@@ -9,12 +9,16 @@ with the factors that produced it.
 
 ## Requirements
 
-- **Python 3.12** (backend) — 3.13+ is not supported; several data dependencies
-  have no wheels there yet and will try to build from source.
+- **Python 3.12** (backend) — 3.13+ will not install. The pinned `numpy==2.0.2`
+  ships no wheels above 3.12, so pip falls back to a source build and fails without
+  MSVC. The geospatial libraries we add later (geopandas, shapely, pyproj) are also
+  most reliably prebuilt for 3.12.
 - **Node 20+** (frontend)
 
-The backend directory is pinned via `backend/.python-version`, which is honored by
-the Python Install Manager, `uv`, and `pyenv-win`.
+`backend/.python-version` records the required version. It is read automatically by
+`uv` and `pyenv-win`, but **not** by Windows' Python Install Manager (`py`) — there,
+be explicit with `py -3.12`. The real enforcement is the virtual environment: once
+`backend/.venv` is activated, `python` is 3.12 regardless of what else is installed.
 
 ## Backend setup
 
@@ -64,9 +68,5 @@ backend/            FastAPI service, risk engine, ETL scripts
   requirements.txt  Pinned dependencies
 data/raw/           Downloaded source datasets (gitignored)
 data/processed/     Build artifacts (gitignored except published profiles)
-docs/               Architecture and data-layer specs
 frontend/           React + TypeScript + Vite dashboard
 ```
-
-See [docs/data-plan.md](docs/data-plan.md) for the data layer: sources, schema,
-and pipeline stages.
