@@ -1,24 +1,29 @@
 """FastAPI application: settings, CORS, and every endpoint.
 
-Three files total. This one is the web layer, `schemas.py` is the contract, and
-`risk.py` is the model. Nothing here does arithmetic — routes resolve counties, call
-into `risk`, and shape responses.
+This one is the web layer, `schemas.py` is the contract, `risk.py` is the county risk
+model and mitigation economics, `claims.py` is the damage and payout engine, and
+`wind.py` is the provisional wind field that feeds it. Nothing here does arithmetic —
+routes resolve counties, call into those modules, and shape responses.
 
 All endpoints are stateless. Portfolios are never persisted: the client holds its
 selection and sends it on each call, which keeps sessions, auth and portfolio tables
 out of the MVP entirely.
 """
 
+import json
 import os
+from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import risk
+from . import claims, risk, wind
 from .schemas import (
     CountyConcentration,
     CountyDetail,
     CountySummary,
+    EligibleOption,
     HurricaneCategoryInfo,
     MitigationRequest,
     ModelMeta,
@@ -31,6 +36,9 @@ from .schemas import (
     SimulationImpact,
     SimulationRequest,
     SimulationResult,
+    StormLossPropertyInput,
+    StormLossRequest,
+    StormLossResponse,
 )
 
 API_PREFIX = "/api"
@@ -549,4 +557,269 @@ def appraise_portfolio(request: MitigationRequest) -> PortfolioMitigation:
         assumptions=risk.MITIGATION_ASSUMPTIONS,
         model_version=risk.MODEL_VERSION,
         data_source=risk.data_source(),
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Storm losses - damage and insurer payout, shared contract version 1.1
+#
+# Separate from /api/simulate above, and deliberately not a replacement for it.
+# /api/simulate places a synthetic storm of a chosen CATEGORY at a chosen point and
+# prices it against insured value: the underwriter's what-if. These endpoints price
+# INDIVIDUAL storms from the simulator's catalog through supplied vulnerability curves
+# and a policy deductible, and report insurer payout rather than economic loss.
+# --------------------------------------------------------------------------- #
+
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+def _example_portfolio() -> dict:
+    return json.loads((FIXTURES / "example_portfolio.json").read_text(encoding="utf-8"))
+
+
+def _generated_run_id() -> str:
+    return "run-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def _storm_losses(
+    properties: list[StormLossPropertyInput],
+    storm_ids: list[str] | None,
+    run_id: str | None,
+    wind_exposures: list | None,
+    eligible_options: list[EligibleOption] | None,
+) -> dict:
+    """Assemble engine inputs, run the engine, attach provenance.
+
+    The only place in the web layer that knows how a request maps onto the engine.
+    Engine rejections become 422s carrying the engine's message verbatim, because a
+    message naming the storm, the property and the missing curve is what the caller
+    needs in order to fix the call.
+    """
+    catalog = wind.load_catalog()
+    ids = list(storm_ids) if storm_ids else list(catalog["storm_ids"])
+
+    unknown = [storm_id for storm_id in ids if wind.storm_by_id(storm_id, catalog) is None]
+    if unknown:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Unknown storm ids for this catalog.",
+                "unknownStormIds": unknown,
+                "catalogId": catalog["catalog_id"],
+                "available": catalog["storm_ids"],
+            },
+        )
+
+    engine_properties = []
+    policies = []
+    for prop in properties:
+        engine_properties.append(
+            claims.Property(
+                property_id=prop.property_id,
+                replacement_cost_usd=prop.replacement_cost_usd,
+                vulnerability_class=prop.vulnerability_class,
+            )
+        )
+        # Coverage A defaults to replacement cost, and is also the base the percentage
+        # deductible is taken against.
+        coverage_a = prop.coverage_a_usd or prop.replacement_cost_usd
+        if prop.deductible_usd is not None:
+            policies.append(
+                claims.Policy(
+                    property_id=prop.property_id,
+                    deductible_usd=prop.deductible_usd,
+                    coverage_limit_usd=prop.coverage_limit_usd or coverage_a,
+                )
+            )
+        else:
+            policy = claims.policy_from_template(prop.property_id, coverage_a)
+            if prop.coverage_limit_usd:
+                policy = policy._replace(coverage_limit_usd=prop.coverage_limit_usd)
+            policies.append(policy)
+
+    exposure_detail: list[dict] | None = None
+    if wind_exposures:
+        exposures = [
+            claims.WindExposure(
+                storm_id=exposure.storm_id,
+                property_id=exposure.property_id,
+                peak_gust_mph=exposure.peak_gust_mph,
+                wind_metric=exposure.wind_metric,
+            )
+            for exposure in wind_exposures
+        ]
+        wind_metadata = {
+            "source": "supplied by the caller, not derived from a track",
+            "evidence_status": "caller-declared",
+            "note": "Rows were used verbatim. The engine still rejects any wind metric "
+            "that does not match the metric the curves are defined on.",
+        }
+    else:
+        uncoordinated = [
+            prop.property_id
+            for prop in properties
+            if prop.latitude is None or prop.longitude is None
+        ]
+        if uncoordinated:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": "Without windExposures, every property needs latitude and "
+                    "longitude so the wind field can derive a gust from the storm track.",
+                    "propertyIds": uncoordinated,
+                },
+            )
+        coordinates = [
+            (prop.property_id, prop.latitude, prop.longitude) for prop in properties
+        ]
+        exposures = []
+        exposure_detail = []
+        for storm_id in ids:
+            storm = wind.storm_by_id(storm_id, catalog)
+            storm_exposures, detail = wind.exposures_for_storm(storm, coordinates)
+            exposures.extend(storm_exposures)
+            exposure_detail.extend(detail)
+        wind_metadata = wind.metadata()
+
+    options = (
+        {option.property_id: option.upgrade_ids for option in eligible_options}
+        if eligible_options
+        else None
+    )
+
+    try:
+        result = claims.compute_losses(
+            engine_properties,
+            policies,
+            exposures,
+            ids,
+            run_id=run_id or _generated_run_id(),
+            catalog_id=catalog["catalog_id"],
+            sampling_description=catalog["sampling_description"],
+            eligible_options=options,
+            wind_model_metadata=wind_metadata,
+            extra_assumptions=[catalog["completeness_warning"]],
+        )
+    except claims.EngineError as error:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": str(error), "error": type(error).__name__},
+        ) from error
+
+    result["metadata"]["storm_catalog"] = {
+        "catalog_id": catalog["catalog_id"],
+        "imported_at": catalog["imported_at"],
+        "source_wind_metric": catalog["wind_metric"],
+        "source_wind_metric_note": catalog["wind_metric_note"],
+        "completeness_warning": catalog["completeness_warning"],
+    }
+    if exposure_detail is not None:
+        # Closest approach per property, so a zero-loss row reads as an audited miss
+        # rather than looking like a row that went missing.
+        result["metadata"]["wind_exposure_detail"] = exposure_detail
+    return result
+
+
+@app.get(f"{API_PREFIX}/v1/storm-catalog", tags=["storm losses"])
+def storm_catalog() -> dict:
+    """The individual storms available to price, with their tracks.
+
+    Everything a client needs to draw and animate a storm: ordered track points with
+    centre position, intensity and category. Wind here is sustained wind at the CENTRE
+    in knots and not wind at a property, so the wind model block travels with it.
+    """
+    catalog = wind.load_catalog()
+    return {**catalog, "wind_model": wind.metadata()}
+
+
+@app.get(f"{API_PREFIX}/v1/damage-curves", tags=["storm losses"])
+def damage_curves() -> dict:
+    """The vulnerability curves and the policy template, with their provenance.
+
+    Published so a client can show what a number rests on. Every curve here is an
+    assumed fixture, and the evidence status and source note say so per curve rather
+    than in a footnote somewhere else.
+    """
+    curve_set = claims.load_curve_set()
+    classes = sorted({c.vulnerability_class for c in curve_set["curves"].values()})
+    return {
+        "curve_set_id": curve_set["curve_set_id"],
+        "wind_metric": curve_set["wind_metric"],
+        "evidence_status": curve_set["evidence_status"],
+        "provenance": curve_set["provenance"],
+        "curves": [
+            {
+                "curve_id": curve.curve_id,
+                "vulnerability_class": curve.vulnerability_class,
+                "upgrade_id": curve.upgrade_id,
+                "wind_metric": curve.wind_metric,
+                "evidence_status": curve.evidence_status,
+                "source_note": curve.source_note,
+                "points": [list(point) for point in curve.points],
+            }
+            for curve in curve_set["curves"].values()
+        ],
+        "vulnerability_classes": classes,
+        "eligible_upgrades_by_class": {
+            name: claims.eligible_upgrades(curve_set["curves"], name) for name in classes
+        },
+        "policy_template": claims.load_policy_template(),
+        "wind_model": wind.metadata(),
+    }
+
+
+@app.get(
+    f"{API_PREFIX}/v1/storm-losses/example",
+    response_model=StormLossResponse,
+    tags=["storm losses"],
+)
+def storm_losses_example(storm_id: str = "SYN0155") -> dict:
+    """A complete worked run with no request body, to build a client against.
+
+    Defaults to the Category 4 Miami landfall, which is the demonstration case worth
+    having: it destroys value in Miami-Dade and Broward, and passes far enough from
+    Jacksonville that the property there comes back as an explicit zero-loss row rather
+    than as no row at all.
+    """
+    portfolio = _example_portfolio()
+    properties = [
+        StormLossPropertyInput(
+            property_id=entry["property_id"],
+            replacement_cost_usd=entry["replacement_cost_usd"],
+            vulnerability_class=entry["vulnerability_class"],
+            latitude=entry["latitude"],
+            longitude=entry["longitude"],
+        )
+        for entry in portfolio["properties"]
+    ]
+    result = _storm_losses(properties, [storm_id], f"example-{storm_id}", None, None)
+    result["metadata"]["example_portfolio"] = {
+        "portfolio_id": portfolio["portfolio_id"],
+        "label": portfolio["label"],
+        "missing_input": portfolio["missing_input"],
+        "replacement_cost_note": portfolio["replacement_cost_note"],
+        "properties": portfolio["properties"],
+    }
+    return result
+
+
+@app.post(
+    f"{API_PREFIX}/v1/storm-losses",
+    response_model=StormLossResponse,
+    tags=["storm losses"],
+)
+def storm_losses(request: StormLossRequest) -> dict:
+    """Price storms against properties, before and after each eligible upgrade.
+
+    Returns every storm/property/upgrade combination, including zero-loss rows for
+    homes a storm missed, because a missing row means missing data and not no loss.
+    Send windExposures to price real property-level gusts; omit them and the
+    provisional wind field derives gusts from the stored track.
+    """
+    return _storm_losses(
+        request.properties,
+        request.storm_ids,
+        request.run_id,
+        request.wind_exposures,
+        request.eligible_options,
     )

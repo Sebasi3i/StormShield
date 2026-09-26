@@ -6,11 +6,15 @@ transformation. Responses use camelCase.
 
 If the frontend's Property type changes, this file changes with it and nothing else
 does.
+
+One exception, at the bottom of this file: the storm-loss models of shared contract
+version 1.1 stay snake_case, because those field names are fixed by a written contract
+with the developer consuming them.
 """
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
 def to_camel(snake: str) -> str:
@@ -352,3 +356,154 @@ class ModelMeta(ApiModel):
     default_discount_rate: float
     warnings: list[str]
     sources: list[str]
+
+
+# --------------------------------------------------------------------------- #
+# Storm losses - shared response contract version 1.1
+#
+# These models deliberately do NOT inherit from ApiModel. Every other response in this
+# file is camelCase, but version 1.1 is a written contract shared with the developer
+# consuming it, and its field names are snake_case. Renaming them to match house style
+# would break the other side of the contract, so here house style loses.
+# --------------------------------------------------------------------------- #
+
+
+EvidenceStatus = Literal["assumed", "sourced"]
+
+# Vulnerability classes and upgrade ids are plain strings on purpose. What exists is
+# decided by the curve fixture, not by this file: a Literal here would mean the API
+# rejects a class the research team just supplied a curve for.
+
+
+class StormLossPropertyInput(BaseModel):
+    """One building. Accepts the frontend Property shape without transformation.
+
+    The aliases let the map POST what it already holds - id and value - while the
+    engine works in the terms the brief defines: a string property id and a building
+    replacement cost kept separate from the coverage limit.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    property_id: str = Field(
+        validation_alias=AliasChoices("property_id", "propertyId", "id"),
+        description="String id. An integer from the frontend list is accepted and coerced.",
+    )
+    replacement_cost_usd: float = Field(
+        gt=0,
+        validation_alias=AliasChoices("replacement_cost_usd", "replacementCostUsd", "value"),
+        description="Building replacement cost. Insured value is accepted as a stand-in.",
+    )
+    vulnerability_class: str = Field(
+        default="pre_fbc_2002",
+        description="Must have a baseline curve in the curve set, or the row is rejected.",
+    )
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    coverage_a_usd: float | None = Field(
+        default=None,
+        gt=0,
+        description="Dwelling limit. Defaults to replacement cost, which also sets the "
+        "percentage deductible base.",
+    )
+    deductible_usd: float | None = Field(
+        default=None,
+        ge=0,
+        description="Overrides the template percentage deductible with a flat amount.",
+    )
+    coverage_limit_usd: float | None = Field(default=None, gt=0)
+
+    @field_validator("property_id", mode="before")
+    @classmethod
+    def _coerce_id(cls, value: object) -> object:
+        # The frontend numbers its properties; the contract calls for strings.
+        return str(value) if isinstance(value, int) else value
+
+
+class WindExposureInput(BaseModel):
+    """Property-level peak gust, supplied rather than computed from a track.
+
+    wind_metric is required, not defaulted. The whole point of carrying it is that a
+    mismatch against the curve gets rejected instead of silently converted, and a
+    default would quietly assert the very thing that needs agreeing.
+    """
+
+    storm_id: str
+    property_id: str
+    peak_gust_mph: float = Field(ge=0)
+    wind_metric: str
+
+
+class EligibleOption(BaseModel):
+    property_id: str
+    upgrade_ids: list[str]
+
+
+class StormLossRequest(BaseModel):
+    """Price storms against properties.
+
+    Wind reaches the engine one of two ways. Supply wind_exposures and they are used
+    verbatim, which is the path for real exposures from the simulator owner. Omit them
+    and latitude/longitude are required, so the provisional wind field in app/wind.py
+    derives the gust from the stored storm track.
+    """
+
+    properties: list[StormLossPropertyInput] = Field(min_length=1, max_length=500)
+    storm_ids: list[str] | None = Field(
+        default=None, description="Defaults to every storm in the catalog."
+    )
+    run_id: str | None = None
+    wind_exposures: list[WindExposureInput] | None = None
+    eligible_options: list[EligibleOption] | None = Field(
+        default=None,
+        description="Per property. Omitted, every upgrade with a curve for the class is "
+        "priced. Baseline is not an option.",
+    )
+
+
+class StormLossRow(BaseModel):
+    """One storm, one property, one upgrade.
+
+    Baseline figures repeat across the upgrade rows of the same storm and property by
+    design: they are computed once, so a consumer can check they match.
+    """
+
+    storm_id: str
+    property_id: str
+    upgrade_id: str
+    peak_gust_mph: float
+    baseline_damage_usd: float
+    upgraded_damage_usd: float
+    baseline_payout_usd: float
+    upgraded_payout_usd: float
+    avoided_payout_usd: float = Field(
+        description="baseline_payout - upgraded_payout. Negative values are preserved "
+        "and flagged in warnings, never clamped to zero."
+    )
+
+
+class StormLossResponse(BaseModel):
+    """The version 1.1 envelope.
+
+    Completeness is checkable by construction: storm_ids, property_ids and
+    eligible_options declare what should be present, so a missing row is detectable
+    rather than indistinguishable from a zero loss.
+    """
+
+    schema_version: str
+    run_id: str
+    catalog_id: str
+    storm_ids: list[str]
+    property_ids: list[str]
+    eligible_options: list[EligibleOption]
+    evidence_status: EvidenceStatus = Field(
+        description="assumed if any material input is assumed. Describes provenance, "
+        "not whether the model has been validated."
+    )
+    rows: list[StormLossRow]
+    warnings: list[str]
+    assumptions: list[str]
+    metadata: dict = Field(
+        description="Curve ids and source notes, gust definition, reference height and "
+        "terrain convention, sampling description, policy basis."
+    )

@@ -1,0 +1,721 @@
+{
+  "catalog_id": "syn-fl-3-v1",
+  "imported_at": "2026-09-26T18:42:14Z",
+  "wind_metric": "max_wind_kt",
+  "wind_metric_note": "One-minute sustained wind at the storm CENTRE in knots, HURDAT2 convention. This is not wind at a property and it is not a gust. Converting it to a property-level peak gust is app/wind.py's job, and that conversion is an assumption.",
+  "sampling_description": "hurricane_simulator V1 Monte Carlo run of 1000 synthetic Atlantic storms bootstrapped from HURDAT2 1851-2025 at a 6-hour time step. This catalog holds hand-picked storm ids SYN0155, SYN0697, SYN0973. Track points are clipped to lat 18.0 to 35.0, lon -92.0 to -72.0.",
+  "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns.",
+  "source_run": "C:\\Users\\Max\\Downloads\\hurricane_simulator\\hurricane_simulator\\hurricane_simulator\\output",
+  "storm_ids": [
+    "SYN0155",
+    "SYN0697",
+    "SYN0973"
+  ],
+  "storms": [
+    {
+      "storm_id": "SYN0155",
+      "genesis_time": "2026-09-12",
+      "peak_wind_kt": 148.4,
+      "duration_hours": 312.0,
+      "landfall": true,
+      "landfall_time": "2026-09-19 12:00:00",
+      "landfall_lat": 25.9471,
+      "landfall_lon": -80.245,
+      "landfall_wind_kt": 130.1,
+      "track": [
+        {
+          "step": 24,
+          "timestamp": "2026-09-18 00:00:00",
+          "latitude": 22.3389,
+          "longitude": -73.0236,
+          "max_wind_kt": 141.8,
+          "category": "5",
+          "is_over_land": false
+        },
+        {
+          "step": 25,
+          "timestamp": "2026-09-18 06:00:00",
+          "latitude": 22.8466,
+          "longitude": -74.7331,
+          "max_wind_kt": 148.1,
+          "category": "5",
+          "is_over_land": false
+        },
+        {
+          "step": 26,
+          "timestamp": "2026-09-18 12:00:00",
+          "latitude": 23.7412,
+          "longitude": -75.9153,
+          "max_wind_kt": 148.4,
+          "category": "5",
+          "is_over_land": false
+        },
+        {
+          "step": 27,
+          "timestamp": "2026-09-18 18:00:00",
+          "latitude": 23.9078,
+          "longitude": -76.374,
+          "max_wind_kt": 133.0,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 28,
+          "timestamp": "2026-09-19 00:00:00",
+          "latitude": 24.8294,
+          "longitude": -77.7536,
+          "max_wind_kt": 132.6,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 29,
+          "timestamp": "2026-09-19 06:00:00",
+          "latitude": 25.4661,
+          "longitude": -78.8271,
+          "max_wind_kt": 131.2,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 30,
+          "timestamp": "2026-09-19 12:00:00",
+          "latitude": 25.9471,
+          "longitude": -80.245,
+          "max_wind_kt": 130.1,
+          "category": "4",
+          "is_over_land": true
+        },
+        {
+          "step": 31,
+          "timestamp": "2026-09-19 18:00:00",
+          "latitude": 26.5678,
+          "longitude": -81.556,
+          "max_wind_kt": 106.4,
+          "category": "3",
+          "is_over_land": true
+        },
+        {
+          "step": 32,
+          "timestamp": "2026-09-20 00:00:00",
+          "latitude": 27.0838,
+          "longitude": -81.9545,
+          "max_wind_kt": 87.5,
+          "category": "2",
+          "is_over_land": true
+        },
+        {
+          "step": 33,
+          "timestamp": "2026-09-20 06:00:00",
+          "latitude": 27.7869,
+          "longitude": -81.2418,
+          "max_wind_kt": 72.6,
+          "category": "1",
+          "is_over_land": true
+        },
+        {
+          "step": 34,
+          "timestamp": "2026-09-20 12:00:00",
+          "latitude": 28.9227,
+          "longitude": -79.9558,
+          "max_wind_kt": 60.7,
+          "category": "TS",
+          "is_over_land": false
+        },
+        {
+          "step": 35,
+          "timestamp": "2026-09-20 18:00:00",
+          "latitude": 30.126,
+          "longitude": -79.5254,
+          "max_wind_kt": 60.0,
+          "category": "TS",
+          "is_over_land": false
+        },
+        {
+          "step": 36,
+          "timestamp": "2026-09-21 00:00:00",
+          "latitude": 31.907,
+          "longitude": -76.9849,
+          "max_wind_kt": 50.4,
+          "category": "TS",
+          "is_over_land": false
+        },
+        {
+          "step": 37,
+          "timestamp": "2026-09-21 06:00:00",
+          "latitude": 32.5595,
+          "longitude": -76.8187,
+          "max_wind_kt": 51.3,
+          "category": "TS",
+          "is_over_land": false
+        },
+        {
+          "step": 38,
+          "timestamp": "2026-09-21 12:00:00",
+          "latitude": 33.595,
+          "longitude": -76.7064,
+          "max_wind_kt": 49.8,
+          "category": "TS",
+          "is_over_land": false
+        },
+        {
+          "step": 39,
+          "timestamp": "2026-09-21 18:00:00",
+          "latitude": 34.9434,
+          "longitude": -76.3168,
+          "max_wind_kt": 44.7,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 41,
+          "timestamp": "2026-09-22 06:00:00",
+          "latitude": 34.8641,
+          "longitude": -75.5546,
+          "max_wind_kt": 37.4,
+          "category": "TS",
+          "is_over_land": false
+        }
+      ]
+    },
+    {
+      "storm_id": "SYN0697",
+      "genesis_time": "2026-08-25",
+      "peak_wind_kt": 131.4,
+      "duration_hours": 570.0,
+      "landfall": true,
+      "landfall_time": "2026-09-07 18:00:00",
+      "landfall_lat": 26.6848,
+      "landfall_lon": -80.1917,
+      "landfall_wind_kt": 105.2,
+      "track": [
+        {
+          "step": 38,
+          "timestamp": "2026-09-03 12:00:00",
+          "latitude": 23.8637,
+          "longitude": -72.8316,
+          "max_wind_kt": 97.9,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 39,
+          "timestamp": "2026-09-03 18:00:00",
+          "latitude": 24.0899,
+          "longitude": -72.9873,
+          "max_wind_kt": 102.5,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 40,
+          "timestamp": "2026-09-04 00:00:00",
+          "latitude": 24.2775,
+          "longitude": -73.9277,
+          "max_wind_kt": 109.2,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 41,
+          "timestamp": "2026-09-04 06:00:00",
+          "latitude": 24.8706,
+          "longitude": -74.937,
+          "max_wind_kt": 103.9,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 42,
+          "timestamp": "2026-09-04 12:00:00",
+          "latitude": 25.661,
+          "longitude": -74.448,
+          "max_wind_kt": 104.2,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 43,
+          "timestamp": "2026-09-04 18:00:00",
+          "latitude": 25.4969,
+          "longitude": -74.8818,
+          "max_wind_kt": 102.9,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 44,
+          "timestamp": "2026-09-05 00:00:00",
+          "latitude": 25.5563,
+          "longitude": -75.415,
+          "max_wind_kt": 102.9,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 45,
+          "timestamp": "2026-09-05 06:00:00",
+          "latitude": 26.253,
+          "longitude": -76.1293,
+          "max_wind_kt": 108.0,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 46,
+          "timestamp": "2026-09-05 12:00:00",
+          "latitude": 26.1607,
+          "longitude": -76.5823,
+          "max_wind_kt": 106.8,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 47,
+          "timestamp": "2026-09-05 18:00:00",
+          "latitude": 25.9645,
+          "longitude": -77.132,
+          "max_wind_kt": 97.5,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 48,
+          "timestamp": "2026-09-06 00:00:00",
+          "latitude": 25.5355,
+          "longitude": -76.9016,
+          "max_wind_kt": 102.3,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 49,
+          "timestamp": "2026-09-06 06:00:00",
+          "latitude": 26.3277,
+          "longitude": -76.9729,
+          "max_wind_kt": 101.6,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 50,
+          "timestamp": "2026-09-06 12:00:00",
+          "latitude": 26.2999,
+          "longitude": -77.791,
+          "max_wind_kt": 100.7,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 51,
+          "timestamp": "2026-09-06 18:00:00",
+          "latitude": 26.913,
+          "longitude": -77.5361,
+          "max_wind_kt": 99.8,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 52,
+          "timestamp": "2026-09-07 00:00:00",
+          "latitude": 26.4447,
+          "longitude": -77.5473,
+          "max_wind_kt": 104.2,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 53,
+          "timestamp": "2026-09-07 06:00:00",
+          "latitude": 26.4393,
+          "longitude": -78.253,
+          "max_wind_kt": 104.9,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 54,
+          "timestamp": "2026-09-07 12:00:00",
+          "latitude": 26.1709,
+          "longitude": -79.1409,
+          "max_wind_kt": 104.9,
+          "category": "3",
+          "is_over_land": false
+        },
+        {
+          "step": 55,
+          "timestamp": "2026-09-07 18:00:00",
+          "latitude": 26.6848,
+          "longitude": -80.1917,
+          "max_wind_kt": 105.2,
+          "category": "3",
+          "is_over_land": true
+        },
+        {
+          "step": 56,
+          "timestamp": "2026-09-08 00:00:00",
+          "latitude": 27.546,
+          "longitude": -80.5897,
+          "max_wind_kt": 86.6,
+          "category": "2",
+          "is_over_land": true
+        },
+        {
+          "step": 57,
+          "timestamp": "2026-09-08 06:00:00",
+          "latitude": 27.4949,
+          "longitude": -80.9713,
+          "max_wind_kt": 71.8,
+          "category": "1",
+          "is_over_land": true
+        },
+        {
+          "step": 58,
+          "timestamp": "2026-09-08 12:00:00",
+          "latitude": 27.7762,
+          "longitude": -80.766,
+          "max_wind_kt": 60.1,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 59,
+          "timestamp": "2026-09-08 18:00:00",
+          "latitude": 27.9141,
+          "longitude": -81.0884,
+          "max_wind_kt": 50.8,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 60,
+          "timestamp": "2026-09-09 00:00:00",
+          "latitude": 28.0794,
+          "longitude": -81.6745,
+          "max_wind_kt": 43.4,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 61,
+          "timestamp": "2026-09-09 06:00:00",
+          "latitude": 28.658,
+          "longitude": -82.7086,
+          "max_wind_kt": 37.6,
+          "category": "TS",
+          "is_over_land": false
+        },
+        {
+          "step": 62,
+          "timestamp": "2026-09-09 12:00:00",
+          "latitude": 28.8062,
+          "longitude": -81.8202,
+          "max_wind_kt": 36.3,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 63,
+          "timestamp": "2026-09-09 18:00:00",
+          "latitude": 29.0633,
+          "longitude": -81.8272,
+          "max_wind_kt": 31.9,
+          "category": "TD",
+          "is_over_land": true
+        },
+        {
+          "step": 64,
+          "timestamp": "2026-09-10 00:00:00",
+          "latitude": 29.3848,
+          "longitude": -80.9574,
+          "max_wind_kt": 28.4,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 65,
+          "timestamp": "2026-09-10 06:00:00",
+          "latitude": 30.2882,
+          "longitude": -80.1465,
+          "max_wind_kt": 33.5,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 66,
+          "timestamp": "2026-09-10 12:00:00",
+          "latitude": 30.9114,
+          "longitude": -78.0483,
+          "max_wind_kt": 27.8,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 67,
+          "timestamp": "2026-09-10 18:00:00",
+          "latitude": 31.9202,
+          "longitude": -77.7537,
+          "max_wind_kt": 32.7,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 68,
+          "timestamp": "2026-09-11 00:00:00",
+          "latitude": 32.341,
+          "longitude": -76.8282,
+          "max_wind_kt": 33.2,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 69,
+          "timestamp": "2026-09-11 06:00:00",
+          "latitude": 33.4552,
+          "longitude": -76.1357,
+          "max_wind_kt": 33.3,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 70,
+          "timestamp": "2026-09-11 12:00:00",
+          "latitude": 33.0399,
+          "longitude": -76.7611,
+          "max_wind_kt": 28.8,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 71,
+          "timestamp": "2026-09-11 18:00:00",
+          "latitude": 33.2482,
+          "longitude": -76.9643,
+          "max_wind_kt": 24.3,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 72,
+          "timestamp": "2026-09-12 00:00:00",
+          "latitude": 33.4327,
+          "longitude": -76.3387,
+          "max_wind_kt": 29.9,
+          "category": "TD",
+          "is_over_land": false
+        },
+        {
+          "step": 73,
+          "timestamp": "2026-09-12 06:00:00",
+          "latitude": 34.1014,
+          "longitude": -74.1747,
+          "max_wind_kt": 30.9,
+          "category": "TD",
+          "is_over_land": false
+        }
+      ]
+    },
+    {
+      "storm_id": "SYN0973",
+      "genesis_time": "2026-08-15",
+      "peak_wind_kt": 144.4,
+      "duration_hours": 318.0,
+      "landfall": true,
+      "landfall_time": "2026-08-24 12:00:00",
+      "landfall_lat": 29.1068,
+      "landfall_lon": -82.5809,
+      "landfall_wind_kt": 115.7,
+      "track": [
+        {
+          "step": 27,
+          "timestamp": "2026-08-21 18:00:00",
+          "latitude": 25.4256,
+          "longitude": -72.2134,
+          "max_wind_kt": 127.5,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 28,
+          "timestamp": "2026-08-22 00:00:00",
+          "latitude": 26.5051,
+          "longitude": -72.7702,
+          "max_wind_kt": 128.9,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 29,
+          "timestamp": "2026-08-22 06:00:00",
+          "latitude": 26.3785,
+          "longitude": -74.3789,
+          "max_wind_kt": 144.4,
+          "category": "5",
+          "is_over_land": false
+        },
+        {
+          "step": 30,
+          "timestamp": "2026-08-22 12:00:00",
+          "latitude": 26.4958,
+          "longitude": -74.6068,
+          "max_wind_kt": 133.3,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 31,
+          "timestamp": "2026-08-22 18:00:00",
+          "latitude": 26.4217,
+          "longitude": -75.0926,
+          "max_wind_kt": 142.9,
+          "category": "5",
+          "is_over_land": false
+        },
+        {
+          "step": 32,
+          "timestamp": "2026-08-23 00:00:00",
+          "latitude": 26.3119,
+          "longitude": -76.1938,
+          "max_wind_kt": 132.2,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 33,
+          "timestamp": "2026-08-23 06:00:00",
+          "latitude": 26.5507,
+          "longitude": -77.5579,
+          "max_wind_kt": 136.8,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 34,
+          "timestamp": "2026-08-23 12:00:00",
+          "latitude": 27.24,
+          "longitude": -77.5152,
+          "max_wind_kt": 125.0,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 35,
+          "timestamp": "2026-08-23 18:00:00",
+          "latitude": 27.3975,
+          "longitude": -78.9469,
+          "max_wind_kt": 129.7,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 36,
+          "timestamp": "2026-08-24 00:00:00",
+          "latitude": 27.8871,
+          "longitude": -79.369,
+          "max_wind_kt": 114.2,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 37,
+          "timestamp": "2026-08-24 06:00:00",
+          "latitude": 28.7333,
+          "longitude": -80.3421,
+          "max_wind_kt": 114.7,
+          "category": "4",
+          "is_over_land": false
+        },
+        {
+          "step": 38,
+          "timestamp": "2026-08-24 12:00:00",
+          "latitude": 29.1068,
+          "longitude": -82.5809,
+          "max_wind_kt": 115.7,
+          "category": "4",
+          "is_over_land": true
+        },
+        {
+          "step": 39,
+          "timestamp": "2026-08-24 18:00:00",
+          "latitude": 29.6351,
+          "longitude": -84.1933,
+          "max_wind_kt": 94.9,
+          "category": "2",
+          "is_over_land": false
+        },
+        {
+          "step": 40,
+          "timestamp": "2026-08-25 00:00:00",
+          "latitude": 30.1702,
+          "longitude": -84.2225,
+          "max_wind_kt": 95.7,
+          "category": "2",
+          "is_over_land": true
+        },
+        {
+          "step": 41,
+          "timestamp": "2026-08-25 06:00:00",
+          "latitude": 30.6419,
+          "longitude": -84.1344,
+          "max_wind_kt": 79.0,
+          "category": "1",
+          "is_over_land": true
+        },
+        {
+          "step": 42,
+          "timestamp": "2026-08-25 12:00:00",
+          "latitude": 32.1265,
+          "longitude": -83.695,
+          "max_wind_kt": 65.8,
+          "category": "1",
+          "is_over_land": true
+        },
+        {
+          "step": 43,
+          "timestamp": "2026-08-25 18:00:00",
+          "latitude": 33.0963,
+          "longitude": -82.4817,
+          "max_wind_kt": 55.3,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 44,
+          "timestamp": "2026-08-26 00:00:00",
+          "latitude": 33.5905,
+          "longitude": -81.0319,
+          "max_wind_kt": 47.0,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 45,
+          "timestamp": "2026-08-26 06:00:00",
+          "latitude": 33.5877,
+          "longitude": -82.2899,
+          "max_wind_kt": 40.4,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 46,
+          "timestamp": "2026-08-26 12:00:00",
+          "latitude": 34.1181,
+          "longitude": -82.4898,
+          "max_wind_kt": 35.2,
+          "category": "TS",
+          "is_over_land": true
+        },
+        {
+          "step": 47,
+          "timestamp": "2026-08-26 18:00:00",
+          "latitude": 34.9911,
+          "longitude": -81.0758,
+          "max_wind_kt": 31.0,
+          "category": "TD",
+          "is_over_land": true
+        }
+      ]
+    }
+  ]
+}

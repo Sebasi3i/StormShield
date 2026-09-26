@@ -1,0 +1,29 @@
+{
+  "policy_template_id": "fl-illustrative-5pct-v1",
+  "label": "Illustrative Florida homeowners policy - 5% hurricane deductible",
+  "evidence_status": "assumed",
+  "source": "StormShield_Finance_Data_v5.xlsx, sheet 'Sample Policy Summary', built from Fla. Stat. 627.701 and Citizens Property Insurance guidance.",
+  "warning": "ILLUSTRATIVE ONLY - not a declarations page and not policy wording. Citizens states real coverages, deductibles, limits and exclusions vary by policy. Finance must approve this scope before any number leaves the prototype.",
+  "deductible": {
+    "basis": "percent_of_coverage_a",
+    "percent": 0.05,
+    "statutory_options": ["$500", "2% of Coverage A", "5% of Coverage A", "10% of Coverage A"],
+    "note": "Fla. Stat. 627.701 requires insurers to offer $500, 2%, 5% and 10% hurricane-deductible options. The workbook's 'Data Request - Policy Examples' sheet asks for ONE option so worked examples stay internally consistent, and advises against 10%; 5% is the option its 'Sample Policy Summary' sheet already works through ($400,000 Coverage A -> $20,000). The percentage is applied to the documented policy base (Coverage A), never to the damage amount."
+  },
+  "aop_deductible_usd": 2500,
+  "coverage_limit_basis": "coverage_a",
+  "payout_basis": "RCV",
+  "wind_coverage_included": true,
+  "worked_example_from_workbook": {
+    "coverage_a_usd": 400000,
+    "hurricane_deductible_usd": 20000,
+    "damage_usd": 150000,
+    "insurer_pays_usd": 130000
+  },
+  "out_of_scope_v1": [
+    "Second-hurricane-same-calendar-year deductible (Fla. Stat. 627.701(5)(a): the greater of the unmet first deductible or the AOP deductible). This engine prices each storm independently and resets the deductible, so a chronological multi-storm year needs a future model.",
+    "AOP deductible for non-hurricane wind. Stored here because the statutory rule needs it; unused in v1.",
+    "Contents, loss of use, flood and storm surge, premium changes, reinsurance, claim expenses.",
+    "Recoverable depreciation withheld until repairs complete under RCV."
+  ]
+}

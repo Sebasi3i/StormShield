@@ -1,0 +1,61 @@
+{
+  "curve_set_id": "wrp-assumed-v1",
+  "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+  "evidence_status": "assumed",
+  "upper_supported_wind_mph": 220,
+  "provenance": {
+    "summary": "Provisional fixture curves. Every damage fraction below is ASSUMED. No curve here is measured, calibrated or validated against loss experience.",
+    "baseline_derivation": "Baseline pre-FBC fractions are the platform's already-published vulnerability assumption (risk.wind_damage_ratio: min(0.85, 0.9 * ((kt - 50) / 100) ** 2.2), sustained knots) evaluated on this file's gust grid using kt = mph / (1.15078 * 1.30). Reusing it keeps one vulnerability assumption in the product rather than two competing ones.",
+    "upgrade_derivation": "Upgrade curves are the baseline scaled by (1 - effectiveness) using the hurricane effectiveness already published on /api/meta/model: opening-protection 0.25 for 'shutters', roof-to-wall 0.20 for 'roof_straps'. This is an assumed uniform effect across all wind speeds, which is almost certainly wrong in shape: real mitigation effects vary with intensity.",
+    "code_uplift_derivation": "post_fbc_2002 baseline is pre_fbc_2002 scaled by 0.60, an assumed uplift for homes built to the 2002 Florida Building Code. Not sourced.",
+    "finance_workbook_status": "StormShield_Finance_Data_v5.xlsx returned NO damage-effect evidence: 'Data Request - Upgrades' tables A and B have every Answer cell blank ('—'), under an explicit ground rule that a premium discount must not be converted into a damage reduction. These fixtures exist so the engine can run before that request is answered; they are not a substitute for it.",
+    "do_not": "Do not present these as FORTIFIED, IBHS or study-derived results. Replace this whole file when the math/research team supplies curves."
+  },
+  "curves": [
+    {
+      "curve_id": "pre_fbc_2002.baseline.assumed.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "baseline",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "assumed",
+      "source_note": "Assumed. Platform vulnerability curve risk.wind_damage_ratio on the gust grid. Single-family home built before the 2002 Florida Building Code.",
+      "points": [[0, 0.0], [75, 0.0], [90, 0.0059], [105, 0.0266], [120, 0.0647], [140, 0.1448], [160, 0.2608], [180, 0.4148], [200, 0.6083], [220, 0.8428]]
+    },
+    {
+      "curve_id": "pre_fbc_2002.shutters.assumed.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "shutters",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "assumed",
+      "source_note": "Assumed. Baseline x 0.75 (opening-protection hurricane effectiveness 0.25). Scope: whole-house accordion shutters on every opening, per Finance workbook row 'Hurricane shutters — accordion, whole-house'.",
+      "points": [[0, 0.0], [75, 0.0], [90, 0.0044], [105, 0.0199], [120, 0.0485], [140, 0.1086], [160, 0.1956], [180, 0.3111], [200, 0.4562], [220, 0.6321]]
+    },
+    {
+      "curve_id": "pre_fbc_2002.roof_straps.assumed.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "roof_straps",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "assumed",
+      "source_note": "Assumed. Baseline x 0.80 (roof-to-wall hurricane effectiveness 0.20). Scope: roof-to-wall strap/clip retrofit on an existing roof. Finance workbook flags the sourced price at $850-$5,000, not the $20,000 the starter model assumed.",
+      "points": [[0, 0.0], [75, 0.0], [90, 0.0047], [105, 0.0213], [120, 0.0518], [140, 0.1158], [160, 0.2086], [180, 0.3318], [200, 0.4866], [220, 0.6742]]
+    },
+    {
+      "curve_id": "post_fbc_2002.baseline.assumed.v1",
+      "vulnerability_class": "post_fbc_2002",
+      "upgrade_id": "baseline",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "assumed",
+      "source_note": "Assumed. pre_fbc_2002 baseline x 0.60 code-uplift factor. Single-family home built to the 2002 Florida Building Code or later.",
+      "points": [[0, 0.0], [75, 0.0], [90, 0.0035], [105, 0.016], [120, 0.0388], [140, 0.0869], [160, 0.1565], [180, 0.2489], [200, 0.365], [220, 0.5057]]
+    },
+    {
+      "curve_id": "post_fbc_2002.shutters.assumed.v1",
+      "vulnerability_class": "post_fbc_2002",
+      "upgrade_id": "shutters",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "assumed",
+      "source_note": "Assumed. post_fbc_2002 baseline x 0.75. No roof_straps curve exists for this class: roof-to-wall connections are already required by the 2002 code, so the retrofit is not an eligible option and must not be offered.",
+      "points": [[0, 0.0], [75, 0.0], [90, 0.0027], [105, 0.012], [120, 0.0291], [140, 0.0652], [160, 0.1174], [180, 0.1867], [200, 0.2737], [220, 0.3793]]
+    }
+  ]
+}

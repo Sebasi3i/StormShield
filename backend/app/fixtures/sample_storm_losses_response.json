@@ -1,0 +1,584 @@
+{
+  "schema_version": "1.1",
+  "run_id": "example-SYN0155",
+  "catalog_id": "syn-fl-3-v1",
+  "storm_ids": [
+    "SYN0155"
+  ],
+  "property_ids": [
+    "P001",
+    "P002",
+    "P003",
+    "P004",
+    "P005",
+    "P006",
+    "P007",
+    "P008",
+    "P009",
+    "P010"
+  ],
+  "eligible_options": [
+    {
+      "property_id": "P001",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P002",
+      "upgrade_ids": [
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P003",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P004",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P005",
+      "upgrade_ids": [
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P006",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P007",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P008",
+      "upgrade_ids": [
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P009",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    },
+    {
+      "property_id": "P010",
+      "upgrade_ids": [
+        "roof_straps",
+        "shutters"
+      ]
+    }
+  ],
+  "evidence_status": "assumed",
+  "rows": [
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P001",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 168.9,
+      "baseline_damage_usd": 279770.94,
+      "upgraded_damage_usd": 223782.75,
+      "baseline_payout_usd": 237270.94,
+      "upgraded_payout_usd": 181282.75,
+      "avoided_payout_usd": 55988.19
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P001",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 168.9,
+      "baseline_damage_usd": 279770.94,
+      "upgraded_damage_usd": 209828.21,
+      "baseline_payout_usd": 237270.94,
+      "upgraded_payout_usd": 167328.21,
+      "avoided_payout_usd": 69942.74
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P002",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 169.4,
+      "baseline_damage_usd": 239751.46,
+      "upgraded_damage_usd": 179843.59,
+      "baseline_payout_usd": 179751.46,
+      "upgraded_payout_usd": 119843.59,
+      "avoided_payout_usd": 59907.86
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P003",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 63.6,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P003",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 63.6,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P004",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 66.4,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P004",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 66.4,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P005",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 61.8,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P006",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 22.7,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P006",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 22.7,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P007",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 108.6,
+      "baseline_damage_usd": 25361.8,
+      "upgraded_damage_usd": 20307.04,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P007",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 108.6,
+      "baseline_damage_usd": 25361.8,
+      "upgraded_damage_usd": 18990.1,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P008",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 128.2,
+      "baseline_damage_usd": 26910.65,
+      "upgraded_damage_usd": 20187.7,
+      "baseline_payout_usd": 3910.65,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 3910.65
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P009",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 111.8,
+      "baseline_damage_usd": 43060.39,
+      "upgraded_damage_usd": 34476.83,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P009",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 111.8,
+      "baseline_damage_usd": 43060.39,
+      "upgraded_damage_usd": 32257.44,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P010",
+      "upgrade_id": "roof_straps",
+      "peak_gust_mph": 167.8,
+      "baseline_damage_usd": 216492.73,
+      "upgraded_damage_usd": 173167.18,
+      "baseline_payout_usd": 182742.73,
+      "upgraded_payout_usd": 139417.18,
+      "avoided_payout_usd": 43325.55
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P010",
+      "upgrade_id": "shutters",
+      "peak_gust_mph": 167.8,
+      "baseline_damage_usd": 216492.73,
+      "upgraded_damage_usd": 162369.55,
+      "baseline_payout_usd": 182742.73,
+      "upgraded_payout_usd": 128619.55,
+      "avoided_payout_usd": 54123.18
+    }
+  ],
+  "warnings": [],
+  "assumptions": [
+    "Illustrative gross insurer payouts before reinsurance. Not calibrated and not validated against loss experience.",
+    "Every damage curve in this run is an assumed fixture. The Finance workbook's upgrade damage-effect request is still unanswered.",
+    "payout = min(coverage_limit, max(0, damage - deductible)). The prototype's agreed contract, pending Finance approval of its scope.",
+    "Each storm is priced independently: the deductible resets and the building is assumed fully repaired beforehand. No annual accumulation, and no annual event rate is applied here.",
+    "Replacement cost is taken as the property's insured value; no square-footage rebuild cost was available.",
+    "Contents, loss of use, flood and storm surge, premium changes, reinsurance and claim expenses are out of scope.",
+    "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns."
+  ],
+  "metadata": {
+    "result_basis": "illustrative gross insurer payouts before reinsurance",
+    "curve_set_id": "wrp-assumed-v1",
+    "curve_ids": [
+      "post_fbc_2002.baseline.assumed.v1",
+      "post_fbc_2002.shutters.assumed.v1",
+      "pre_fbc_2002.baseline.assumed.v1",
+      "pre_fbc_2002.roof_straps.assumed.v1",
+      "pre_fbc_2002.shutters.assumed.v1"
+    ],
+    "curve_wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+    "curve_provenance": {
+      "summary": "Provisional fixture curves. Every damage fraction below is ASSUMED. No curve here is measured, calibrated or validated against loss experience.",
+      "baseline_derivation": "Baseline pre-FBC fractions are the platform's already-published vulnerability assumption (risk.wind_damage_ratio: min(0.85, 0.9 * ((kt - 50) / 100) ** 2.2), sustained knots) evaluated on this file's gust grid using kt = mph / (1.15078 * 1.30). Reusing it keeps one vulnerability assumption in the product rather than two competing ones.",
+      "upgrade_derivation": "Upgrade curves are the baseline scaled by (1 - effectiveness) using the hurricane effectiveness already published on /api/meta/model: opening-protection 0.25 for 'shutters', roof-to-wall 0.20 for 'roof_straps'. This is an assumed uniform effect across all wind speeds, which is almost certainly wrong in shape: real mitigation effects vary with intensity.",
+      "code_uplift_derivation": "post_fbc_2002 baseline is pre_fbc_2002 scaled by 0.60, an assumed uplift for homes built to the 2002 Florida Building Code. Not sourced.",
+      "finance_workbook_status": "StormShield_Finance_Data_v5.xlsx returned NO damage-effect evidence: 'Data Request - Upgrades' tables A and B have every Answer cell blank ('\u2014'), under an explicit ground rule that a premium discount must not be converted into a damage reduction. These fixtures exist so the engine can run before that request is answered; they are not a substitute for it.",
+      "do_not": "Do not present these as FORTIFIED, IBHS or study-derived results. Replace this whole file when the math/research team supplies curves."
+    },
+    "curve_source_notes": {
+      "pre_fbc_2002.baseline.assumed.v1": "Assumed. Platform vulnerability curve risk.wind_damage_ratio on the gust grid. Single-family home built before the 2002 Florida Building Code.",
+      "pre_fbc_2002.shutters.assumed.v1": "Assumed. Baseline x 0.75 (opening-protection hurricane effectiveness 0.25). Scope: whole-house accordion shutters on every opening, per Finance workbook row 'Hurricane shutters \u2014 accordion, whole-house'.",
+      "pre_fbc_2002.roof_straps.assumed.v1": "Assumed. Baseline x 0.80 (roof-to-wall hurricane effectiveness 0.20). Scope: roof-to-wall strap/clip retrofit on an existing roof. Finance workbook flags the sourced price at $850-$5,000, not the $20,000 the starter model assumed.",
+      "post_fbc_2002.baseline.assumed.v1": "Assumed. pre_fbc_2002 baseline x 0.60 code-uplift factor. Single-family home built to the 2002 Florida Building Code or later.",
+      "post_fbc_2002.shutters.assumed.v1": "Assumed. post_fbc_2002 baseline x 0.75. No roof_straps curve exists for this class: roof-to-wall connections are already required by the 2002 code, so the retrofit is not an eligible option and must not be offered."
+    },
+    "sampling_description": "hurricane_simulator V1 Monte Carlo run of 1000 synthetic Atlantic storms bootstrapped from HURDAT2 1851-2025 at a 6-hour time step. This catalog holds hand-picked storm ids SYN0155, SYN0697, SYN0973. Track points are clipped to lat 18.0 to 35.0, lon -92.0 to -72.0.",
+    "policy_basis": {
+      "deductible_basis": "percent_of_coverage_a",
+      "deductible_percent": 0.05,
+      "coverage_limit_basis": "coverage_a",
+      "note": "A percentage deductible is applied to Coverage A, never to damage."
+    },
+    "wind_model": {
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "assumed",
+      "gust_factor": 1.3,
+      "gust_factor_note": "ASSUMED ratio of 3-second gust to the simulator's one-minute sustained centre wind, over open terrain. Confirm with the simulator owner before treating any output as a wind estimate.",
+      "kt_to_mph": 1.15078,
+      "decay_km": 150.0,
+      "decay_note": "ASSUMED exponential decay of wind with distance from the centre, e-folding at this distance. Shared with the existing /api/simulate endpoint. No radius of maximum wind, pressure profile, forward-motion asymmetry or terrain roughness is modeled, because the simulator does not publish them.",
+      "reference_height_m": 10,
+      "terrain_exposure": "open",
+      "negligible_gust_floor_mph": 20.0,
+      "method": "For each property, the peak gust is the maximum over every track step of centre_wind_kt * exp(-distance_km / decay_km) * kt_to_mph * gust_factor.",
+      "replace_with": "A parametric or numerical wind field from the simulator owner. This module is the seam: claims.py consumes WindExposure rows and is unaffected."
+    },
+    "storm_catalog": {
+      "catalog_id": "syn-fl-3-v1",
+      "imported_at": "2026-09-26T18:42:14Z",
+      "source_wind_metric": "max_wind_kt",
+      "source_wind_metric_note": "One-minute sustained wind at the storm CENTRE in knots, HURDAT2 convention. This is not wind at a property and it is not a gust. Converting it to a property-level peak gust is app/wind.py's job, and that conversion is an assumption.",
+      "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns."
+    },
+    "wind_exposure_detail": [
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P001",
+        "peak_gust_mph": 168.9,
+        "closest_approach": {
+          "step": 30,
+          "timestamp": "2026-09-19 12:00:00",
+          "centre_lat": 25.9471,
+          "centre_lon": -80.245,
+          "centre_wind_kt": 130.1,
+          "distance_km": 21.3
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P002",
+        "peak_gust_mph": 169.4,
+        "closest_approach": {
+          "step": 30,
+          "timestamp": "2026-09-19 12:00:00",
+          "centre_lat": 25.9471,
+          "centre_lon": -80.245,
+          "centre_wind_kt": 130.1,
+          "distance_km": 20.9
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P003",
+        "peak_gust_mph": 63.6,
+        "closest_approach": {
+          "step": 32,
+          "timestamp": "2026-09-20 00:00:00",
+          "centre_lat": 27.0838,
+          "centre_lon": -81.9545,
+          "centre_wind_kt": 87.5,
+          "distance_km": 108.4
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P004",
+        "peak_gust_mph": 66.4,
+        "closest_approach": {
+          "step": 32,
+          "timestamp": "2026-09-20 00:00:00",
+          "centre_lat": 27.0838,
+          "centre_lon": -81.9545,
+          "centre_wind_kt": 87.5,
+          "distance_km": 101.8
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P005",
+        "peak_gust_mph": 61.8,
+        "closest_approach": {
+          "step": 33,
+          "timestamp": "2026-09-20 06:00:00",
+          "centre_lat": 27.7869,
+          "centre_lon": -81.2418,
+          "centre_wind_kt": 72.6,
+          "distance_km": 84.6
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P006",
+        "peak_gust_mph": 22.7,
+        "closest_approach": {
+          "step": 35,
+          "timestamp": "2026-09-20 18:00:00",
+          "centre_lat": 30.126,
+          "centre_lon": -79.5254,
+          "centre_wind_kt": 60.0,
+          "distance_km": 205.9
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P007",
+        "peak_gust_mph": 108.6,
+        "closest_approach": {
+          "step": 30,
+          "timestamp": "2026-09-19 12:00:00",
+          "centre_lat": 25.9471,
+          "centre_lon": -80.245,
+          "centre_wind_kt": 130.1,
+          "distance_km": 87.5
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P008",
+        "peak_gust_mph": 128.2,
+        "closest_approach": {
+          "step": 31,
+          "timestamp": "2026-09-19 18:00:00",
+          "centre_lat": 26.5678,
+          "centre_lon": -81.556,
+          "centre_wind_kt": 106.4,
+          "distance_km": 32.5
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P009",
+        "peak_gust_mph": 111.8,
+        "closest_approach": {
+          "step": 31,
+          "timestamp": "2026-09-19 18:00:00",
+          "centre_lat": 26.5678,
+          "centre_lon": -81.556,
+          "centre_wind_kt": 106.4,
+          "distance_km": 53.0
+        }
+      },
+      {
+        "storm_id": "SYN0155",
+        "property_id": "P010",
+        "peak_gust_mph": 167.8,
+        "closest_approach": {
+          "step": 30,
+          "timestamp": "2026-09-19 12:00:00",
+          "centre_lat": 25.9471,
+          "centre_lon": -80.245,
+          "centre_wind_kt": 130.1,
+          "distance_km": 22.3
+        }
+      }
+    ],
+    "example_portfolio": {
+      "portfolio_id": "demo-fl-10",
+      "label": "Ten-property Florida demo portfolio",
+      "missing_input": "vulnerability_class is NOT real data. The team property table requested in the brief (replacement cost and class per property) has not arrived, so each class below is an assigned placeholder. Construction year, roof type and existing mitigation features would all normally decide it.",
+      "replacement_cost_note": "replacement_cost_usd is taken as the property's insured value from the frontend list. No square-footage rebuild cost was available, so the Finance workbook's $250-450/sq ft South Florida range could not be applied.",
+      "properties": [
+        {
+          "property_id": "P001",
+          "address": "1200 Brickell Ave",
+          "city": "Miami",
+          "county": "Miami-Dade",
+          "latitude": 25.7617,
+          "longitude": -80.1918,
+          "replacement_cost_usd": 850000,
+          "vulnerability_class": "pre_fbc_2002"
+        },
+        {
+          "property_id": "P002",
+          "address": "350 Ocean Dr",
+          "city": "Miami Beach",
+          "county": "Miami-Dade",
+          "latitude": 25.7907,
+          "longitude": -80.13,
+          "replacement_cost_usd": 1200000,
+          "vulnerability_class": "post_fbc_2002"
+        },
+        {
+          "property_id": "P003",
+          "address": "725 Bayshore Blvd",
+          "city": "Tampa",
+          "county": "Hillsborough",
+          "latitude": 27.9506,
+          "longitude": -82.4572,
+          "replacement_cost_usd": 620000,
+          "vulnerability_class": "pre_fbc_2002"
+        },
+        {
+          "property_id": "P004",
+          "address": "410 Central Ave",
+          "city": "St. Petersburg",
+          "county": "Pinellas",
+          "latitude": 27.7676,
+          "longitude": -82.6403,
+          "replacement_cost_usd": 540000,
+          "vulnerability_class": "pre_fbc_2002"
+        },
+        {
+          "property_id": "P005",
+          "address": "800 Orange Ave",
+          "city": "Orlando",
+          "county": "Orange",
+          "latitude": 28.5383,
+          "longitude": -81.3792,
+          "replacement_cost_usd": 475000,
+          "vulnerability_class": "post_fbc_2002"
+        },
+        {
+          "property_id": "P006",
+          "address": "2400 Atlantic Blvd",
+          "city": "Jacksonville",
+          "county": "Duval",
+          "latitude": 30.3322,
+          "longitude": -81.6557,
+          "replacement_cost_usd": 390000,
+          "vulnerability_class": "pre_fbc_2002"
+        },
+        {
+          "property_id": "P007",
+          "address": "100 Clematis St",
+          "city": "West Palm Beach",
+          "county": "Palm Beach",
+          "latitude": 26.7153,
+          "longitude": -80.0534,
+          "replacement_cost_usd": 710000,
+          "vulnerability_class": "pre_fbc_2002"
+        },
+        {
+          "property_id": "P008",
+          "address": "500 Main St",
+          "city": "Fort Myers",
+          "county": "Lee",
+          "latitude": 26.6406,
+          "longitude": -81.8723,
+          "replacement_cost_usd": 460000,
+          "vulnerability_class": "post_fbc_2002"
+        },
+        {
+          "property_id": "P009",
+          "address": "900 Gulf Shore Blvd",
+          "city": "Naples",
+          "county": "Collier",
+          "latitude": 26.1423,
+          "longitude": -81.7948,
+          "replacement_cost_usd": 980000,
+          "vulnerability_class": "pre_fbc_2002"
+        },
+        {
+          "property_id": "P010",
+          "address": "300 Las Olas Blvd",
+          "city": "Fort Lauderdale",
+          "county": "Broward",
+          "latitude": 26.1224,
+          "longitude": -80.1373,
+          "replacement_cost_usd": 675000,
+          "vulnerability_class": "pre_fbc_2002"
+        }
+      ]
+    }
+  }
+}
