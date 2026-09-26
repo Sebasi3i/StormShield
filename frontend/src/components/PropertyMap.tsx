@@ -15,9 +15,9 @@ function PropertyMap({
 }: PropertyMapProps) {
   return (
     <MapContainer
-      center={[27.8, -81.7]}
-      zoom={6}
-      className="property-map"
+     center={[27.0, -78.5]}
+     zoom={6}
+     className="property-map"
     >
       <TileLayer
         attribution="&copy; OpenStreetMap contributors"

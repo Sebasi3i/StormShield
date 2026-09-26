@@ -1,66 +1,91 @@
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import type { Property } from '../types/Property'
-import 'leaflet/dist/leaflet.css'
 
-interface PropertyMapProps {
+interface PortfolioProps {
   properties: Property[]
-  selectedProperties: Property[]
-  onToggleProperty: (property: Property) => void
+  onRemoveProperty: (property: Property) => void
 }
 
-function PropertyMap({
+function Portfolio({
   properties,
-  selectedProperties,
-  onToggleProperty,
-}: PropertyMapProps) {
+  onRemoveProperty,
+}: PortfolioProps) {
+  const totalValue = properties.reduce(
+    (total, property) => total + property.value,
+    0,
+  )
+
   return (
-    <MapContainer
-      center={[27.8, -81.7]}
-      zoom={6}
-      className="property-map"
-    >
-      <TileLayer
-        attribution="&copy; OpenStreetMap contributors"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <aside className="portfolio">
+      <div className="portfolio-header">
+        <p className="portfolio-label">YOUR PORTFOLIO</p>
+        <h2>Property Portfolio</h2>
+      </div>
 
-      {properties.map((property) => {
-        const selected = selectedProperties.some(
-          (selectedProperty) => selectedProperty.id === property.id,
-        )
+      <div className="portfolio-summary">
+        <div className="summary-card">
+          <span>Properties</span>
+          <strong>{properties.length}</strong>
+        </div>
 
-        return (
-          <Marker
-            key={property.id}
-            position={[property.latitude, property.longitude]}
-          >
-            <Popup>
-              <div className="property-popup">
-                <strong>{property.address}</strong>
+        <div className="summary-card">
+          <span>Total Value</span>
+          <strong>
+            ${totalValue.toLocaleString()}
+          </strong>
+        </div>
+      </div>
 
-                <p>
-                  {property.city}, FL
-                </p>
+      <div className="portfolio-properties">
+        <h3>Selected Properties</h3>
 
-                <p>{property.county} County</p>
+        {properties.length === 0 ? (
+          <div className="empty-portfolio">
+            <p>No properties selected.</p>
+            <span>Select properties from the map to build your portfolio.</span>
+          </div>
+        ) : (
+          <div className="property-list">
+            {properties.map((property) => (
+              <div className="portfolio-property" key={property.id}>
+                <div>
+                  <strong>{property.address}</strong>
 
-                <p>
-                  ${property.value.toLocaleString()}
-                </p>
+                  <p>
+                    {property.city}, FL
+                  </p>
+
+                  <span>
+                    {property.county} County
+                  </span>
+
+                  <p className="portfolio-property-value">
+                    ${property.value.toLocaleString()}
+                  </p>
+                </div>
 
                 <button
                   type="button"
-                  onClick={() => onToggleProperty(property)}
+                  className="remove-property"
+                  onClick={() => onRemoveProperty(property)}
+                  aria-label={`Remove ${property.address}`}
                 >
-                  {selected ? 'Remove from Portfolio' : 'Add to Portfolio'}
+                  ×
                 </button>
               </div>
-            </Popup>
-          </Marker>
-        )
-      })}
-    </MapContainer>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        className="analyze-button"
+        disabled={properties.length === 0}
+      >
+        Analyze Portfolio Risk
+      </button>
+    </aside>
   )
 }
 
-export default PropertyMap
+export default Portfolio

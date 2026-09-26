@@ -2,6 +2,7 @@ import { useState } from 'react'
 import PropertyMap from './components/PropertyMap'
 import { properties } from './data/properties'
 import type { Property } from './types/Property'
+import Portfolio from './components/Portfolio'
 import './App.css'
 
 function App() {
@@ -26,23 +27,34 @@ function App() {
   return (
     <main className="app">
       <header className="app-header">
-        <div>
-          <h1>Florida Property Risk</h1>
-          <p>Select properties to build an insurance portfolio.</p>
-        </div>
+  <div className="brand">
+    <div className="brand-mark">S</div>
 
-        <div className="property-count">
-          {selectedProperties.length} selected
-        </div>
-      </header>
+    <div>
+      <h1>StormShield</h1>
+      <p>Property Risk Intelligence</p>
+    </div>
+  </div>
 
-      <section className="map-container">
-        <PropertyMap
-          properties={properties}
-          selectedProperties={selectedProperties}
-          onToggleProperty={toggleProperty}
-        />
-      </section>
+  <div className="property-count">
+    {selectedProperties.length} selected
+  </div>
+</header>
+
+      <section className="workspace">
+  <div className="map-container">
+    <PropertyMap
+      properties={properties}
+      selectedProperties={selectedProperties}
+      onToggleProperty={toggleProperty}
+    />
+  </div>
+
+  <Portfolio
+    properties={selectedProperties}
+    onRemoveProperty={toggleProperty}
+  />
+</section>
     </main>
   )
 }
