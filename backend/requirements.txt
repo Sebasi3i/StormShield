@@ -4,6 +4,7 @@ anyio==4.12.1
 click==8.1.8
 exceptiongroup==1.3.1
 fastapi==0.128.8
+global-land-mask==1.0.0
 h11==0.16.0
 httptools==0.8.0
 idna==3.20
@@ -16,6 +17,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 pytz==2026.4
 PyYAML==6.0.3
+scipy==1.18.1
 six==1.17.0
 starlette==0.49.3
 typing-inspection==0.4.2

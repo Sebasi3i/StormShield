@@ -80,16 +80,44 @@ python -m pytest tests -q
 
 ### Storm losses — damage and insurer payout
 
-Prices individual storms from the simulator catalog through vulnerability curves and a
-policy deductible, before and after a mitigation upgrade. Shared response contract
-version 1.1, snake_case, documented at `/docs`.
+Prices storms through vulnerability curves and a policy deductible, before and after a
+mitigation upgrade. Shared response contract version 1.1, snake_case, documented at
+`/docs`.
+
+**The demo path** — send a portfolio, get a storm and what it costs:
+
+- `POST /api/v1/simulate-storm` — draws a storm from the pool, prices it, and returns
+  the payout rows plus the storm's full track for animation. Every candidate is a
+  Category 3+ hurricane that strikes Florida. `selection: "random"` (default) draws one;
+  `selection: "worst"` draws `stormsSampled` and keeps the most expensive.
+- `GET /api/v1/storm-pool` — what the generator draws from, and how many storms had to
+  be generated to fill it.
+
+**Named storms** — for reproducible runs and tests:
 
 - `GET /api/v1/storm-losses/example` — a complete worked run, no request body needed.
-  Takes `?storm_id=`; defaults to the Category 4 Miami landfall.
+  Takes `?storm_id=`; defaults to a Category 4 Miami landfall.
 - `POST /api/v1/storm-losses` — the contract. Accepts the frontend `Property` shape
   (`id`, `value`, `latitude`, `longitude`) directly.
-- `GET /api/v1/storm-catalog` — the storms available to price, with animatable tracks.
+- `GET /api/v1/storm-catalog` — the fixed catalog, with animatable tracks.
 - `GET /api/v1/damage-curves` — the curves and policy template, with their provenance.
+
+Read `metadata.scenario_selection` before quoting any number from `simulate-storm`. A
+storm drawn at random and the worst of a hundred support completely different claims,
+and the payout alone cannot tell them apart.
+
+**Damage and payout are different events.** About half of these storms damage a home
+and only ~14% clear a 5% hurricane deductible, so a client that shows only
+`baseline_payout_usd` will display zero on most clicks while a real hurricane is on
+screen. Show `baseline_damage_usd` too — "three homes damaged, insurer paid nothing,
+the deductible absorbed it" is the product's actual argument.
+
+Rebuild the storm pool (a few minutes; the committed one is fine for normal work):
+
+```bash
+cd backend
+python scripts/build_storm_pool.py --target 600
+```
 
 Every damage curve currently shipped is an **assumed fixture**, and so is the wind
 field that turns a storm-centre wind into a gust at a property. Both say so in their

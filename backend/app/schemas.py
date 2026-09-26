@@ -507,3 +507,29 @@ class StormLossResponse(BaseModel):
         description="Curve ids and source notes, gust definition, reference height and "
         "terrain convention, sampling description, policy basis."
     )
+
+
+class ScenarioRequest(BaseModel):
+    """Generate a hurricane that hits Florida and price it against this portfolio.
+
+    No storm is named. The simulator is asked for storms until one reaches
+    `minCategory` and actually strikes Florida, which takes roughly a second. The storm
+    is not aimed at the portfolio, so a Panhandle hurricane against a Miami portfolio
+    correctly returns near-zero loss.
+    """
+
+    properties: list[StormLossPropertyInput] = Field(min_length=1, max_length=500)
+    min_category: int = Field(
+        default=3,
+        ge=1,
+        le=5,
+        description="Floor on the storm's peak Saffir-Simpson category. Below 3 a direct "
+        "hit rarely clears a 5% hurricane deductible, so 3 is the default.",
+    )
+    run_id: str | None = None
+    seed: int | None = Field(
+        default=None,
+        description="Makes the run reproducible: the simulator returns identical output "
+        "for identical inputs and seed. Omit for a different storm every time.",
+    )
+    eligible_options: list[EligibleOption] | None = None

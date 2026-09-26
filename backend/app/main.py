@@ -12,13 +12,14 @@ out of the MVP entirely.
 
 import json
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import claims, risk, wind
+from . import claims, risk, storms, wind
 from .schemas import (
     CountyConcentration,
     CountyDetail,
@@ -33,6 +34,7 @@ from .schemas import (
     PropertyInput,
     PropertyMitigation,
     PropertyRisk,
+    ScenarioRequest,
     SimulationImpact,
     SimulationRequest,
     SimulationResult,
@@ -53,6 +55,23 @@ CORS_ORIGINS = [
     if o.strip()
 ]
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Load the 55,524-observation HURDAT2 record at boot, not on the first button press.
+
+    A failure here is logged and swallowed. Every endpoint except storm generation works
+    without the simulator, so a missing vendored tree should degrade one feature rather
+    than stop the API from serving; `/api/v1/simulate-storm` reports it properly as a 503
+    when it is actually called.
+    """
+    try:
+        storms.historical_data()
+    except Exception as error:  # noqa: BLE001 - startup must never be fatal
+        print(f"[startup] hurricane simulator unavailable: {error}")
+    yield
+
+
 app = FastAPI(
     title="Weather Risk API",
     description=(
@@ -62,6 +81,7 @@ app = FastAPI(
         "the claims."
     ),
     version=risk.MODEL_VERSION,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -581,6 +601,60 @@ def _generated_run_id() -> str:
     return "run-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
+def _engine_inputs(
+    properties: list[StormLossPropertyInput],
+) -> tuple[list[claims.Property], list[claims.Policy]]:
+    """Turn request properties into engine properties and their policies.
+
+    Coverage A defaults to replacement cost, and is also the base a percentage
+    deductible is taken against - never the damage amount.
+    """
+    engine_properties = []
+    policies = []
+
+    for prop in properties:
+        engine_properties.append(
+            claims.Property(
+                property_id=prop.property_id,
+                replacement_cost_usd=prop.replacement_cost_usd,
+                vulnerability_class=prop.vulnerability_class,
+            )
+        )
+        coverage_a = prop.coverage_a_usd or prop.replacement_cost_usd
+        if prop.deductible_usd is not None:
+            policies.append(
+                claims.Policy(
+                    property_id=prop.property_id,
+                    deductible_usd=prop.deductible_usd,
+                    coverage_limit_usd=prop.coverage_limit_usd or coverage_a,
+                )
+            )
+        else:
+            policy = claims.policy_from_template(prop.property_id, coverage_a)
+            if prop.coverage_limit_usd:
+                policy = policy._replace(coverage_limit_usd=prop.coverage_limit_usd)
+            policies.append(policy)
+
+    return engine_properties, policies
+
+
+def _require_coordinates(properties: list[StormLossPropertyInput]) -> None:
+    uncoordinated = [
+        prop.property_id
+        for prop in properties
+        if prop.latitude is None or prop.longitude is None
+    ]
+    if uncoordinated:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Every property needs latitude and longitude so the wind "
+                "field can derive a gust from the storm track.",
+                "propertyIds": uncoordinated,
+            },
+        )
+
+
 def _storm_losses(
     properties: list[StormLossPropertyInput],
     storm_ids: list[str] | None,
@@ -610,32 +684,7 @@ def _storm_losses(
             },
         )
 
-    engine_properties = []
-    policies = []
-    for prop in properties:
-        engine_properties.append(
-            claims.Property(
-                property_id=prop.property_id,
-                replacement_cost_usd=prop.replacement_cost_usd,
-                vulnerability_class=prop.vulnerability_class,
-            )
-        )
-        # Coverage A defaults to replacement cost, and is also the base the percentage
-        # deductible is taken against.
-        coverage_a = prop.coverage_a_usd or prop.replacement_cost_usd
-        if prop.deductible_usd is not None:
-            policies.append(
-                claims.Policy(
-                    property_id=prop.property_id,
-                    deductible_usd=prop.deductible_usd,
-                    coverage_limit_usd=prop.coverage_limit_usd or coverage_a,
-                )
-            )
-        else:
-            policy = claims.policy_from_template(prop.property_id, coverage_a)
-            if prop.coverage_limit_usd:
-                policy = policy._replace(coverage_limit_usd=prop.coverage_limit_usd)
-            policies.append(policy)
+    engine_properties, policies = _engine_inputs(properties)
 
     exposure_detail: list[dict] | None = None
     if wind_exposures:
@@ -655,20 +704,7 @@ def _storm_losses(
             "that does not match the metric the curves are defined on.",
         }
     else:
-        uncoordinated = [
-            prop.property_id
-            for prop in properties
-            if prop.latitude is None or prop.longitude is None
-        ]
-        if uncoordinated:
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "message": "Without windExposures, every property needs latitude and "
-                    "longitude so the wind field can derive a gust from the storm track.",
-                    "propertyIds": uncoordinated,
-                },
-            )
+        _require_coordinates(properties)
         coordinates = [
             (prop.property_id, prop.latitude, prop.longitude) for prop in properties
         ]
@@ -823,3 +859,104 @@ def storm_losses(request: StormLossRequest) -> dict:
         request.wind_exposures,
         request.eligible_options,
     )
+
+
+
+
+# --------------------------------------------------------------------------- #
+# Scenario generation - a live hurricane for a portfolio
+# --------------------------------------------------------------------------- #
+
+
+@app.get(f"{API_PREFIX}/v1/simulator", tags=["storm losses"])
+def simulator() -> dict:
+    """What generates the storms, how a Florida strike is defined, and what it is not."""
+    try:
+        return storms.simulator_info()
+    except storms.SimulatorUnavailable as error:
+        raise HTTPException(status_code=503, detail={"message": str(error)}) from error
+
+
+@app.post(
+    f"{API_PREFIX}/v1/simulate-storm",
+    response_model=StormLossResponse,
+    tags=["storm losses"],
+)
+def simulate_storm(request: ScenarioRequest) -> dict:
+    """Generate a hurricane that hits Florida and price it against this portfolio.
+
+    The demo path. Send the properties the user selected; get back a storm, its track for
+    animation, and what it costs per property before and after each upgrade.
+
+    The storm comes from the vendored simulator, unmodified: a Monte Carlo draw over the
+    real HURDAT2 record. Because the real Atlantic mostly misses Florida, the generator
+    keeps drawing until one storm reaches the requested category and actually strikes the
+    state - about one draw in fifty, so roughly a second. How many draws it took is
+    reported in `metadata.storm_generation`, and that count is the rarity of what you are
+    looking at.
+
+    The storm is NOT aimed at the portfolio. A Panhandle hurricane is a real Florida
+    strike that legitimately does nothing to a Miami portfolio, and about 40% of runs will
+    show little or no loss for that reason. That is the hazard being honest, not a failure.
+
+    Read `metadata.wind_model` before quoting any figure. Turning the simulator's
+    storm-centre wind into a gust at a building is still a placeholder owned by the
+    simulator's author, and it is the single largest source of uncertainty here.
+    """
+    _require_coordinates(request.properties)
+    engine_properties, policies = _engine_inputs(request.properties)
+
+    try:
+        storm, generation = storms.generate_florida_storm(
+            min_category=request.min_category, seed=request.seed
+        )
+    except storms.SimulatorUnavailable as error:
+        raise HTTPException(status_code=503, detail={"message": str(error)}) from error
+    except storms.NoQualifyingStorm as error:
+        raise HTTPException(status_code=504, detail={"message": str(error)}) from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail={"message": str(error)}) from error
+
+    coordinates = [
+        (prop.property_id, prop.latitude, prop.longitude) for prop in request.properties
+    ]
+    exposures, exposure_detail = wind.exposures_for_storm(storm, coordinates)
+
+    options = (
+        {option.property_id: option.upgrade_ids for option in request.eligible_options}
+        if request.eligible_options
+        else None
+    )
+
+    try:
+        result = claims.compute_losses(
+            engine_properties,
+            policies,
+            exposures,
+            [storm["storm_id"]],
+            run_id=request.run_id or _generated_run_id(),
+            catalog_id=f"live-{storm['storm_id']}",
+            sampling_description=storms.simulator_info()["method"],
+            eligible_options=options,
+            wind_model_metadata=wind.metadata(),
+            extra_assumptions=[
+                storms.simulator_info()["not_a_rate"],
+                generation["interpretation"],
+            ],
+        )
+    except claims.EngineError as error:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": str(error), "error": type(error).__name__},
+        ) from error
+
+    result["metadata"]["storm_generation"] = generation
+    result["metadata"]["simulator"] = storms.simulator_info()
+    # The whole storm, track included, so a client can draw what it just priced without
+    # a second request.
+    result["metadata"]["storm"] = storm
+    result["metadata"]["wind_exposure_detail"] = exposure_detail
+    result["metadata"]["worst_gust_on_portfolio_mph"] = max(
+        (round(exposure.peak_gust_mph, 1) for exposure in exposures), default=0.0
+    )
+    return result
