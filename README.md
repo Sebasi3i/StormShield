@@ -34,6 +34,10 @@ python -V                                    # must print 3.12.x
 pip install -r backend\requirements.txt
 ```
 
+This also installs `wind-field` (the wind model the storm-loss endpoints use) and
+`hurricane-simulator` (storm generation) from the wheels in `backend/vendor/`; neither
+is on PyPI.
+
 macOS / Linux:
 
 ```bash
@@ -87,16 +91,48 @@ version 1.1, snake_case, documented at `/docs`.
 - `GET /api/v1/storm-losses/example` — a complete worked run, no request body needed.
   Takes `?storm_id=`; defaults to the Category 4 Miami landfall.
 - `POST /api/v1/storm-losses` — the contract. Accepts the frontend `Property` shape
-  (`id`, `value`, `latitude`, `longitude`) directly.
+  (`id`, `value`, `latitude`, `longitude`) directly. Optional `storms` prices storms
+  sent with the request (such as generated ones) instead of the stored catalog.
 - `GET /api/v1/storm-catalog` — the storms available to price, with animatable tracks.
 - `GET /api/v1/damage-curves` — the curves and policy template, with their provenance.
+- `POST /api/v1/storms/generate` — new storms from a starting point you choose (see
+  below), returned in the catalog's shape.
 
-Every damage curve currently shipped is an **assumed fixture**, and so is the wind
-field that turns a storm-centre wind into a gust at a property. Both say so in their
-own provenance, and every response carries `evidence_status`. Replace
-`app/fixtures/damage_curves.json` when the research team supplies real curves, and
-`app/wind.py` when a real wind field model arrives — `app/claims.py` is unaffected by
-either, because it consumes wind exposures rather than tracks.
+The gust at each property comes from **wind_field**, the property-level wind model
+from the hurricane simulator project, called by `app/wind.py`: a radial wind profile
+around the storm centre (calm eye, strongest at the radius of maximum wind), moved
+along the track in 15-minute steps so each home sees the storm's closest pass, with a
+1.25 gust factor. Its storm size is still an assumed demonstration value, the same for
+every storm, and every damage curve currently shipped is an **assumed fixture**. Both
+say so in their own provenance, and every response carries `evidence_status`. Replace
+`app/fixtures/damage_curves.json` when the research team supplies real curves;
+`app/claims.py` is unaffected by the curves and the wind model alike, because it
+consumes wind exposures rather than tracks.
+
+`wind-field` and `hurricane-simulator` are not on PyPI. Their wheels live in
+`backend/vendor/` and are pinned in `requirements.txt`. To upgrade either, put the new
+wheel in `backend/vendor/`, update its pin, and reinstall. After a `wind-field`
+upgrade, also regenerate `app/fixtures/sample_storm_losses_response.json` with the
+command in `tests/test_storm_losses_api.py`.
+
+### Generating storms
+
+`POST /api/v1/storms/generate` runs the hurricane simulator from a starting point you
+choose (`latitude`, `longitude`, `max_wind_kt`, `start_date`, `seed`, `count` up to 10)
+and returns an ensemble: every storm starts there, and each follows its own seed. The
+same request always returns the same storms. Starts over land, or far from where
+Atlantic storms have formed, are rejected with a reason. An ensemble is a what-if from
+one starting condition, not a probabilistic sample, and the response says so.
+
+The simulator is loaded on the first generate request, not at start-up: that request
+takes a couple of seconds and raises the API process's memory to about 1 GB (the
+simulator's global land/sea map). Later requests take milliseconds. Nothing is stored
+server-side; to price a generated storm, send it back in the `storms` field of
+`POST /api/v1/storm-losses`.
+
+In the dashboard, the Generate Storms card does this: **Pick on map** sets the start,
+**Generate** runs it, and the new storms appear under Storm Scenario, where Simulate
+Catastrophe animates and prices them like catalog storms.
 
 Re-import a new simulator run:
 
@@ -104,6 +140,11 @@ Re-import a new simulator run:
 cd backend
 python scripts/import_storm_catalog.py <simulator_output_dir> --storms SYN0155,SYN0697
 ```
+
+Tracks are trimmed to the catalog's map window at their ends only, so they stay
+continuous; the wind field will not bridge a gap in a track. The shipped catalog
+predates that fix: SYN0155's stored track skips one step off Cape Hatteras, so its
+results carry a warning saying the gap was not bridged.
 
 ## Frontend setup
 
@@ -122,10 +163,12 @@ backend/            FastAPI service, risk engine, ETL scripts
     schemas.py      Request and response contracts
     risk.py         County risk model and mitigation economics
     claims.py       Damage and insurer payout engine (pure, no HTTP)
-    wind.py         Provisional wind field: storm centre -> gust at a property
+    wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
+    generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     fixtures/       Curves, policy template, storm catalog, sample response
   scripts/          Adapters that import outside data
   tests/            pytest suite
+  vendor/           wind_field and hurricane_simulator wheels (not on PyPI)
   requirements.txt  Pinned dependencies
 data/raw/           Downloaded source datasets (gitignored)
 data/processed/     Build artifacts (gitignored except published profiles)

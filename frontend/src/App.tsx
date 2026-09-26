@@ -3,12 +3,18 @@ import PropertyMap from './components/PropertyMap'
 import Portfolio from './components/Portfolio'
 import { properties } from './data/properties'
 import type { Property } from './types/Property'
-import type { Storm } from './types/Storm'
-import { getStorm } from './api/storms'
+import type {
+  GeneratedStormCatalog,
+  GenerationStart,
+  Storm,
+} from './types/Storm'
+import { generateStorms, getStorm } from './api/storms'
 import type { StormLossResponse } from './types/StormLoss'
 import { getStormLosses } from './api/stormLosses'
 import StormImpact from './components/StormImpact'
 import FullAnalysis from './components/FullAnalysis'
+import GenerateStorms from './components/GenerateStorms'
+import type { GenerationOptions } from './components/GenerateStorms'
 import './App.css'
 
 function App() {
@@ -21,6 +27,20 @@ function App() {
   const [stormLosses, setStormLosses] =
   useState<StormLossResponse | null>(null)
   const [analysisOpen, setAnalysisOpen] = useState(false)
+
+  // Storm generator. The south-east Bahamas is open water where storms have
+  // formed, and close enough to Florida for some members to reach it.
+  const [generationStart, setGenerationStart] = useState<GenerationStart>({
+    latitude: 22.5,
+    longitude: -72.0,
+  })
+  const [pickingStart, setPickingStart] = useState(false)
+  const [generatedCatalog, setGeneratedCatalog] =
+    useState<GeneratedStormCatalog | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [generationError, setGenerationError] = useState<string | null>(null)
+
+  const generatedStorms = generatedCatalog?.storms ?? []
 
   const toggleProperty = (property: Property) => {
     setSelectedProperties((currentProperties) => {
@@ -38,6 +58,36 @@ function App() {
     })
   }
 
+  const runGeneration = async (options: GenerationOptions) => {
+    try {
+      setGenerating(true)
+      setGenerationError(null)
+      setPickingStart(false)
+
+      const catalog = await generateStorms({
+        latitude: generationStart.latitude,
+        longitude: generationStart.longitude,
+        max_wind_kt: options.maxWindKt,
+        start_date: options.startDate,
+        seed: options.seed,
+        count: options.count,
+      })
+
+      setGeneratedCatalog(catalog)
+      setSelectedStormId(catalog.storms[0].storm_id)
+      setActiveStorm(null)
+      setStormStep(0)
+      setStormLosses(null)
+      setAnalysisOpen(false)
+    } catch (error) {
+      setGenerationError(
+        error instanceof Error ? error.message : 'Storm generation failed.',
+      )
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const simulateCatastrophe = async () => {
     try {
       setStormLoading(true)
@@ -45,7 +95,11 @@ function App() {
       setStormLosses(null)
       setAnalysisOpen(false)
 
-      const storm = await getStorm(selectedStormId)
+      // Generated storms live here, not in the API's catalog.
+      const generatedStorm = generatedStorms.find(
+        (storm) => storm.storm_id === selectedStormId,
+      )
+      const storm = generatedStorm ?? (await getStorm(selectedStormId))
 
       setActiveStorm(storm)
 
@@ -53,6 +107,7 @@ function App() {
         const losses = await getStormLosses(
           selectedProperties,
           selectedStormId,
+          generatedStorm,
         )
 
         setStormLosses(losses)
@@ -78,9 +133,15 @@ function App() {
       return
     }
 
+    // Generated tracks run from formation to dissipation and can be twice as
+    // long as catalog ones, so long tracks step faster to keep playback short.
+    const trackLength = activeStorm.track.length
+    const stepDelay =
+      trackLength > 40 ? Math.max(200, 26000 / trackLength) : 650
+
     const timer = window.setTimeout(() => {
       setStormStep((currentStep) => currentStep + 1)
-    }, 650)
+    }, stepDelay)
 
     return () => window.clearTimeout(timer)
   }, [activeStorm, stormAnimating, stormStep])
@@ -123,11 +184,24 @@ function App() {
       setStormStep(0)
       setStormAnimating(false)
     }}
-    disabled={stormAnimating || stormLoading}
+    disabled={stormAnimating || stormLoading || generating}
   >
-    <option value="SYN0155">SYN0155</option>
-    <option value="SYN0697">SYN0697</option>
-    <option value="SYN0973">SYN0973</option>
+    <optgroup label="Catalog">
+      <option value="SYN0155">SYN0155</option>
+      <option value="SYN0697">SYN0697</option>
+      <option value="SYN0973">SYN0973</option>
+    </optgroup>
+
+    {generatedStorms.length > 0 && (
+      <optgroup label="Generated">
+        {generatedStorms.map((storm) => (
+          <option key={storm.storm_id} value={storm.storm_id}>
+            {storm.storm_id} · {Math.round(storm.peak_wind_kt)} kt
+            {storm.landfall ? ' · landfall' : ''}
+          </option>
+        ))}
+      </optgroup>
+    )}
   </select>
 </div>
         <div className="map-container">
@@ -215,6 +289,12 @@ function App() {
             onToggleProperty={toggleProperty}
             storm={activeStorm}
             stormStep={stormStep}
+            generationStart={generationStart}
+            pickingStart={pickingStart}
+            onPickStart={(start) => {
+              setGenerationStart(start)
+              setPickingStart(false)
+            }}
           />
         </div>
 
@@ -233,6 +313,17 @@ function App() {
             onViewAnalysis={() => setAnalysisOpen(true)}
           />
         )}
+
+        <GenerateStorms
+          start={generationStart}
+          pickingStart={pickingStart}
+          onTogglePickStart={() => setPickingStart((picking) => !picking)}
+          onGenerate={runGeneration}
+          generating={generating}
+          disabled={stormLoading || stormAnimating}
+          error={generationError}
+          result={generatedCatalog}
+        />
       </div>
       </section>
       {analysisOpen && stormLosses && (

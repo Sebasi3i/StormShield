@@ -1,11 +1,19 @@
+# wind-field (the property-level wind model) and hurricane-simulator (storm
+# generation) come from the hurricane_simulator project and are not on PyPI: their
+# wheels are vendored in backend/vendor/. pip resolves --find-links relative to this
+# file, so this works from the repo root and from backend/ alike.
+--find-links ./vendor
+
 annotated-doc==0.0.5
 annotated-types==0.7.0
 anyio==4.12.1
 click==8.1.8
 exceptiongroup==1.3.1
 fastapi==0.128.8
+global-land-mask==1.0.0
 h11==0.16.0
 httptools==0.8.0
+hurricane-simulator==0.4.0
 idna==3.20
 numpy==2.0.2
 pandas==2.3.3
@@ -16,6 +24,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 pytz==2026.4
 PyYAML==6.0.3
+scipy==1.18.1
 six==1.17.0
 starlette==0.49.3
 typing-inspection==0.4.2
@@ -25,3 +34,4 @@ uvicorn==0.39.0
 uvloop==0.22.1; sys_platform != "win32"
 watchfiles==1.1.1
 websockets==15.0.1
+wind-field==0.3.0

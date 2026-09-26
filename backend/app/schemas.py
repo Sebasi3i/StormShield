@@ -12,6 +12,7 @@ version 1.1 stay snake_case, because those field names are fixed by a written co
 with the developer consuming them.
 """
 
+from datetime import date
 from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
@@ -439,13 +440,38 @@ class EligibleOption(BaseModel):
     upgrade_ids: list[str]
 
 
+class StormTrackPointInput(BaseModel):
+    """One six-hourly fix of a storm supplied with a request, in the catalog's shape."""
+
+    model_config = ConfigDict(extra="allow")
+
+    step: int = Field(ge=0)
+    timestamp: str
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    max_wind_kt: float = Field(ge=0, le=250)
+
+
+class StormInput(BaseModel):
+    """A storm supplied with a request rather than taken from the stored catalog.
+
+    The shape the catalog and POST /api/v1/storms/generate return; any other fields
+    (landfall, member seed and so on) are carried through untouched.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    storm_id: str = Field(min_length=1, max_length=64)
+    track: list[StormTrackPointInput] = Field(min_length=1, max_length=400)
+
+
 class StormLossRequest(BaseModel):
     """Price storms against properties.
 
     Wind reaches the engine one of two ways. Supply wind_exposures and they are used
     verbatim, which is the path for real exposures from the simulator owner. Omit them
-    and latitude/longitude are required, so the provisional wind field in app/wind.py
-    derives the gust from the stored storm track.
+    and latitude/longitude are required, so the wind field in app/wind.py (backed by
+    the wind_field package) derives the gust from the stored storm track.
     """
 
     properties: list[StormLossPropertyInput] = Field(min_length=1, max_length=500)
@@ -454,6 +480,12 @@ class StormLossRequest(BaseModel):
     )
     run_id: str | None = None
     wind_exposures: list[WindExposureInput] | None = None
+    storms: list[StormInput] | None = Field(
+        default=None,
+        max_length=20,
+        description="Price these storms instead of the stored catalog, for example ones "
+        "from POST /api/v1/storms/generate. storm_ids then defaults to all of them.",
+    )
     eligible_options: list[EligibleOption] | None = Field(
         default=None,
         description="Per property. Omitted, every upgrade with a curve for the class is "
@@ -507,3 +539,25 @@ class StormLossResponse(BaseModel):
         description="Curve ids and source notes, gust definition, reference height and "
         "terrain convention, sampling description, policy basis."
     )
+
+
+class GenerateStormsRequest(BaseModel):
+    """Generate an ensemble of storms from one starting point with the hurricane simulator.
+
+    Every storm starts at the same place, wind and date; only its seed differs, so the
+    ensemble shows the spread of paths from one starting condition. The same request
+    always returns the same storms. snake_case, like the storm-loss contract it feeds.
+    """
+
+    latitude: float = Field(ge=-90, le=90, description="Where the storm forms.")
+    longitude: float = Field(ge=-180, le=180, description="Where the storm forms.")
+    max_wind_kt: float = Field(
+        default=45.0, ge=20, le=185, description="Sustained centre wind at the start, knots."
+    )
+    start_date: date | None = Field(
+        default=None,
+        description="When the storm forms. Defaults to 10 September of the current year, "
+        "close to the peak of the Atlantic season.",
+    )
+    seed: int = Field(default=42, ge=0, le=2**32 - 1)
+    count: int = Field(default=5, ge=1, le=10, description="How many storms to generate.")

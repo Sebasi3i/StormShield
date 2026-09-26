@@ -2,7 +2,8 @@
 
 This one is the web layer, `schemas.py` is the contract, `risk.py` is the county risk
 model and mitigation economics, `claims.py` is the damage and payout engine, and
-`wind.py` is the provisional wind field that feeds it. Nothing here does arithmetic —
+`wind.py` turns storm tracks into gusts at properties for it, using the wind_field
+package. Nothing here does arithmetic —
 routes resolve counties, call into those modules, and shape responses.
 
 All endpoints are stateless. Portfolios are never persisted: the client holds its
@@ -18,12 +19,13 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import claims, risk, wind
+from . import claims, generator, risk, wind
 from .schemas import (
     CountyConcentration,
     CountyDetail,
     CountySummary,
     EligibleOption,
+    GenerateStormsRequest,
     HurricaneCategoryInfo,
     MitigationRequest,
     ModelMeta,
@@ -39,6 +41,7 @@ from .schemas import (
     StormLossPropertyInput,
     StormLossRequest,
     StormLossResponse,
+    StormInput,
 )
 
 API_PREFIX = "/api"
@@ -587,6 +590,7 @@ def _storm_losses(
     run_id: str | None,
     wind_exposures: list | None,
     eligible_options: list[EligibleOption] | None,
+    catalog: dict | None = None,
 ) -> dict:
     """Assemble engine inputs, run the engine, attach provenance.
 
@@ -595,7 +599,7 @@ def _storm_losses(
     message naming the storm, the property and the missing curve is what the caller
     needs in order to fix the call.
     """
-    catalog = wind.load_catalog()
+    catalog = catalog or wind.load_catalog()
     ids = list(storm_ids) if storm_ids else list(catalog["storm_ids"])
 
     unknown = [storm_id for storm_id in ids if wind.storm_by_id(storm_id, catalog) is None]
@@ -638,6 +642,7 @@ def _storm_losses(
             policies.append(policy)
 
     exposure_detail: list[dict] | None = None
+    track_warnings: list[str] = []
     if wind_exposures:
         exposures = [
             claims.WindExposure(
@@ -676,9 +681,18 @@ def _storm_losses(
         exposure_detail = []
         for storm_id in ids:
             storm = wind.storm_by_id(storm_id, catalog)
-            storm_exposures, detail = wind.exposures_for_storm(storm, coordinates)
+            try:
+                storm_exposures, detail = wind.exposures_for_storm(storm, coordinates)
+            except ValueError as error:
+                # wind_field validates its inputs (a property id sent twice, say) and
+                # names what it rejected; that is the caller's to fix, not a 500.
+                raise HTTPException(
+                    status_code=422,
+                    detail={"message": str(error), "error": "WindFieldInputError"},
+                ) from error
             exposures.extend(storm_exposures)
             exposure_detail.extend(detail)
+            track_warnings.extend(wind.track_gaps(storm))
         wind_metadata = wind.metadata()
 
     options = (
@@ -706,6 +720,9 @@ def _storm_losses(
             detail={"message": str(error), "error": type(error).__name__},
         ) from error
 
+    # A gap in a stored track limits what the wind field could see, so it travels with
+    # the result rather than staying in a log.
+    result["warnings"].extend(track_warnings)
     result["metadata"]["storm_catalog"] = {
         "catalog_id": catalog["catalog_id"],
         "imported_at": catalog["imported_at"],
@@ -730,6 +747,63 @@ def storm_catalog() -> dict:
     """
     catalog = wind.load_catalog()
     return {**catalog, "wind_model": wind.metadata()}
+
+
+@app.post(f"{API_PREFIX}/v1/storms/generate", tags=["storm losses"])
+def generate_storms(request: GenerateStormsRequest) -> dict:
+    """Generate an ensemble of storms from one starting point.
+
+    Runs the hurricane simulator (loaded on the first call, which takes a few seconds)
+    and returns the storms in the storm catalog's shape, tracks included, so a client
+    draws them like catalog storms and prices them by sending them back in the
+    `storms` field of POST /api/v1/storm-losses. Nothing is stored server-side.
+    """
+    try:
+        catalog = generator.generate_catalog(
+            request.latitude,
+            request.longitude,
+            request.max_wind_kt,
+            request.start_date or generator.default_start_date(),
+            request.seed,
+            request.count,
+        )
+    except ValueError as error:
+        # The simulator names what it rejected (a start over land, or far from where
+        # Atlantic storms have formed); that is the caller's to change.
+        raise HTTPException(
+            status_code=422,
+            detail={"message": str(error), "error": "GenerationInputError"},
+        ) from error
+    return {**catalog, "wind_model": wind.metadata()}
+
+
+def _supplied_catalog(storms: list[StormInput]) -> dict:
+    """Storms sent with a request, in the stored catalog's shape."""
+    storm_ids = [storm.storm_id for storm in storms]
+    duplicates = sorted({storm_id for storm_id in storm_ids if storm_ids.count(storm_id) > 1})
+    if duplicates:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": "Each supplied storm needs its own storm_id.", "duplicateStormIds": duplicates},
+        )
+    stored = wind.load_catalog()
+    return {
+        "catalog_id": "supplied-with-request",
+        "imported_at": None,
+        "wind_metric": stored["wind_metric"],
+        "wind_metric_note": stored["wind_metric_note"],
+        "sampling_description": (
+            "Storms supplied with the request (for example generated with POST "
+            "/api/v1/storms/generate), not taken from the stored catalog."
+        ),
+        "completeness_warning": (
+            "Storms supplied with the request are a what-if set, not a probabilistic "
+            "sample. Do not compute annual expected loss, average annual loss or "
+            "exceedance probabilities from them."
+        ),
+        "storm_ids": storm_ids,
+        "storms": [storm.model_dump() for storm in storms],
+    }
 
 
 @app.get(f"{API_PREFIX}/v1/damage-curves", tags=["storm losses"])
@@ -813,8 +887,10 @@ def storm_losses(request: StormLossRequest) -> dict:
 
     Returns every storm/property/upgrade combination, including zero-loss rows for
     homes a storm missed, because a missing row means missing data and not no loss.
-    Send windExposures to price real property-level gusts; omit them and the
-    provisional wind field derives gusts from the stored track.
+    Send windExposures to price gusts computed elsewhere; omit them and the wind
+    field in app/wind.py (backed by the wind_field package) derives gusts from the
+    storm's track. Send storms (for example from POST /api/v1/storms/generate) to
+    price those instead of the stored catalog.
     """
     return _storm_losses(
         request.properties,
@@ -822,4 +898,5 @@ def storm_losses(request: StormLossRequest) -> dict:
         request.run_id,
         request.wind_exposures,
         request.eligible_options,
+        catalog=_supplied_catalog(request.storms) if request.storms else None,
     )

@@ -19,10 +19,41 @@ export interface Storm {
   landfall_lon: number
   landfall_wind_kt: number
   track: StormTrackPoint[]
+  member_seed?: number
 }
 
 export interface StormCatalog {
   catalog_id: string
   storm_ids: string[]
   storms: Storm[]
+}
+
+export interface GenerationStart {
+  latitude: number
+  longitude: number
+}
+
+export interface GenerateStormsRequest {
+  latitude: number
+  longitude: number
+  max_wind_kt: number
+  start_date: string
+  seed: number
+  count: number
+}
+
+export interface GeneratedStormCatalog extends StormCatalog {
+  completeness_warning: string
+  generator: {
+    version: string
+    seed: number
+    count: number
+    member_seeds: number[]
+    start: {
+      latitude: number
+      longitude: number
+      max_wind_kt: number
+      date: string
+    }
+  }
 }

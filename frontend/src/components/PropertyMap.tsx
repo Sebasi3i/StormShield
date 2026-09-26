@@ -5,12 +5,14 @@ import {
   Polyline,
   Popup,
   TileLayer,
+  Tooltip,
   useMap,
+  useMapEvents,
 } from 'react-leaflet'
 
 import { useEffect } from 'react'
 import type { Property } from '../types/Property'
-import type { Storm } from '../types/Storm'
+import type { GenerationStart, Storm } from '../types/Storm'
 import 'leaflet/dist/leaflet.css'
 
 interface PropertyMapProps {
@@ -19,6 +21,9 @@ interface PropertyMapProps {
   onToggleProperty: (property: Property) => void
   storm: Storm | null
   stormStep: number
+  generationStart: GenerationStart
+  pickingStart: boolean
+  onPickStart: (start: GenerationStart) => void
 }
 function MapResizeHandler() {
   const map = useMap()
@@ -42,12 +47,46 @@ function MapResizeHandler() {
 
   return null
 }
+/*
+ * While the generator is picking a start, the next map click sets it. Other
+ * clicks leave it alone, so browsing the map never moves it by accident.
+ */
+function StartPicker({
+  active,
+  onPick,
+}: {
+  active: boolean
+  onPick: (start: GenerationStart) => void
+}) {
+  const map = useMapEvents({
+    click(event) {
+      if (!active) {
+        return
+      }
+
+      // Leaflet reports longitudes past +/-180 after panning around the globe.
+      const longitude = ((((event.latlng.lng + 180) % 360) + 360) % 360) - 180
+
+      onPick({ latitude: event.latlng.lat, longitude })
+    },
+  })
+
+  useEffect(() => {
+    map.getContainer().classList.toggle('picking-start', active)
+  }, [map, active])
+
+  return null
+}
+
 function PropertyMap({
   properties,
   selectedProperties,
   onToggleProperty,
   storm,
   stormStep,
+  generationStart,
+  pickingStart,
+  onPickStart,
 }: PropertyMapProps) {
   return (
     <MapContainer
@@ -60,6 +99,20 @@ function PropertyMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapResizeHandler />
+      <StartPicker active={pickingStart} onPick={onPickStart} />
+
+      <CircleMarker
+        center={[generationStart.latitude, generationStart.longitude]}
+        radius={7}
+        pathOptions={{
+          color: '#ffffff',
+          weight: 3,
+          fillColor: '#16a34a',
+          fillOpacity: 1,
+        }}
+      >
+        <Tooltip>Storm generator start</Tooltip>
+      </CircleMarker>
       {storm && (
   <>
     <Polyline

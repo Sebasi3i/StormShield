@@ -1263,3 +1263,224 @@
     flex-direction: column;
   }
 }
+
+/* Storm generator card (sidebar) */
+
+.generate-storms {
+  padding: 18px;
+
+  background: white;
+  border: 1px solid var(--storm-border);
+  border-radius: 14px;
+
+  box-shadow: 0 4px 18px rgba(8, 27, 51, 0.08);
+}
+
+.generate-label {
+  color: var(--storm-blue);
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.generate-storms h2 {
+  margin: 4px 0 2px;
+
+  color: var(--storm-navy);
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.generate-intro {
+  margin: 0 0 12px;
+
+  color: var(--storm-muted);
+
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.generate-start {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 10px;
+  padding: 10px 12px;
+
+  background: var(--storm-blue-soft);
+  border-radius: 10px;
+}
+
+.generate-start span {
+  display: block;
+
+  color: var(--storm-muted);
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.generate-start strong {
+  color: var(--storm-navy);
+
+  font-size: 13px;
+}
+
+.pick-start {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  background: white;
+  color: var(--storm-blue);
+
+  border: 1px solid var(--storm-blue-light);
+  border-radius: 7px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.pick-start.active {
+  background: var(--storm-blue);
+  color: white;
+}
+
+.pick-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.generate-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+
+  margin-bottom: 12px;
+}
+
+.generate-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  color: var(--storm-muted);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.generate-fields input {
+  min-width: 0;
+  padding: 7px 8px;
+
+  color: var(--storm-text);
+
+  border: 1px solid var(--storm-border);
+  border-radius: 7px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.generate-fields input:focus {
+  outline: none;
+  border-color: var(--storm-blue);
+}
+
+.generate-button {
+  width: 100%;
+  padding: 10px 12px;
+
+  background: var(--storm-blue);
+  color: white;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.generate-button:hover:not(:disabled) {
+  background: #0f63d9;
+}
+
+.generate-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.generate-note {
+  margin: 8px 0 0;
+
+  color: var(--storm-muted);
+
+  font-size: 11px;
+}
+
+.generate-error {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+
+  background: #fff1f0;
+  color: #b42318;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.generate-result {
+  margin-top: 10px;
+  padding: 10px 12px;
+
+  border: 1px solid var(--storm-border);
+  border-radius: 10px;
+}
+
+.generate-result strong {
+  display: block;
+
+  color: var(--storm-navy);
+
+  font-size: 13px;
+}
+
+.generate-result span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: var(--storm-blue);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.generate-result p {
+  margin: 6px 0 0;
+
+  color: var(--storm-muted);
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.leaflet-container.picking-start,
+.leaflet-container.picking-start .leaflet-interactive {
+  cursor: crosshair;
+}

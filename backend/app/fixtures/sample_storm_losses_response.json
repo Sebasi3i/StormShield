@@ -92,40 +92,40 @@
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 168.9,
-      "baseline_damage_usd": 279770.94,
-      "upgraded_damage_usd": 223782.75,
-      "baseline_payout_usd": 237270.94,
-      "upgraded_payout_usd": 181282.75,
-      "avoided_payout_usd": 55988.19
+      "peak_gust_mph": 183.4,
+      "baseline_damage_usd": 380294.04,
+      "upgraded_damage_usd": 304201.23,
+      "baseline_payout_usd": 337794.04,
+      "upgraded_payout_usd": 261701.23,
+      "avoided_payout_usd": 76092.81
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 168.9,
-      "baseline_damage_usd": 279770.94,
-      "upgraded_damage_usd": 209828.21,
-      "baseline_payout_usd": 237270.94,
-      "upgraded_payout_usd": 167328.21,
-      "avoided_payout_usd": 69942.74
+      "peak_gust_mph": 183.4,
+      "baseline_damage_usd": 380294.04,
+      "upgraded_damage_usd": 285216.95,
+      "baseline_payout_usd": 337794.04,
+      "upgraded_payout_usd": 242716.95,
+      "avoided_payout_usd": 95077.09
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P002",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 169.4,
-      "baseline_damage_usd": 239751.46,
-      "upgraded_damage_usd": 179843.59,
-      "baseline_payout_usd": 179751.46,
-      "upgraded_payout_usd": 119843.59,
-      "avoided_payout_usd": 59907.86
+      "peak_gust_mph": 186.3,
+      "baseline_damage_usd": 342844.44,
+      "upgraded_damage_usd": 257134.8,
+      "baseline_payout_usd": 282844.44,
+      "upgraded_payout_usd": 197134.8,
+      "avoided_payout_usd": 85709.64
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 63.6,
+      "peak_gust_mph": 66.2,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -136,7 +136,7 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 63.6,
+      "peak_gust_mph": 66.2,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -147,7 +147,7 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 66.4,
+      "peak_gust_mph": 68.3,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -158,7 +158,7 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 66.4,
+      "peak_gust_mph": 68.3,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -169,7 +169,7 @@
       "storm_id": "SYN0155",
       "property_id": "P005",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 61.8,
+      "peak_gust_mph": 66.3,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -180,7 +180,7 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 22.7,
+      "peak_gust_mph": 33.3,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -191,7 +191,7 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 22.7,
+      "peak_gust_mph": 33.3,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -202,9 +202,9 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 108.6,
-      "baseline_damage_usd": 25361.8,
-      "upgraded_damage_usd": 20307.04,
+      "peak_gust_mph": 109.6,
+      "baseline_damage_usd": 27253.78,
+      "upgraded_damage_usd": 21821.61,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -213,9 +213,9 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 108.6,
-      "baseline_damage_usd": 25361.8,
-      "upgraded_damage_usd": 18990.1,
+      "peak_gust_mph": 109.6,
+      "baseline_damage_usd": 27253.78,
+      "upgraded_damage_usd": 20410.32,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -224,59 +224,61 @@
       "storm_id": "SYN0155",
       "property_id": "P008",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 128.2,
-      "baseline_damage_usd": 26910.65,
-      "upgraded_damage_usd": 20187.7,
-      "baseline_payout_usd": 3910.65,
-      "upgraded_payout_usd": 0.0,
-      "avoided_payout_usd": 3910.65
+      "peak_gust_mph": 151.1,
+      "baseline_damage_usd": 57678.85,
+      "upgraded_damage_usd": 43270.64,
+      "baseline_payout_usd": 34678.85,
+      "upgraded_payout_usd": 20270.64,
+      "avoided_payout_usd": 14408.21
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 111.8,
-      "baseline_damage_usd": 43060.39,
-      "upgraded_damage_usd": 34476.83,
-      "baseline_payout_usd": 0.0,
+      "peak_gust_mph": 116.1,
+      "baseline_damage_usd": 53598.55,
+      "upgraded_damage_usd": 42912.89,
+      "baseline_payout_usd": 4598.55,
       "upgraded_payout_usd": 0.0,
-      "avoided_payout_usd": 0.0
+      "avoided_payout_usd": 4598.55
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 111.8,
-      "baseline_damage_usd": 43060.39,
-      "upgraded_damage_usd": 32257.44,
-      "baseline_payout_usd": 0.0,
+      "peak_gust_mph": 116.1,
+      "baseline_damage_usd": 53598.55,
+      "upgraded_damage_usd": 40167.98,
+      "baseline_payout_usd": 4598.55,
       "upgraded_payout_usd": 0.0,
-      "avoided_payout_usd": 0.0
+      "avoided_payout_usd": 4598.55
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 167.8,
-      "baseline_damage_usd": 216492.73,
-      "upgraded_damage_usd": 173167.18,
-      "baseline_payout_usd": 182742.73,
-      "upgraded_payout_usd": 139417.18,
-      "avoided_payout_usd": 43325.55
+      "peak_gust_mph": 187.1,
+      "baseline_damage_usd": 326618.66,
+      "upgraded_damage_usd": 261267.93,
+      "baseline_payout_usd": 292868.66,
+      "upgraded_payout_usd": 227517.93,
+      "avoided_payout_usd": 65350.73
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 167.8,
-      "baseline_damage_usd": 216492.73,
-      "upgraded_damage_usd": 162369.55,
-      "baseline_payout_usd": 182742.73,
-      "upgraded_payout_usd": 128619.55,
-      "avoided_payout_usd": 54123.18
+      "peak_gust_mph": 187.1,
+      "baseline_damage_usd": 326618.66,
+      "upgraded_damage_usd": 244957.97,
+      "baseline_payout_usd": 292868.66,
+      "upgraded_payout_usd": 211207.97,
+      "avoided_payout_usd": 81660.69
     }
   ],
-  "warnings": [],
+  "warnings": [
+    "SYN0155: the stored track jumps 12 hours, from step 39 to step 41 (typically where the catalog import clipped it to its map window). Wind was modeled for each continuous stretch separately; nothing is assumed inside the gap, so any wind the storm produced there is not counted."
+  ],
   "assumptions": [
     "Illustrative gross insurer payouts before reinsurance. Not calibrated and not validated against loss experience.",
     "Every damage curve in this run is an assumed fixture. The Finance workbook's upgrade damage-effect request is still unanswered.",
@@ -322,16 +324,30 @@
     "wind_model": {
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "assumed",
-      "gust_factor": 1.3,
-      "gust_factor_note": "ASSUMED ratio of 3-second gust to the simulator's one-minute sustained centre wind, over open terrain. Confirm with the simulator owner before treating any output as a wind estimate.",
-      "kt_to_mph": 1.15078,
-      "decay_km": 150.0,
-      "decay_note": "ASSUMED exponential decay of wind with distance from the centre, e-folding at this distance. Shared with the existing /api/simulate endpoint. No radius of maximum wind, pressure profile, forward-motion asymmetry or terrain roughness is modeled, because the simulator does not publish them.",
-      "reference_height_m": 10,
+      "model": "wind_field",
+      "model_version": "symmetric_rankine_v1",
+      "package_version": "0.3.0",
+      "gust_factor": 1.25,
+      "gust_duration_seconds": 3.0,
+      "gust_factor_note": "ASSUMED ratio of a 3-second gust to the simulator's one-minute sustained wind, over open terrain: wind_field's demonstration value, agreed for the platform. Not calibrated.",
+      "kt_to_mph": 1.1507794480235425,
+      "storm_parameters": {
+        "rmw_km": 30.0,
+        "outer_decay_exponent": 0.5,
+        "taper_start_km": 200.0,
+        "cutoff_km": 300.0,
+        "parameter_status": "assumed"
+      },
+      "storm_parameters_note": "ASSUMED storm size, identical for every storm, because the simulator does not publish a radius of maximum wind or size per storm. Demo/test fixture value from the StormShield implementation brief (26 Sep 2026), section 6. Not an empirical calibration; replace with sourced or validated per-storm parameters before any real risk use.",
+      "track_interpolation": {
+        "max_time_step_minutes": 15.0,
+        "max_segment_distance_fraction_rmw": 0.1
+      },
+      "reference_height_m": 10.0,
       "terrain_exposure": "open",
       "negligible_gust_floor_mph": 20.0,
-      "method": "For each property, the peak gust is the maximum over every track step of centre_wind_kt * exp(-distance_km / decay_km) * kt_to_mph * gust_factor.",
-      "replace_with": "A parametric or numerical wind field from the simulator owner. This module is the seam: claims.py consumes WindExposure rows and is unaffected."
+      "method": "For each property, the peak over the whole track of: the storm centre moved along great circles in steps of at most max_time_step_minutes and max_segment_distance_fraction_rmw x rmw_km; at each step, sustained wind from a modified-Rankine profile (max_wind_kt x r/rmw inside the radius of maximum wind, max_wind_kt x (rmw/r)^outer_decay_exponent outside it, cosine-tapered to zero between taper_start_km and cutoff_km), converted to mph and multiplied by the gust factor. Gaps in a stored track are not bridged.",
+      "not_modeled": "Forward-motion asymmetry, terrain roughness, and any weakening over land beyond what the track's max_wind_kt already carries."
     },
     "storm_catalog": {
       "catalog_id": "syn-fl-3-v1",
@@ -344,131 +360,101 @@
       {
         "storm_id": "SYN0155",
         "property_id": "P001",
-        "peak_gust_mph": 168.9,
+        "peak_gust_mph": 183.4,
+        "peak_sustained_kt": 127.5,
+        "peak_time_utc": "2026-09-19T10:35:00",
         "closest_approach": {
-          "step": 30,
-          "timestamp": "2026-09-19 12:00:00",
-          "centre_lat": 25.9471,
-          "centre_lon": -80.245,
-          "centre_wind_kt": 130.1,
-          "distance_km": 21.3
+          "distance_km": 17.5
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P002",
-        "peak_gust_mph": 169.4,
+        "peak_gust_mph": 186.3,
+        "peak_sustained_kt": 129.5,
+        "peak_time_utc": "2026-09-19T10:14:00",
         "closest_approach": {
-          "step": 30,
-          "timestamp": "2026-09-19 12:00:00",
-          "centre_lat": 25.9471,
-          "centre_lon": -80.245,
-          "centre_wind_kt": 130.1,
-          "distance_km": 20.9
+          "distance_km": 12.3
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P003",
-        "peak_gust_mph": 63.6,
+        "peak_gust_mph": 66.2,
+        "peak_sustained_kt": 46.0,
+        "peak_time_utc": "2026-09-20T00:00:00",
         "closest_approach": {
-          "step": 32,
-          "timestamp": "2026-09-20 00:00:00",
-          "centre_lat": 27.0838,
-          "centre_lon": -81.9545,
-          "centre_wind_kt": 87.5,
-          "distance_km": 108.4
+          "distance_km": 101.1
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P004",
-        "peak_gust_mph": 66.4,
+        "peak_gust_mph": 68.3,
+        "peak_sustained_kt": 47.5,
+        "peak_time_utc": "2026-09-20T00:00:00",
         "closest_approach": {
-          "step": 32,
-          "timestamp": "2026-09-20 00:00:00",
-          "centre_lat": 27.0838,
-          "centre_lon": -81.9545,
-          "centre_wind_kt": 87.5,
-          "distance_km": 101.8
+          "distance_km": 101.1
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P005",
-        "peak_gust_mph": 61.8,
+        "peak_gust_mph": 66.3,
+        "peak_sustained_kt": 46.1,
+        "peak_time_utc": "2026-09-20T07:24:00",
         "closest_approach": {
-          "step": 33,
-          "timestamp": "2026-09-20 06:00:00",
-          "centre_lat": 27.7869,
-          "centre_lon": -81.2418,
-          "centre_wind_kt": 72.6,
-          "distance_km": 84.6
+          "distance_km": 68.2
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P006",
-        "peak_gust_mph": 22.7,
+        "peak_gust_mph": 33.3,
+        "peak_sustained_kt": 23.1,
+        "peak_time_utc": "2026-09-20T16:13:00",
         "closest_approach": {
-          "step": 35,
-          "timestamp": "2026-09-20 18:00:00",
-          "centre_lat": 30.126,
-          "centre_lon": -79.5254,
-          "centre_wind_kt": 60.0,
-          "distance_km": 205.9
+          "distance_km": 202.5
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P007",
-        "peak_gust_mph": 108.6,
+        "peak_gust_mph": 109.6,
+        "peak_sustained_kt": 76.2,
+        "peak_time_utc": "2026-09-19T12:14:00",
         "closest_approach": {
-          "step": 30,
-          "timestamp": "2026-09-19 12:00:00",
-          "centre_lat": 25.9471,
-          "centre_lon": -80.245,
-          "centre_wind_kt": 130.1,
-          "distance_km": 87.5
+          "distance_km": 84.3
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P008",
-        "peak_gust_mph": 128.2,
+        "peak_gust_mph": 151.1,
+        "peak_sustained_kt": 105.0,
+        "peak_time_utc": "2026-09-19T18:15:00",
         "closest_approach": {
-          "step": 31,
-          "timestamp": "2026-09-19 18:00:00",
-          "centre_lat": 26.5678,
-          "centre_lon": -81.556,
-          "centre_wind_kt": 106.4,
-          "distance_km": 32.5
+          "distance_km": 21.3
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P009",
-        "peak_gust_mph": 111.8,
+        "peak_gust_mph": 116.1,
+        "peak_sustained_kt": 80.7,
+        "peak_time_utc": "2026-09-19T17:38:00",
         "closest_approach": {
-          "step": 31,
-          "timestamp": "2026-09-19 18:00:00",
-          "centre_lat": 26.5678,
-          "centre_lon": -81.556,
-          "centre_wind_kt": 106.4,
           "distance_km": 53.0
         }
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P010",
-        "peak_gust_mph": 167.8,
+        "peak_gust_mph": 187.1,
+        "peak_sustained_kt": 130.1,
+        "peak_time_utc": "2026-09-19T11:04:00",
         "closest_approach": {
-          "step": 30,
-          "timestamp": "2026-09-19 12:00:00",
-          "centre_lat": 25.9471,
-          "centre_lon": -80.245,
-          "centre_wind_kt": 130.1,
-          "distance_km": 22.3
+          "distance_km": 22.0
         }
       }
     ],

@@ -1,4 +1,4 @@
-"""The storm-loss endpoints and the provisional wind field behind them.
+"""The storm-loss endpoints and the wind field (the wind_field package) behind them.
 
 These run against the shipped fixtures, so they also serve as a regression check on
 the curve set and the storm catalog: if someone re-imports a catalog without the Miami
@@ -13,12 +13,18 @@ Run from the backend directory:
 from __future__ import annotations
 
 import json
+import math
 import pathlib
+from datetime import datetime, timedelta
 
 import pytest
+import wind_field
 from starlette.testclient import TestClient
+from wind_field import WindFieldConfig, haversine_distance_km
+from wind_field.profile import sustained_wind_profile_kt
+from wind_field.schema import DEMO_STORM_PARAMETERS as SIZE
 
-from app import wind
+from app import claims, wind
 from app.main import app
 
 client = TestClient(app)
@@ -316,30 +322,83 @@ def test_unknown_vulnerability_class_is_a_422_naming_the_class():
 # --------------------------------------------------------------------------- #
 
 
-def test_peak_gust_is_the_worst_over_the_track_not_the_value_at_landfall():
-    """A property can see its worst wind while the centre is still offshore."""
-    track = [
-        {"step": 0, "timestamp": "t0", "latitude": 25.0, "longitude": -80.0,
-         "max_wind_kt": 130.0, "category": "4", "is_over_land": False},
-        {"step": 1, "timestamp": "t1", "latitude": 27.0, "longitude": -82.0,
-         "max_wind_kt": 60.0, "category": "TS", "is_over_land": True},
-    ]
-    gust, step = wind.peak_gust_mph(25.0, -80.0, track)
+def _storm(*points):
+    """A test storm on the catalog's 6-hour steps, from (latitude, longitude, max_wind_kt)."""
+    start = datetime(2026, 9, 1)
+    return {
+        "storm_id": "TEST",
+        "track": [
+            {"step": step, "timestamp": (start + timedelta(hours=6 * step)).strftime("%Y-%m-%d %H:%M:%S"),
+             "latitude": latitude, "longitude": longitude, "max_wind_kt": knots,
+             "category": "4", "is_over_land": False}
+            for step, (latitude, longitude, knots) in enumerate(points)
+        ],
+    }
 
-    assert step["step"] == 0
-    assert gust == pytest.approx(130.0 * wind.KT_TO_MPH * wind.GUST_FACTOR, rel=1e-6)
+
+def _expected_gust(distance_km, centre_wind_kt):
+    """The gust wind_field's profile gives at this distance, the independent check."""
+    sustained = sustained_wind_profile_kt(
+        distance_km, centre_wind_kt, SIZE["rmw_km"], SIZE["outer_decay_exponent"],
+        SIZE["taper_start_km"], SIZE["cutoff_km"],
+    )
+    return sustained * wind.KT_TO_MPH * wind.GUST_FACTOR
+
+
+def _km_east(latitude, longitude, km):
+    return longitude + km / (111.195 * math.cos(math.radians(latitude)))
+
+
+def test_peak_gust_is_the_worst_over_the_track_not_the_value_at_landfall():
+    """A property can see its worst wind while the centre is still offshore.
+
+    A 130 kt centre passes 40 km west of the property, then weakens to 60 kt and makes
+    landfall far to the north-west: the peak comes from the offshore hours.
+    """
+    storm = _storm((25.0, -80.0, 130.0), (27.0, -82.0, 60.0))
+    home = (25.0, _km_east(25.0, -80.0, 40.0))
+    exposures, detail = wind.exposures_for_storm(storm, [("HOME", *home)])
+
+    distance = haversine_distance_km(*home, 25.0, -80.0)
+    assert exposures[0].peak_gust_mph == pytest.approx(_expected_gust(distance, 130.0), abs=0.01)
+    assert detail[0]["peak_time_utc"] == "2026-09-01T00:00:00"
+
+
+def test_wind_peaks_at_the_radius_of_maximum_wind_not_in_the_eye():
+    storm = _storm((25.0, -80.0, 130.0))
+    eyewall = (25.0, _km_east(25.0, -80.0, SIZE["rmw_km"]))
+    exposures, _ = wind.exposures_for_storm(storm, [("EYE", 25.0, -80.0), ("EYEWALL", *eyewall)])
+    gust = {exposure.property_id: exposure.peak_gust_mph for exposure in exposures}
+
+    assert gust["EYE"] == 0.0
+    assert gust["EYEWALL"] == pytest.approx(
+        _expected_gust(haversine_distance_km(*eyewall, 25.0, -80.0), 130.0), abs=0.01
+    )
+    assert gust["EYEWALL"] > 0.99 * 130.0 * wind.KT_TO_MPH * wind.GUST_FACTOR
 
 
 def test_distant_property_is_floored_to_zero_exposure():
-    track = [
-        {"step": 0, "timestamp": "t0", "latitude": 25.0, "longitude": -80.0,
-         "max_wind_kt": 130.0, "category": "4", "is_over_land": False}
-    ]
-    gust, step = wind.peak_gust_mph(45.0, -70.0, track)
+    exposures, detail = wind.exposures_for_storm(_storm((25.0, -80.0, 130.0)), [("FAR", 45.0, -70.0)])
 
-    assert gust == 0.0
-    # Still reports where the centre was, so the zero can be checked.
-    assert step is not None and step["distance_km"] > 1000
+    assert exposures[0].peak_gust_mph == 0.0
+    # Still reports how far away the centre passed, so the zero can be checked.
+    assert detail[0]["closest_approach"]["distance_km"] > 1000
+    assert detail[0]["peak_time_utc"] is None
+
+
+def test_a_gap_in_the_stored_track_is_modeled_in_stretches_not_bridged():
+    """The storm's closest pass falls in the gap, so it is missing, not invented."""
+    full = _storm((25.0, -78.0, 130.0), (25.0, -79.0, 130.0), (25.0, -80.0, 130.0))
+    gapped = {"storm_id": "TEST", "track": [full["track"][0], full["track"][2]]}
+    home = [("HOME", 25.27, -79.0)]
+
+    full_gust = wind.exposures_for_storm(full, home)[0][0].peak_gust_mph
+    gapped_gust = wind.exposures_for_storm(gapped, home)[0][0].peak_gust_mph
+
+    assert 0 < gapped_gust < full_gust
+    assert wind.track_gaps(full) == []
+    (warning,) = wind.track_gaps(gapped)
+    assert "12 hours" in warning and "step 0 to step 2" in warning
 
 
 def test_every_property_gets_an_exposure_row_including_zeros():
@@ -352,6 +411,64 @@ def test_every_property_gets_an_exposure_row_including_zeros():
     assert len(detail) == 2
     assert {e.property_id for e in exposures} == {"P001", "PFAR"}
     assert all(e.wind_metric == wind.WIND_METRIC for e in exposures)
+
+
+def test_the_example_run_warns_about_its_storm_track_gap(example):
+    """SYN0155's stored track skips step 40; the response says so."""
+    assert any(
+        warning.startswith(f"{EXAMPLE_STORM}: the stored track jumps 12 hours")
+        for warning in example["warnings"]
+    )
+
+
+def test_wind_model_is_wind_field_with_the_agreed_gust_factor(example):
+    wind_model = example["metadata"]["wind_model"]
+
+    assert wind_model["model"] == "wind_field"
+    assert wind_model["package_version"] == wind_field.__version__
+    assert wind_model["gust_factor"] == 1.25
+    assert wind_model["storm_parameters"]["parameter_status"] == "assumed"
+
+
+def test_wind_field_labels_its_output_with_the_curves_metric():
+    config = WindFieldConfig(
+        run_id="test", catalog_id="test",
+        gust_factor=wind.GUST_FACTOR, gust_duration_seconds=wind.GUST_DURATION_SECONDS,
+    )
+    assert config.wind_metric == wind.WIND_METRIC == claims.load_curve_set()["wind_metric"]
+
+
+@pytest.mark.parametrize("storm_id", wind.load_catalog()["storm_ids"])
+def test_every_catalog_storm_prices_the_frontend_portfolio(storm_id):
+    """Exactly what the dashboard sends: its Property shape, one storm at a time."""
+    portfolio_path = pathlib.Path(__file__).resolve().parents[1] / "app" / "fixtures" / "example_portfolio.json"
+    portfolio = json.loads(portfolio_path.read_text(encoding="utf-8"))["properties"]
+    properties = [
+        {"id": index + 1, "address": entry["address"], "city": entry["city"],
+         "county": entry["county"], "latitude": entry["latitude"],
+         "longitude": entry["longitude"], "value": entry["replacement_cost_usd"]}
+        for index, entry in enumerate(portfolio)
+    ]
+    response = client.post(
+        "/api/v1/storm-losses", json={"properties": properties, "storm_ids": [storm_id]}
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert len(body["property_ids"]) == len(portfolio)
+    assert body["rows"]
+
+
+def test_a_property_sent_twice_is_a_422_not_a_500():
+    home = {"property_id": "P001", "replacement_cost_usd": 500000,
+            "latitude": 25.76, "longitude": -80.19}
+    response = client.post(
+        "/api/v1/storm-losses", json={"storm_ids": [EXAMPLE_STORM], "properties": [home, home]}
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"]["error"] == "WindFieldInputError"
+    assert "P001" in response.json()["detail"]["message"]
 
 
 # --------------------------------------------------------------------------- #

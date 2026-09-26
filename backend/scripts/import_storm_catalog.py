@@ -23,7 +23,8 @@ from pathlib import Path
 
 # Track points far from Florida cannot raise wind at a Florida property, and carrying
 # the whole Atlantic basin would bloat the fixture. The window is generous so the
-# frontend can still animate the approach, not just the landfall.
+# frontend can still animate the approach, not just the landfall. Only the ends of a
+# track are trimmed to it (see _trim_to_window).
 WINDOW = {"min_lat": 18.0, "max_lat": 35.0, "min_lon": -92.0, "max_lon": -72.0}
 
 FLORIDA = {"min_lat": 24.3, "max_lat": 31.1, "min_lon": -87.7, "max_lon": -79.9}
@@ -46,6 +47,30 @@ def _florida_landfalls(summary_path: Path, limit: int) -> list[dict]:
             rows.append(row)
     rows.sort(key=lambda r: float(r["landfall_wind_kt"]), reverse=True)
     return rows[:limit]
+
+
+def _in_window(point: dict) -> bool:
+    return (
+        WINDOW["min_lat"] <= point["latitude"] <= WINDOW["max_lat"]
+        and WINDOW["min_lon"] <= point["longitude"] <= WINDOW["max_lon"]
+    )
+
+
+def _trim_to_window(points: list[dict]) -> list[dict]:
+    """Keep a track from its first point inside the window to its last, cutting nothing
+    out in between.
+
+    Clipping point by point used to remove any excursion outside the window from the
+    middle of a track - SYN0155 crosses 35N for one step off Cape Hatteras - leaving a
+    12-hour hole in a 6-hourly series. The wind field refuses to bridge such a gap,
+    rightly, since it would have to invent the storm's position inside it. Trimming
+    only the approach and the departure keeps every track continuous.
+    """
+    points = sorted(points, key=lambda point: point["step"])
+    inside = [index for index, point in enumerate(points) if _in_window(point)]
+    if not inside:
+        return []
+    return points[inside[0] : inside[-1] + 1]
 
 
 def _optional_float(value: str, digits: int = 4) -> float | None:
@@ -86,22 +111,19 @@ def build(output_dir: Path, storm_ids: list[str] | None, limit: int) -> dict:
         for row in csv.DictReader(handle):
             if row["storm_id"] not in tracks:
                 continue
-            lat, lon = float(row["latitude"]), float(row["longitude"])
-            if not WINDOW["min_lat"] <= lat <= WINDOW["max_lat"]:
-                continue
-            if not WINDOW["min_lon"] <= lon <= WINDOW["max_lon"]:
-                continue
             tracks[row["storm_id"]].append(
                 {
                     "step": int(row["step"]),
                     "timestamp": row["timestamp"],
-                    "latitude": round(lat, 4),
-                    "longitude": round(lon, 4),
+                    "latitude": round(float(row["latitude"]), 4),
+                    "longitude": round(float(row["longitude"]), 4),
                     "max_wind_kt": round(float(row["max_wind_kt"]), 1),
                     "category": row["category"],
                     "is_over_land": row["is_over_land"] == "True",
                 }
             )
+
+    tracks = {storm_id: _trim_to_window(points) for storm_id, points in tracks.items()}
 
     storms = [
         {
@@ -132,9 +154,11 @@ def build(output_dir: Path, storm_ids: list[str] | None, limit: int) -> dict:
         "sampling_description": (
             f"hurricane_simulator V1 Monte Carlo run of {run_storm_count} synthetic "
             "Atlantic storms bootstrapped from HURDAT2 1851-2025 at a 6-hour time "
-            f"step. This catalog holds {selection_note}. Track points are clipped to "
-            f"lat {WINDOW['min_lat']} to {WINDOW['max_lat']}, lon "
-            f"{WINDOW['min_lon']} to {WINDOW['max_lon']}."
+            f"step. This catalog holds {selection_note}. Tracks are trimmed to run "
+            f"from their first to their last point inside lat {WINDOW['min_lat']} to "
+            f"{WINDOW['max_lat']}, lon {WINDOW['min_lon']} to {WINDOW['max_lon']}, "
+            "keeping any excursion outside it in between so every track stays "
+            "continuous."
         ),
         "completeness_warning": (
             "A SELECTED subset, not a probabilistic sample: these storms were chosen "
