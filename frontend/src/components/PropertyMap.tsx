@@ -1,17 +1,53 @@
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import {
+  CircleMarker,
+  MapContainer,
+  Marker,
+  Polyline,
+  Popup,
+  TileLayer,
+  useMap,
+} from 'react-leaflet'
+
+import { useEffect } from 'react'
 import type { Property } from '../types/Property'
+import type { Storm } from '../types/Storm'
 import 'leaflet/dist/leaflet.css'
 
 interface PropertyMapProps {
   properties: Property[]
   selectedProperties: Property[]
   onToggleProperty: (property: Property) => void
+  storm: Storm | null
+  stormStep: number
 }
+function MapResizeHandler() {
+  const map = useMap()
 
+  useEffect(() => {
+    const handleResize = () => {
+      map.invalidateSize()
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    const timer = window.setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.clearTimeout(timer)
+    }
+  }, [map])
+
+  return null
+}
 function PropertyMap({
   properties,
   selectedProperties,
   onToggleProperty,
+  storm,
+  stormStep,
 }: PropertyMapProps) {
   return (
     <MapContainer
@@ -23,6 +59,59 @@ function PropertyMap({
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <MapResizeHandler />
+      {storm && (
+  <>
+    <Polyline
+      positions={storm.track
+        .slice(0, stormStep + 1)
+        .map((point) => [
+          point.latitude,
+          point.longitude,
+        ])}
+      pathOptions={{
+        color: '#1677ff',
+        weight: 4,
+        opacity: 0.9,
+      }}
+    />
+
+    <CircleMarker
+      center={[
+        storm.track[stormStep].latitude,
+        storm.track[stormStep].longitude,
+      ]}
+      radius={10}
+      pathOptions={{
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#1677ff',
+        fillOpacity: 1,
+      }}
+    >
+      <Popup>
+        <div>
+          <strong>{storm.storm_id}</strong>
+
+          <p>
+            Category: {storm.track[stormStep].category}
+          </p>
+
+          <p>
+            Center wind:{' '}
+            {storm.track[stormStep].max_wind_kt.toFixed(1)} kt
+          </p>
+
+          <p>{storm.track[stormStep].timestamp}</p>
+
+          {storm.track[stormStep].is_over_land && (
+            <p>Over land</p>
+          )}
+        </div>
+      </Popup>
+    </CircleMarker>
+  </>
+)}
 
       {properties.map((property) => {
         const selected = selectedProperties.some(
