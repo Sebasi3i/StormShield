@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+backend/.venv/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Raw/processed datasets
+data/raw/*
+data/processed/*
+
+# Keep directories in Git
+!data/raw/.gitkeep
+!data/processed/.gitkeep
