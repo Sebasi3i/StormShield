@@ -9,7 +9,7 @@ observed, for the two constants together.
 
 Inputs, from data/calibration/fl_hurricane_gust_data:
 
-  - best_tracks.csv: the NHC HURDAT2 rows for the 11 storms, wind radii included.
+  - best_tracks.csv: the NHC HURDAT2 rows for the 19 storms, wind radii included.
     Only synoptic fixes (00, 06, 12, 18 UTC) are used, because the wind model's track
     validation requires a six-hour cadence; landfall rows at other times are dropped.
   - coverage_by_storm_station.csv: each station's observed peak gust in the storm, and
@@ -54,7 +54,7 @@ OCEAN_FETCH_FRACTION = 0.5
 
 
 def storms_from_best_tracks(path: Path) -> list[dict]:
-    """The 11 storms in the catalog's track shape, synoptic fixes only."""
+    """The 19 storms in the catalog's track shape, synoptic fixes only."""
     table = pd.read_csv(path, parse_dates=["time_utc"])
     storms = []
     for storm_id, rows in table.groupby("storm_id", sort=False):

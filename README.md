@@ -107,7 +107,7 @@ along the track in 15-minute steps so each home sees the storm's closest pass. I
 constants are calibrated (see `docs/calibration.md` for the fits, the data and the
 validation): the radius of maximum wind per storm from a model fitted to the wind radii
 in NOAA's HURDAT2 record (`scripts/fit_storm_size.py`); the gust factor measured at
-Florida ASOS stations during 11 hurricanes (`scripts/fit_gust_factor.py`); and the
+Florida ASOS stations during 19 hurricanes (`scripts/fit_gust_factor.py`); and the
 profile's decay exponent and an open-terrain land factor fitted jointly to the peak
 gusts those stations recorded (`scripts/calibrate_wind_field.py`), with
 `scripts/validate_wind_field.py` recording how the whole step compares with the

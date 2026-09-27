@@ -32,7 +32,7 @@ Selection of pairs: station within 250 km of the track, observed peak gust at le
 40 kt, record not broken off after strong wind (see validate_wind_field.py).
 
 Because the same pairs would otherwise both choose the constants and judge them, the
-script also runs a leave-one-storm-out check: for each of the 11 storms it repeats the
+script also runs a leave-one-storm-out check: for each of the 19 storms it repeats the
 selection on the other ten and scores the held-out storm with constants that never saw
 it. The pooled out-of-sample errors and the spread of the chosen constants across the
 folds are written with the result; if the out-of-sample error were much worse than the

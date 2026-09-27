@@ -22,7 +22,7 @@ wind radii NOAA records in HURDAT2: a smaller eye for a stronger, lower-latitude
 The simulator publishes no size per storm, so the model is evaluated once per storm at
 its peak intensity near Florida and held constant through the event. The gust factor
 comes from `fixtures/gust_factor_model.json`, measured at Florida ASOS stations during
-11 hurricanes (`scripts/fit_gust_factor.py`). The profile's outer decay exponent and an
+19 hurricanes (`scripts/fit_gust_factor.py`). The profile's outer decay exponent and an
 open-terrain land exposure factor come from `fixtures/wind_calibration.json`, fitted
 jointly to the peak gusts those stations recorded (`scripts/calibrate_wind_field.py`),
 and `fixtures/wind_validation.json` records how the whole step then compares with the

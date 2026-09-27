@@ -4,7 +4,7 @@ The damage curves are defined on a peak 3-second gust; the wind model produces a
 sustained wind and multiplies it by a gust factor to get there. Until now that factor
 was wind_field's demonstration value, 1.25. This script fits it from
 data/calibration/fl_hurricane_gust_data: one-minute ASOS observations at Florida
-stations during 11 hurricanes (2016-2024), each a two-minute mean wind paired with the
+stations during 19 hurricanes (2004-2005 and 2016-2024), each a two-minute mean wind paired with the
 peak gust in the same window.
 
 What is fitted, and what is not:
@@ -104,6 +104,15 @@ def fit(pairs: pd.DataFrame) -> dict:
     }
 
 
+def _storms_label(pairs: pd.DataFrame) -> str:
+    """Describe the storms and stations the pairs cover, e.g. "19 hurricanes 2004-2024, 57 stations"."""
+    years = pairs["storm_id"].str[-4:].astype(int)
+    return (
+        f"{pairs['storm_id'].nunique()} hurricanes {years.min()}-{years.max()}, "
+        f"{pairs['station'].nunique()} stations"
+    )
+
+
 def build_model(pairs_path: Path) -> dict:
     pairs = pd.read_csv(pairs_path)
     fitted = fit(pairs)
@@ -124,7 +133,7 @@ def build_model(pairs_path: Path) -> dict:
             "dataset": "Florida hurricane ASOS gust data (data/calibration/fl_hurricane_gust_data)",
             "file": pairs_path.name,
             "observations": "NCEI ASOS one-minute data via the Iowa Environmental Mesonet",
-            "storms": "Hermine 2016 to Milton 2024, 11 hurricanes, 46 stations",
+            "storms": _storms_label(pairs),
             "pairing": "NOAA/AOML ASOS gust method: peak gust over the same two-minute window as the mean",
         },
         "fitted_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

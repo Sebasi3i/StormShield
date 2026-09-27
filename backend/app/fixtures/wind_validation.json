@@ -1,182 +1,296 @@
 {
   "wind_validation_id": "fl-asos-hurricane-peaks-v1",
-  "validated_at": "2026-09-27T02:52:49Z",
+  "validated_at": "2026-09-27T03:35:29Z",
   "script": "backend/scripts/validate_wind_field.py",
-  "gust_factor": 1.333,
+  "gust_factor": 1.314,
   "storm_size_model_id": "hurdat2-radii-fit-v1",
   "selection": {
     "max_closest_approach_km": 250.0,
     "min_observed_gust_kt": 40.0,
     "truncated_records_excluded": true,
-    "storms": 11,
-    "station_storm_pairs": 156,
-    "pairs_excluded_as_truncated": 4
+    "storms": 19,
+    "station_storm_pairs": 209,
+    "pairs_excluded_as_truncated": 9
   },
   "all": {
-    "n": 156,
-    "bias_kt": 3.5,
-    "mean_absolute_error_kt": 14.1,
-    "median_ratio_modeled_over_observed": 1.033,
-    "within_15_percent": 0.37,
-    "observed_mean_kt": 55.5,
-    "modeled_mean_kt": 59.0
+    "n": 209,
+    "bias_kt": 2.9,
+    "mean_absolute_error_kt": 13.5,
+    "median_ratio_modeled_over_observed": 1.038,
+    "within_15_percent": 0.4,
+    "observed_mean_kt": 55.3,
+    "modeled_mean_kt": 58.2
   },
   "within_75_km": {
-    "n": 44,
-    "bias_kt": 10.7,
-    "mean_absolute_error_kt": 15.4,
-    "median_ratio_modeled_over_observed": 1.131,
-    "within_15_percent": 0.41,
-    "observed_mean_kt": 60.2,
-    "modeled_mean_kt": 71.0
+    "n": 64,
+    "bias_kt": 9.2,
+    "mean_absolute_error_kt": 14.6,
+    "median_ratio_modeled_over_observed": 1.113,
+    "within_15_percent": 0.44,
+    "observed_mean_kt": 60.4,
+    "modeled_mean_kt": 69.6
   },
   "beyond_75_km": {
-    "n": 112,
-    "bias_kt": 0.6,
-    "mean_absolute_error_kt": 13.6,
-    "median_ratio_modeled_over_observed": 0.986,
-    "within_15_percent": 0.35,
-    "observed_mean_kt": 53.7,
-    "modeled_mean_kt": 54.3
+    "n": 145,
+    "bias_kt": 0.2,
+    "mean_absolute_error_kt": 13.0,
+    "median_ratio_modeled_over_observed": 1.014,
+    "within_15_percent": 0.38,
+    "observed_mean_kt": 53.0,
+    "modeled_mean_kt": 53.1
   },
   "observed_64kt_or_more": {
-    "n": 34,
-    "bias_kt": -4.2,
-    "mean_absolute_error_kt": 16.1,
-    "median_ratio_modeled_over_observed": 0.901,
-    "within_15_percent": 0.35,
-    "observed_mean_kt": 70.6,
-    "modeled_mean_kt": 66.4
+    "n": 48,
+    "bias_kt": -4.6,
+    "mean_absolute_error_kt": 14.2,
+    "median_ratio_modeled_over_observed": 0.909,
+    "within_15_percent": 0.44,
+    "observed_mean_kt": 71.6,
+    "modeled_mean_kt": 67.0
   },
   "per_storm": {
+    "CHARLEY": {
+      "n": 2,
+      "bias_kt": 2.6,
+      "mean_absolute_error_kt": 17.7,
+      "median_ratio_modeled_over_observed": 1.12,
+      "within_15_percent": 0.0,
+      "observed_mean_kt": 70.5,
+      "modeled_mean_kt": 73.1
+    },
     "DEBBY": {
       "n": 17,
-      "bias_kt": -4.0,
-      "mean_absolute_error_kt": 7.2,
-      "median_ratio_modeled_over_observed": 0.928,
-      "within_15_percent": 0.65,
+      "bias_kt": -4.7,
+      "mean_absolute_error_kt": 7.6,
+      "median_ratio_modeled_over_observed": 0.917,
+      "within_15_percent": 0.59,
       "observed_mean_kt": 46.9,
-      "modeled_mean_kt": 42.9
+      "modeled_mean_kt": 42.3
+    },
+    "DENNIS": {
+      "n": 7,
+      "bias_kt": 14.0,
+      "mean_absolute_error_kt": 16.1,
+      "median_ratio_modeled_over_observed": 1.348,
+      "within_15_percent": 0.14,
+      "observed_mean_kt": 53.3,
+      "modeled_mean_kt": 67.3
+    },
+    "FRANCES": {
+      "n": 8,
+      "bias_kt": 6.6,
+      "mean_absolute_error_kt": 15.4,
+      "median_ratio_modeled_over_observed": 1.184,
+      "within_15_percent": 0.25,
+      "observed_mean_kt": 47.4,
+      "modeled_mean_kt": 54.0
     },
     "HELENE": {
       "n": 12,
-      "bias_kt": 8.8,
-      "mean_absolute_error_kt": 10.6,
-      "median_ratio_modeled_over_observed": 1.157,
-      "within_15_percent": 0.42,
+      "bias_kt": 6.7,
+      "mean_absolute_error_kt": 10.0,
+      "median_ratio_modeled_over_observed": 1.122,
+      "within_15_percent": 0.58,
       "observed_mean_kt": 57.6,
-      "modeled_mean_kt": 66.4
+      "modeled_mean_kt": 64.3
     },
     "HERMINE": {
       "n": 9,
-      "bias_kt": 2.4,
-      "mean_absolute_error_kt": 4.2,
-      "median_ratio_modeled_over_observed": 1.03,
+      "bias_kt": 1.7,
+      "mean_absolute_error_kt": 4.3,
+      "median_ratio_modeled_over_observed": 1.014,
       "within_15_percent": 0.89,
       "observed_mean_kt": 43.3,
-      "modeled_mean_kt": 45.8
+      "modeled_mean_kt": 45.1
     },
     "IAN": {
       "n": 27,
-      "bias_kt": 13.9,
-      "mean_absolute_error_kt": 18.5,
-      "median_ratio_modeled_over_observed": 1.233,
-      "within_15_percent": 0.11,
+      "bias_kt": 11.5,
+      "mean_absolute_error_kt": 17.0,
+      "median_ratio_modeled_over_observed": 1.188,
+      "within_15_percent": 0.15,
       "observed_mean_kt": 55.1,
-      "modeled_mean_kt": 69.0
+      "modeled_mean_kt": 66.7
     },
     "IDALIA": {
       "n": 1,
-      "bias_kt": 21.4,
-      "mean_absolute_error_kt": 21.4,
-      "median_ratio_modeled_over_observed": 1.498,
+      "bias_kt": 19.8,
+      "mean_absolute_error_kt": 19.8,
+      "median_ratio_modeled_over_observed": 1.46,
       "within_15_percent": 0.0,
       "observed_mean_kt": 43.0,
-      "modeled_mean_kt": 64.4
+      "modeled_mean_kt": 62.8
     },
     "IRMA": {
       "n": 31,
-      "bias_kt": -7.6,
-      "mean_absolute_error_kt": 17.5,
-      "median_ratio_modeled_over_observed": 0.83,
-      "within_15_percent": 0.32,
+      "bias_kt": -8.5,
+      "mean_absolute_error_kt": 18.2,
+      "median_ratio_modeled_over_observed": 0.823,
+      "within_15_percent": 0.26,
       "observed_mean_kt": 63.5,
-      "modeled_mean_kt": 55.9
+      "modeled_mean_kt": 55.0
+    },
+    "IVAN": {
+      "n": 2,
+      "bias_kt": -30.8,
+      "mean_absolute_error_kt": 30.8,
+      "median_ratio_modeled_over_observed": 0.41,
+      "within_15_percent": 0.0,
+      "observed_mean_kt": 66.5,
+      "modeled_mean_kt": 35.7
+    },
+    "JEANNE": {
+      "n": 8,
+      "bias_kt": 3.4,
+      "mean_absolute_error_kt": 12.9,
+      "median_ratio_modeled_over_observed": 0.96,
+      "within_15_percent": 0.5,
+      "observed_mean_kt": 49.6,
+      "modeled_mean_kt": 53.0
+    },
+    "KATRINA": {
+      "n": 7,
+      "bias_kt": 2.5,
+      "mean_absolute_error_kt": 5.4,
+      "median_ratio_modeled_over_observed": 1.052,
+      "within_15_percent": 0.86,
+      "observed_mean_kt": 59.9,
+      "modeled_mean_kt": 62.3
     },
     "MATTHEW": {
       "n": 15,
-      "bias_kt": 20.2,
-      "mean_absolute_error_kt": 20.2,
-      "median_ratio_modeled_over_observed": 1.385,
+      "bias_kt": 19.1,
+      "mean_absolute_error_kt": 19.1,
+      "median_ratio_modeled_over_observed": 1.373,
       "within_15_percent": 0.07,
       "observed_mean_kt": 51.8,
-      "modeled_mean_kt": 72.0
+      "modeled_mean_kt": 70.9
     },
     "MICHAEL": {
       "n": 4,
-      "bias_kt": 37.8,
-      "mean_absolute_error_kt": 37.8,
-      "median_ratio_modeled_over_observed": 1.558,
+      "bias_kt": 37.2,
+      "mean_absolute_error_kt": 37.2,
+      "median_ratio_modeled_over_observed": 1.562,
       "within_15_percent": 0.0,
       "observed_mean_kt": 64.8,
-      "modeled_mean_kt": 102.5
+      "modeled_mean_kt": 102.0
     },
     "MILTON": {
       "n": 20,
-      "bias_kt": -4.6,
-      "mean_absolute_error_kt": 7.4,
-      "median_ratio_modeled_over_observed": 0.941,
-      "within_15_percent": 0.65,
+      "bias_kt": -6.0,
+      "mean_absolute_error_kt": 7.9,
+      "median_ratio_modeled_over_observed": 0.914,
+      "within_15_percent": 0.75,
       "observed_mean_kt": 60.6,
-      "modeled_mean_kt": 56.0
+      "modeled_mean_kt": 54.6
     },
     "NICOLE": {
       "n": 16,
       "bias_kt": -6.9,
-      "mean_absolute_error_kt": 11.0,
-      "median_ratio_modeled_over_observed": 0.814,
+      "mean_absolute_error_kt": 11.5,
+      "median_ratio_modeled_over_observed": 0.81,
       "within_15_percent": 0.31,
       "observed_mean_kt": 51.6,
       "modeled_mean_kt": 44.7
+    },
+    "RITA": {
+      "n": 4,
+      "bias_kt": -0.1,
+      "mean_absolute_error_kt": 3.0,
+      "median_ratio_modeled_over_observed": 0.984,
+      "within_15_percent": 1.0,
+      "observed_mean_kt": 42.8,
+      "modeled_mean_kt": 42.7
     },
     "SALLY": {
       "n": 4,
       "bias_kt": 17.6,
       "mean_absolute_error_kt": 17.6,
-      "median_ratio_modeled_over_observed": 1.311,
+      "median_ratio_modeled_over_observed": 1.322,
       "within_15_percent": 0.25,
       "observed_mean_kt": 52.0,
       "modeled_mean_kt": 69.6
+    },
+    "WILMA": {
+      "n": 15,
+      "bias_kt": 7.4,
+      "mean_absolute_error_kt": 10.4,
+      "median_ratio_modeled_over_observed": 1.165,
+      "within_15_percent": 0.47,
+      "observed_mean_kt": 58.3,
+      "modeled_mean_kt": 65.8
     }
   },
   "truncated_records": [
+    {
+      "storm_name": "DENNIS",
+      "station": "DAB",
+      "closest_approach_km": 509.4,
+      "observed_gust_kt": 59.0,
+      "modeled_gust_kt": 0.0
+    },
+    {
+      "storm_name": "FRANCES",
+      "station": "DAB",
+      "closest_approach_km": 164.3,
+      "observed_gust_kt": 61.0,
+      "modeled_gust_kt": 51.5
+    },
     {
       "storm_name": "IAN",
       "station": "PGD",
       "closest_approach_km": 2.8,
       "observed_gust_kt": 117.0,
-      "modeled_gust_kt": 121.8
+      "modeled_gust_kt": 123.9
     },
     {
       "storm_name": "IRMA",
       "station": "FMY",
       "closest_approach_km": 16.1,
       "observed_gust_kt": 73.0,
-      "modeled_gust_kt": 85.7
+      "modeled_gust_kt": 87.2
     },
     {
       "storm_name": "IRMA",
       "station": "RSW",
       "closest_approach_km": 5.7,
       "observed_gust_kt": 77.0,
-      "modeled_gust_kt": 87.4
+      "modeled_gust_kt": 89.0
     },
     {
       "storm_name": "MILTON",
       "station": "SRQ",
       "closest_approach_km": 1.9,
       "observed_gust_kt": 89.0,
-      "modeled_gust_kt": 104.0
+      "modeled_gust_kt": 105.8
+    },
+    {
+      "storm_name": "WILMA",
+      "station": "APF",
+      "closest_approach_km": 36.6,
+      "observed_gust_kt": 71.0,
+      "modeled_gust_kt": 92.8
+    },
+    {
+      "storm_name": "WILMA",
+      "station": "DJT",
+      "closest_approach_km": 21.5,
+      "observed_gust_kt": 88.0,
+      "modeled_gust_kt": 100.3
+    },
+    {
+      "storm_name": "WILMA",
+      "station": "OPF",
+      "closest_approach_km": 72.4,
+      "observed_gust_kt": 83.0,
+      "modeled_gust_kt": 73.3
+    },
+    {
+      "storm_name": "WILMA",
+      "station": "PMP",
+      "closest_approach_km": 56.6,
+      "observed_gust_kt": 85.0,
+      "modeled_gust_kt": 80.0
     }
   ],
   "note": "Modeled gust is the platform wind step (storm-size model, modified-Rankine profile, gust factor) applied to the NHC best track at synoptic fixes; observed is the station's peak 3-second gust in the storm window. Stations whose record broke off after strong wind are listed but excluded, since their observed peak is a lower bound."

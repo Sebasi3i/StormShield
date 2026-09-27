@@ -65,7 +65,7 @@ def test_the_gust_factor_is_reproducible_from_the_station_pairs(gust_model):
 
 
 def test_the_gust_factor_rests_on_hurricane_observations(gust_model):
-    assert gust_model["selection"]["storms"] == 11
+    assert gust_model["selection"]["storms"] == 19
     assert gust_model["selection"]["stations"] >= 40
     assert gust_model["land_fetch"]["n"] >= 5000
     assert gust_model["selection"]["min_mean2min_kt"] == 34.0
@@ -113,7 +113,7 @@ def test_the_chosen_point_meets_the_objective(calibration):
 def test_the_calibration_is_the_same_data_as_the_gust_factor(calibration, gust_model):
     assert calibration["gust_factor"] == gust_model["gust_factor"]
     assert calibration["gust_factor_model_id"] == gust_model["gust_factor_model_id"]
-    assert calibration["data"]["storms"] == 11
+    assert calibration["data"]["storms"] == 19
 
 
 def _storm(storm_id, *points):
@@ -168,7 +168,7 @@ def test_the_validation_record_matches_the_current_adapter(validation):
 
 
 def test_validation_covers_the_storms_and_publishes_its_errors(validation):
-    assert validation["selection"]["storms"] == 11
+    assert validation["selection"]["storms"] == 19
     assert validation["selection"]["station_storm_pairs"] >= 100
     assert validation["all"]["mean_absolute_error_kt"] > 0
     assert 0.9 <= validation["all"]["median_ratio_modeled_over_observed"] <= 1.1
@@ -190,14 +190,15 @@ def test_the_calibration_holds_up_on_storms_it_did_not_see(calibration):
     out, inside = cv["out_of_sample"], cv["in_sample"]
     reference = calibration["uncalibrated_reference"]
 
-    assert len(cv["folds"]) == 11
+    assert len(cv["folds"]) == 19
     assert out["mean_absolute_error_kt"] < reference["mean_absolute_error_kt"]
     # Out-of-sample error may exceed in-sample, but not by more than a fifth.
     assert out["mean_absolute_error_kt"] <= inside["mean_absolute_error_kt"] * 1.2
     assert 0.9 <= out["median_ratio"] <= 1.1
     spread = cv["chosen_constants_across_folds"]
-    assert spread["outer_decay_exponent"]["max"] - spread["outer_decay_exponent"]["min"] <= 0.15
-    assert spread["land_exposure_factor"]["max"] - spread["land_exposure_factor"]["min"] <= 0.15
+    # Rounded so a spread of exactly 0.15 on the 0.025 grid passes (0.4 - 0.25 is 0.15000000000000002).
+    assert round(spread["outer_decay_exponent"]["max"] - spread["outer_decay_exponent"]["min"], 6) <= 0.15
+    assert round(spread["land_exposure_factor"]["max"] - spread["land_exposure_factor"]["min"], 6) <= 0.15
     assert spread["outer_decay_exponent"]["min"] <= calibration["outer_decay_exponent"] <= spread["outer_decay_exponent"]["max"]
 
 
@@ -207,7 +208,7 @@ def test_metadata_carries_the_out_of_sample_error(calibration):
 
 
 # --------------------------------------------------------------------------- #
-# Prepared extension: 2004-2005 seasons
+# The two storm manifests: 2016-2024 (original) and 2004-2005 (extension)
 # --------------------------------------------------------------------------- #
 
 
@@ -226,9 +227,12 @@ def test_the_extension_manifest_matches_its_best_tracks():
     assert sorted(headers) == sorted(f"{row.storm_id},{row.storm_name}" for row in manifest.itertuples())
 
 
-def test_the_original_storms_manifest_matches_the_pairs_file():
+def test_the_storm_manifests_match_the_pairs_file():
+    """The pairs table holds exactly the 11 original storms plus the 8 from 2004-2005."""
     import pandas as pd
 
-    manifest = pd.read_csv(DATASET / "storms_2016_2024.csv")
+    original = pd.read_csv(DATASET / "storms_2016_2024.csv")
+    extension = pd.read_csv(DATASET / "storms_2004_2005.csv")
     pairs = pd.read_csv(DATASET / "fl_gust_pairs_2min_qc.csv.gz", usecols=["storm_id"])
-    assert set(manifest["storm_id"]) == set(pairs["storm_id"].unique())
+    assert set(original["storm_id"]).isdisjoint(extension["storm_id"])
+    assert set(original["storm_id"]) | set(extension["storm_id"]) == set(pairs["storm_id"].unique())

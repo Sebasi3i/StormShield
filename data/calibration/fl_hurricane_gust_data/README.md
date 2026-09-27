@@ -1,7 +1,8 @@
 # Florida hurricane ASOS gust data (StormShield gust synthesis)
 
-One-minute ASOS wind observations from Florida stations during 11 hurricanes that
-affected Florida from 2016 to 2024. Each observation is paired with the NHC best
+One-minute ASOS wind observations from Florida stations during 19 hurricanes that
+affected Florida: 11 from 2016 to 2024, and 8 from the 2004 and 2005 seasons added on
+2026-09-27 (see the second table). Each observation is paired with the NHC best
 track (distance from the storm center, intensity, size) and a simple ocean-exposure
 proxy for the station. Built on 2026-09-26.
 
@@ -24,17 +25,32 @@ proxy for the station. Built on 2026-09-26.
 Every Florida ASOS station with one-minute data was requested, which gave 39 to 46
 stations per storm.
 
+| Storm (added 2026-09-27) | Window | Stations with data |
+|---|---|---|
+| Charley 2004 (AL032004) | Aug 12 18Z to Aug 14 12Z | 12 |
+| Frances 2004 (AL062004) | Sep 4 00Z to Sep 7 18Z | 12 |
+| Ivan 2004 (AL092004) | Sep 14 06Z to Sep 17 06Z | 12 |
+| Jeanne 2004 (AL112004) | Sep 25 12Z to Sep 27 18Z | 12 |
+| Dennis 2005 (AL042005) | Jul 8 18Z to Jul 11 06Z | 37 |
+| Katrina 2005 (AL122005) | Aug 25 00Z to Aug 28 18Z | 37 |
+| Rita 2005 (AL182005) | Sep 20 00Z to Sep 22 18Z | 37 |
+| Wilma 2005 (AL252005) | Oct 23 12Z to Oct 25 00Z | 37 |
+
+Fewer airports archived one-minute data in those years. The 76 stations whose archives
+begin by 2005 were requested; the windows are in `storms_2004_2005.csv`.
+
 ## Files
 
 | File | What it is |
 |---|---|
-| `fl_gust_pairs_2min_qc.csv.gz` | **Calibration-ready pairs.** 334,762 rows: every even minute (non-overlapping 2-min windows), mean wind at least 10 kt, all QC flags clear. |
-| `fl_gust_1min.parquet` | Full continuous 1-minute table, 1,086,764 rows, including flagged and missing rows. Use this for gust time-series structure such as autocorrelation. |
+| `fl_gust_pairs_2min_qc.csv.gz` | **Calibration-ready pairs.** 526,303 rows (334,762 from 2016-2024, 191,541 from 2004-2005): every even minute (non-overlapping 2-min windows), mean wind at least 10 kt, all QC flags clear. |
+| `fl_gust_1min.parquet` | Full continuous 1-minute table, 1,086,764 rows for the 2016-2024 storms and 636,628 for 2004-2005 (not committed), including flagged and missing rows. Use this for gust time-series structure such as autocorrelation. |
 | `coverage_by_storm_station.csv` | Data completeness, longest gap, peak mean and gust with times, closest approach, and pair counts for each storm and station. |
 | `stations.csv` | Station location, elevation, distance to ocean, and per-station totals. |
 | `station_ocean_fetch_by_sector.csv` | Upwind ocean fraction for each station in 36 sectors of 10°. |
 | `best_tracks.csv` | NHC HURDAT2 rows used (file `hurdat2-1851-2025-091226.txt`). |
-| `build.py`, `raw/` | Script that rebuilds everything. Put `fl_hurricanes_asos1min_raw.csv.gz` (in your Downloads folder) into `raw/` first. |
+| `build.py`, `raw/` | Script that rebuilds everything. Put `fl_hurricanes_asos1min_raw.csv.gz` (in your Downloads folder) into `raw/` first. It writes to `out/`. |
+| `fetch_asos_1min.py`, `merge_extension.py` | Fetch a raw file for a storm manifest from the Iowa Mesonet; fold a partial build in `out/` into the committed tables. |
 
 ## Key columns
 

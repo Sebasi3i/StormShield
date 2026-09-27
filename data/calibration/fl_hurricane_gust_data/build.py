@@ -34,12 +34,17 @@ def read_sections(path):
     return sections
 
 
+def utc(stamp):
+    ts = pd.Timestamp(stamp)
+    return ts.tz_localize("UTC") if ts.tzinfo is None else ts.tz_convert("UTC")
+
+
 sec = read_sections(RAW / "fl_hurricanes_asos1min_raw.csv.gz")
 windows = {}
 for ln in sec["MANIFEST"].splitlines():
     if ln.startswith("window,"):
         _, k, s, e = ln.split(",")
-        windows[k] = (pd.Timestamp(s), pd.Timestamp(e))
+        windows[k] = (utc(s), utc(e))  # manifest times are UTC, with or without an offset
 
 stations = pd.read_csv(io.StringIO(sec["STATIONS"]))
 
@@ -190,6 +195,8 @@ obs["status"] = obs["status"].astype(object)
 
 for sid, sub in bt.groupby("storm_id"):
     m = obs["storm_id"] == sid
+    if not m.any():  # best track bundled, but this raw file holds no observations for it
+        continue
     t = epoch_s(obs.loc[m, "time_utc"])
     tk = epoch_s(sub["time_utc"])
     assert t.min() >= tk.min() + 5400 and t.max() <= tk.max() - 5400, sid

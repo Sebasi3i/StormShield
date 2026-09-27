@@ -9,9 +9,9 @@ branch.
 | Constant | Before | Now | Data | Evidence |
 | --- | --- | --- | --- | --- |
 | Radius of maximum wind | 30 km, every storm | Per storm, from intensity and latitude near Florida | HURDAT2 RMW, 2021-2025 | sourced |
-| Outer decay exponent | 0.5 | 0.275, fitted to station peak gusts | Florida ASOS peaks, 11 hurricanes | sourced, calibrated |
-| Land exposure factor | none (marine profile) | 0.75 on the sustained wind | Florida ASOS peaks, 11 hurricanes | sourced, calibrated |
-| Gust factor | 1.25, assumed | 1.333, measured | Florida ASOS 2-minute pairs, 11 hurricanes | sourced |
+| Outer decay exponent | 0.5 | 0.30, fitted to station peak gusts | Florida ASOS peaks, 19 hurricanes | sourced, calibrated |
+| Land exposure factor | none (marine profile) | 0.775 on the sustained wind | Florida ASOS peaks, 19 hurricanes | sourced, calibrated |
+| Gust factor | 1.25, assumed | 1.314, measured | Florida ASOS 2-minute pairs, 19 hurricanes | sourced |
 | Taper start / cutoff | 200 / 300 km | 259 / 444 km, record quantiles | HURDAT2 34 kt radii | sourced |
 | Damage curves | assumed fixtures | unchanged | none available | assumed |
 
@@ -45,10 +45,13 @@ winds in four quadrants, and each fix from 2021 on records the radius of maximum
 
 ### Florida hurricane ASOS gust data (`data/calibration/fl_hurricane_gust_data`)
 
-One-minute ASOS observations from 46 Florida airport stations during 11 hurricanes,
-Hermine 2016 to Milton 2024, built from the NCEI archive via the Iowa Environmental
+One-minute ASOS observations from 46 Florida airport stations during 19 hurricanes:
+Charley, Frances, Ivan and Jeanne in 2004, Dennis, Katrina, Rita and Wilma in 2005, and
+Hermine 2016 to Milton 2024. Built from the NCEI archive via the Iowa Environmental
 Mesonet and paired minute by minute with the NHC best track. The calibration-ready
-table has 334,762 two-minute windows with a mean of at least 10 kt and clean QC flags.
+table has 526,303 two-minute windows with a mean of at least 10 kt and clean QC flags:
+334,762 from the 2016-2024 storms and 191,541 from 2004-2005. Fewer airports archived
+one-minute data then, 12 in 2004 and 37 in 2005, against 39 to 46 per storm later.
 `PROVENANCE.md` in that folder records what was received and what was left out (the
 raw ASOS file and the full one-minute parquet, both re-buildable with `build.py`).
 
@@ -91,20 +94,21 @@ misalignment excluded, split by upwind exposure over 10 km:
 
 | Two-minute mean | Land fetch | Ocean fetch |
 | --- | ---: | ---: |
-| 34-50 kt | 1.333 (n 7,519) | 1.289 (n 2,716) |
-| 50-64 kt | 1.360 (n 285) | 1.320 (n 33) |
-| 64 kt or more | 1.424 (n 49) | no data |
+| 34-50 kt | 1.314 (n 9,807) | 1.265 (n 4,137) |
+| 50-64 kt | 1.294 (n 604) | 1.254 (n 170) |
+| 64 kt or more | 1.375 (n 79) | 1.215 (n 13) |
 
-The platform value is the land-fetch median, **1.333**, with a 10th-90th percentile
-range of 1.23-1.50. The curves are labelled "open terrain", the ASOS siting standard.
+The platform value is the land-fetch median, **1.314**, with a 10th-90th percentile
+range of 1.20-1.47. It was 1.333 on the 2016-2024 storms alone; the 2004-2005 windows
+gust slightly less, and the 50-64 kt band, which had 285 land windows, now has 604. The curves are labelled "open terrain", the ASOS siting standard.
 
 Two caveats travel with the number. The observations are ratios to a two-minute mean;
 the model's sustained wind follows the best-track one-minute convention. Within a
 window the larger of its two one-minute means is at least the two-minute mean, so
 G(3s, 2min) is an upper bound on G(3s, 1min), and the two are close in steady hurricane
 wind; no conversion factor was applied, because none could be sourced from this
-container. And the hurricane-force tail is thin (49 windows), so the value rests on the
-34-64 kt bands.
+container. And the hurricane-force tail is still thin (79 land windows, up from 49), so
+the value rests on the 34-64 kt bands.
 
 ## 3. Profile shape: calibrated to station peak gusts
 
@@ -118,7 +122,7 @@ Method: run each storm's real best track (synoptic fixes) through wind_field wit
 storm-size model and a unit gust factor; scale by the measured gust factor and each
 candidate land factor; compare with the station's observed peak. Pairs: station within
 250 km of the track, observed peak at least 40 kt, record not broken off after strong
-wind. That is 156 station-storm pairs from all 11 storms, with 4 truncated records
+wind. That is 209 station-storm pairs from all 19 storms, with 9 truncated records
 listed separately.
 
 Objective: minimum mean absolute error among candidates whose median modelled/observed
@@ -129,28 +133,32 @@ observations by pricing the damaging winds 16% low.
 
 | | Decay | Land factor | Median ratio | MAE | Within 75 km | Beyond 75 km | Observed 64 kt+ |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Reference (radii decay, no land factor) | 0.5 | 1.00 | 0.98 | 16.6 kt | 1.23 | 0.90 | 0.87 |
-| **Chosen** | **0.275** | **0.75** | 1.03 | 14.1 kt | 1.13 | 0.99 | 0.90 |
+| Reference (radii decay, no land factor) | 0.5 | 1.00 | 1.00 | 15.9 kt | 1.29 | 0.92 | 0.95 |
+| **Chosen** | **0.30** | **0.775** | 1.04 | 13.4 kt | 1.11 | 1.01 | 0.91 |
+
+On the 11 storms of 2016-2024 alone the choice was decay 0.275 and land factor 0.75;
+adding 2004-2005 moved each one grid step.
 
 ### Does it hold up on storms it did not see?
 
-Fitting and judging on the same 156 pairs would let the constants absorb the quirks of
-these 11 storms, so the script also refits eleven times, each time without one storm,
+Fitting and judging on the same 209 pairs would let the constants absorb the quirks of
+these 19 storms, so the script also refits nineteen times, each time without one storm,
 and scores that storm with constants that never saw it. Pooled over the held-out
 storms:
 
 | | In sample | Out of sample | Uncalibrated reference |
 | --- | ---: | ---: | ---: |
-| Mean absolute error | 14.1 kt | 15.2 kt | 16.6 kt |
-| Median ratio | 1.03 | 1.00 | 0.98 |
-| Observed 64 kt or more, median ratio | 0.90 | 0.88 | 0.87 |
+| Mean absolute error | 13.4 kt | 14.3 kt | 15.9 kt |
+| Median ratio | 1.04 | 1.03 | 1.00 |
+| Observed 64 kt or more, median ratio | 0.91 | 0.92 | 0.95 |
 
-The constants chosen without each storm stay within decay 0.25-0.35 and land factor
-0.70-0.825, around the in-sample 0.275 and 0.75. So the calibration carries over: a
-storm the fit has not met is priced about 8% less accurately than one it has, and
-still better than with the original constants. The individual folds show where the
-remaining error lives: holding out Michael (4 stations) or Ian leaves them modelled
-30-65% high, holding out Irma leaves it 25% low. That is storm-to-storm variation in
+The constants chosen without each storm stay within decay 0.25-0.40 and land factor
+0.725-0.85, around the in-sample 0.30 and 0.775; the upper ends come from holding out
+Katrina (and Milton, for the land factor). So the calibration carries over: a storm the fit has not met is priced about
+6% less accurately than one it has (8% on 11 storms), and still better than with the
+original constants. The individual folds show where the remaining error lives: holding
+out Michael, Dennis or Matthew leaves them modelled 35-55% high, holding out Irma leaves
+it 26% low, and Ivan, with 2 pairs, 42% low. That is storm-to-storm variation in
 size and structure, which no constant can absorb.
 
 The decay exponent is much flatter than the radii-implied 0.49 because observed peak
@@ -159,35 +167,41 @@ does not carry; since the curves consume peak gusts, the peak-gust shape is the 
 the pricing needs. The land factor stands in for surface roughness. Both are effective
 values, fitted jointly: only their combination is validated, and neither should be
 quoted as a physical measurement on its own. Note that the land factor and the gust
-factor multiply to 1.00, so the calibrated peak gust at a land station is, on average,
-the marine profile's sustained wind. The full candidate grid is in the fixture.
+factor multiply to 1.02 (0.775 x 1.314), so the calibrated peak gust at a land station is,
+on average, about the marine profile's sustained wind. The full candidate grid is in the fixture.
 
 ## 4. Validation: what the calibrated step gets right and wrong
 
-`scripts/validate_wind_field.py`, same 156 pairs, calibrated step as the platform runs it:
+`scripts/validate_wind_field.py`, same 209 pairs, calibrated step as the platform runs it:
 
 | Subset | Pairs | Bias | MAE | Median ratio | Within 15% |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| All | 156 | +3.5 kt | 14.1 kt | 1.03 | 37% |
-| Within 75 km of track | 44 | +10.7 kt | 15.4 kt | 1.13 | 41% |
-| Beyond 75 km | 112 | +0.6 kt | 13.6 kt | 0.99 | 35% |
-| Observed 64 kt or more | 34 | -4.2 kt | 16.1 kt | 0.90 | 35% |
+| All | 209 | +2.9 kt | 13.5 kt | 1.04 | 40% |
+| Within 75 km of track | 64 | +9.2 kt | 14.6 kt | 1.11 | 44% |
+| Beyond 75 km | 145 | +0.2 kt | 13.0 kt | 1.01 | 38% |
+| Observed 64 kt or more | 48 | -4.6 kt | 14.2 kt | 0.91 | 44% |
 
-Per storm the median ratio ranges from 0.81 (Nicole) to 1.56 (Michael, 4 stations).
-Ian and Matthew run high (1.23, 1.39); Irma runs low (0.83), consistent with Irma
-being far larger than the size model gives a 155 kt storm.
+Per storm the median ratio ranges from 0.41 (Ivan, 2 stations) and 0.81 (Nicole) to
+1.56 (Michael, 4 stations). Ian, Dennis and Matthew run high (1.19, 1.35, 1.37); Irma
+runs low (0.82), consistent with Irma being far larger than the size model gives a
+155 kt storm. Of the new storms, Katrina (1.05), Rita (0.98) and Jeanne (0.96) sit
+close; Wilma (1.17) and Frances (1.18) run high.
 
 What this means for a priced result:
 
-- **Near the track the model is still about 13% high** on average, and the scatter is
-  wide: only about a third of stations are within 15% of the model. A single-home
+- **Near the track the model is still about 11% high** on average, and the scatter is
+  wide: fewer than half of stations are within 15% of the model. A single-home
   loss should be read as a central estimate with a spread of that order, not a point
   value.
-- **The strongest observed gusts are modelled about 10% low.** At the top of the damage
-  curve that is a material fraction of the loss.
-- **The four eyewall records that broke off** (Punta Gorda in Ian, Fort Myers and
-  RSW in Irma, Sarasota in Milton) all show the model at or above the last observed
-  value, as they should, since those observations are lower bounds.
+- **The strongest observed gusts are modelled about 9% low.** At the top of the damage
+  curve that is a material fraction of the loss. Adding 2004-2005 took this subset from
+  34 to 48 pairs but did not close the gap.
+- **The eyewall records that broke off** (Punta Gorda in Ian, Fort Myers and RSW in
+  Irma, Sarasota in Milton, and Naples and Dade-Collier in Wilma among the new ones)
+  are lower bounds, and all of them show the model above the last observed value, as
+  they should. Four other broken-off records sit below the model's value (Daytona Beach
+  in Dennis and Frances, Opa-locka and Pompano Beach in Wilma), all 55 km or more from
+  the track.
 - **Storm-to-storm variation in size and asymmetry** is the largest remaining error
   source and cannot be removed by constants. A size per track point from the best-track
   radii, and a forward-motion asymmetry, are the next modelling steps.
@@ -204,6 +218,12 @@ versus the calibrated step:
 | SYN0697 | 150 mph | 121 mph | $110,334 | $12,854 |
 | SYN0973 | 142 mph | 116 mph | $21,037 | $0 |
 
+These figures are from the 11-storm fit. Refitting on 19 storms raises the top gusts by
+about 2 mph (SYN0155 150 to 152 mph, SYN0697 121 to 123 mph, SYN0973 unchanged at
+116 mph), and the example endpoint's SYN0155 portfolio payout rises 11%, from $541,046 to
+$601,313: the lower gust factor is more than offset by the flatter decay and higher land
+factor.
+
 The drop is large and comes mostly from the land factor and gust factor together
 replacing 1.25 with an effective 1.00 near the track, where the demo homes sit. That
 is the direction the stations point: the original constants overstated near-track
@@ -211,13 +231,11 @@ gusts by about a quarter against every observed landfall in the set.
 
 ## 6. Extending the observations
 
-Eleven storms determine the constants to within the fold spread above; more storms
-narrow that and, more importantly, thicken the hurricane-force tail (34 pairs), where
-the model still runs 10% low. Two extensions are prepared in
-`data/calibration/fl_hurricane_gust_data`; both need a network that can reach the
-data hosts, which the environment this branch was built in could not.
+The 2004-2005 airports are now in; the hurricane-force tail went from 34 to 48 pairs
+and the model still runs 9% low there. Airports alone will not fill that tail, so the
+denser networks below are the next step.
 
-### 2004 and 2005 seasons: ready to fetch
+### 2004 and 2005 seasons: fetched 27 September 2026
 
 NCEI's one-minute ASOS archive begins around 2000, so the two most active Florida
 seasons on record are available: Charley, Frances, Ivan and Jeanne in 2004; Dennis,
@@ -225,23 +243,31 @@ Katrina, Rita and Wilma in 2005. They add the cases that stress the model most, 
 small Charley and a very large Wilma. `storms_2004_2005.csv` holds their Florida windows
 (from the bundled HURDAT2) and `raw/hurdat2_fl_2004_2005.txt` their best-track rows;
 `fetch_asos_1min.py` downloads the observations from the Iowa Environmental Mesonet
-mirror into the raw file `build.py` reads. Then the whole chain reruns:
+mirror into the raw file `build.py` reads.
+
+The data were fetched from the Iowa Mesonet through the Claude desktop app's browser on
+a local machine, since this branch's cloud environment could not reach the host, using
+the same query as `fetch_asos_1min.py`. Only the 76 stations whose archives begin by
+2005 were requested; the rest have nothing that early. The 2004-2005 storms were built
+on their own and appended to the committed 2016-2024 tables with `merge_extension.py`,
+which gives the same rows as a single 19-storm build because `build.py` works storm by
+storm; the committed 2016-2024 rows are byte-identical after the merge. To reproduce:
 
 ```bash
 cd data/calibration/fl_hurricane_gust_data
-python fetch_asos_1min.py storms_2004_2005.csv storms_2016_2024.csv   # 19 storms
+python fetch_asos_1min.py storms_2004_2005.csv
 python build.py
+python merge_extension.py
 cd ../../../backend
 python scripts/fit_gust_factor.py && python scripts/calibrate_wind_field.py && python scripts/validate_wind_field.py
 python -m pytest tests -q
 ```
 
-Two things to check on the first run, since the fetch could not be tested here: that
-the fetched sections carry the columns `build.py` expects (the script's docstring lists
-them), and that the 2004-2005 records do not show the parser misalignment the README
-describes for later years, or if they do, that `build.py`'s repair catches them.
-HURDAT2 has no radius of maximum wind for these seasons except at landfall, so
-`r_over_rmw` will be sparse for them; the calibration does not use it.
+Checked on the first run: the fetched sections carry the columns `build.py` expects,
+and no 2004-2005 record shows the parser misalignment the README describes for later
+years (the repair found no runs). HURDAT2 has no radius of maximum wind for these
+seasons except at landfall, so `r_over_rmw` is sparse for them; the calibration does
+not use it.
 
 ### Denser networks: what they are and what is needed
 
@@ -266,12 +292,11 @@ tail well. Two sources do:
 Neither is a drop-in for the current pairs table. FCMP fits the existing scheme after
 a per-tower conversion (their sustained winds are 1-minute at 10 m, so no averaging-
 period caveat); H*Wind is a field rather than point observations and would be compared
-with the model's field over a grid. Both are a further step once the 2004-2005
-airports are in.
+with the model's field over a grid.
 
 To run any of this from a cloud session, the environment's network policy needs these
-hosts allowed: `mesonet.agron.iastate.edu`, `www.ncei.noaa.gov`, `fcmp.ce.ufl.edu`,
-`www.aoml.noaa.gov`.
+hosts allowed: `fcmp.ce.ufl.edu` and `www.aoml.noaa.gov` for these two, and
+`mesonet.agron.iastate.edu` or `www.ncei.noaa.gov` to refetch the airports.
 
 ## 7. Damage curves: still assumed
 

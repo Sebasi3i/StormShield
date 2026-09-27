@@ -16,7 +16,7 @@ QC-cleaned pairs table. Rebuild both with `build.py` once the raw ASOS file is i
 Used by `backend/scripts/fit_gust_factor.py` and `backend/scripts/validate_wind_field.py`.
 See `README.md` for the column definitions and the caveats that matter when fitting.
 
-## Extension: 2004 and 2005 seasons (prepared, not yet fetched)
+## Extension: 2004 and 2005 seasons (added 27 September 2026)
 
 `storms_2004_2005.csv` lists Charley, Frances, Ivan, Jeanne, Dennis, Katrina, Rita and
 Wilma with Florida windows derived from the bundled HURDAT2 (centre inside 22.5-32 N,
@@ -24,7 +24,13 @@ Wilma with Florida windows derived from the bundled HURDAT2 (centre inside 22.5-
 are in `raw/hurdat2_fl_2004_2005.txt`, taken from the same HURDAT2 file as the rest.
 `storms_2016_2024.csv` lists the original 11 with the windows from `README.md`.
 
-The one-minute observations for the new storms are not in this folder yet: the
-environment this was prepared in could not reach the Iowa Mesonet or NCEI hosts.
-`fetch_asos_1min.py` downloads them into the raw file `build.py` reads; run it where
-those hosts are reachable, then `build.py`, then the four calibration scripts.
+The one-minute observations were fetched on 27 September 2026 from the Iowa
+Environmental Mesonet one-minute service (`cgi-bin/request/asos1min.py`, the same query
+as `fetch_asos_1min.py`), through the Claude desktop app's browser on a local machine
+because the cloud environment could not reach the host. The 76 stations in
+`stations.csv` whose archives begin by 2005 were requested; 12 returned data for the
+2004 storms and 37 for 2005. The eight per-storm responses were assembled into
+`raw/fl_hurricanes_asos1min_raw.csv.gz` (4.8 MB, not committed) and built with
+`build.py`; `merge_extension.py` then appended the results to the committed tables.
+The 2016-2024 rows are byte-identical after the merge. No parser-misalignment runs were
+found in the 2004-2005 records.
