@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -10,8 +10,6 @@ import {
   YAxis,
 } from 'recharts'
 
-import { getAverageYear } from '../api/averageYear'
-import type { AverageYearResponse } from '../types/AverageYear'
 import type { Property } from '../types/Property'
 import type { StormLossResponse, StormLossRow } from '../types/StormLoss'
 import { buildLabel, featureLabel, upgradeLabel } from '../utils/propertyLabels'
@@ -29,7 +27,7 @@ interface FullAnalysisProps {
   onClose: () => void
 }
 
-type AnalysisTab = 'overview' | 'storms' | 'properties' | 'upgrades' | 'year' | 'details'
+type AnalysisTab = 'overview' | 'storms' | 'properties' | 'upgrades' | 'details'
 
 interface StormSummary {
   stormId: string
@@ -95,33 +93,8 @@ function getBaselineRows(rows: StormLossRow[]): StormLossRow[] {
   )
 }
 
-function pct(value: number) {
-  return `${(value * 100).toFixed(0)}%`
-}
-
 function FullAnalysis({ properties, losses, onClose }: FullAnalysisProps) {
   const [activeTab, setActiveTab] = useState<AnalysisTab>('overview')
-
-  // The average year comes from the simulated climatology, independent of the storm
-  // run, so it is fetched once for the selected properties.
-  const [averageYear, setAverageYear] = useState<AverageYearResponse | null>(null)
-  const [averageYearError, setAverageYearError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-
-    getAverageYear(properties)
-      .then((loaded) => {
-        if (!cancelled) setAverageYear(loaded)
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setAverageYearError(error instanceof Error ? error.message : 'Average-year figures unavailable')
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [properties])
 
   const baselineRows = useMemo(() => getBaselineRows(losses.rows), [losses.rows])
 
@@ -239,28 +212,8 @@ function FullAnalysis({ properties, losses, onClose }: FullAnalysisProps) {
     ['storms', 'Storms'],
     ['properties', 'Properties'],
     ['upgrades', 'Upgrades'],
-    ['year', 'Average year'],
     ['details', 'Details'],
   ]
-
-  // Per property, the average-year row and the upgrade that saves the most repair cost per year.
-  const yearRows = (averageYear?.properties ?? [])
-    .map((row) => {
-      const property = properties.find((p) => String(p.id) === row.property_id)
-      const upgrades = Object.entries(row.upgrades)
-        .map(([upgradeId, u]) => ({
-          label: upgradeLabel({ upgrade_id: upgradeId, features_added: u.features_added }),
-          featuresAdded: u.features_added?.length ?? 1,
-          repair: u.expected_annual_avoided_repair_cost_usd,
-          claims: u.expected_annual_avoided_payout_usd,
-        }))
-        .sort((a, b) => b.repair - a.repair || a.featuresAdded - b.featuresAdded)
-      const best = upgrades.length > 0 && upgrades[0].repair > 0 ? upgrades[0] : null
-
-      return { row, property, best }
-    })
-    .filter((item) => item.property !== undefined)
-    .sort((a, b) => b.row.expected_annual_repair_cost_usd - a.row.expected_annual_repair_cost_usd)
 
   const stormCount = losses.storm_ids.length
   const propertyCount = properties.length
@@ -609,105 +562,6 @@ function FullAnalysis({ properties, losses, onClose }: FullAnalysisProps) {
                     upgrade pays for itself. The Insurer Lab explores that side with a sample insurer.
                   </p>
                 </div>
-              </section>
-            </>
-          )}
-
-          {/* ---------------- Average year ---------------- */}
-          {activeTab === 'year' && (
-            <>
-              <section className="analysis-section">
-                <div className="analysis-section-heading">
-                  <div>
-                    <span>AN AVERAGE YEAR</span>
-                    <h3>What storms cost per year, on average</h3>
-                  </div>
-                  <p>
-                    {averageYear
-                      ? `${averageYear.sample_storms.toLocaleString()} simulated storms, ${averageYear.storms_per_year} a year`
-                      : 'From thousands of simulated storms'}
-                  </p>
-                </div>
-
-                {averageYearError && <div className="analysis-empty-state">{averageYearError}</div>}
-                {!averageYear && !averageYearError && <div className="analysis-empty-state">Working it out…</div>}
-
-                {averageYear && (
-                  <>
-                    <div className="analysis-metrics">
-                      <div className="analysis-metric">
-                        <span>Repair cost per year, all properties</span>
-                        <strong>{formatCurrency(averageYear.totals.expected_annual_repair_cost_usd)}</strong>
-                      </div>
-                      <div className="analysis-metric">
-                        <span>Covered by insurance per year</span>
-                        <strong>{formatCurrency(averageYear.totals.expected_annual_payout_usd)}</strong>
-                      </div>
-                      <div className="analysis-metric">
-                        <span>Storms a year in the record</span>
-                        <strong>{averageYear.storms_per_year}</strong>
-                        <small>
-                          {averageYear.storms_per_year_basis.recent.from_year}–{averageYear.storms_per_year_basis.recent.to_year}
-                        </small>
-                      </div>
-                    </div>
-
-                    <div className="analysis-table-wrapper">
-                      <table className="analysis-table">
-                        <thead>
-                          <tr>
-                            <th>Property</th>
-                            <th>Chance of storm damage in a year</th>
-                            <th>Repair cost per year</th>
-                            <th>Covered by insurance per year</th>
-                            <th>Once-in-50-years repair cost</th>
-                            <th>Best upgrade, repair cost saved per year</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {yearRows.map(({ row, property, best }) => (
-                            <tr key={row.property_id}>
-                              <td>
-                                <strong>{property!.address}</strong>
-                                <span>{property!.city}, FL · {buildLabel(property!)}</span>
-                              </td>
-                              <td>{pct(row.probability_of_damage_in_a_year)}</td>
-                              <td>{formatCurrency(row.expected_annual_repair_cost_usd)}</td>
-                              <td>{formatCurrency(row.expected_annual_payout_usd)}</td>
-                              <td>
-                                {row.return_periods_repair_cost.once_per_50_years_usd != null
-                                  ? formatCurrency(row.return_periods_repair_cost.once_per_50_years_usd)
-                                  : '—'}
-                              </td>
-                              <td>
-                                {best ? (
-                                  <>
-                                    {best.label}
-                                    <span className="analysis-breakdown">
-                                      saves {formatCurrency(best.repair)} a year in repairs, {formatCurrency(best.claims)} of it insurance claims
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span className="analysis-muted">No upgrade changes the outcome</span>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <div className="analysis-callout">
-                      <strong>How to read this</strong>
-                      <p>
-                        These are averages over {averageYear.sample_storms.toLocaleString()} randomly generated Atlantic storms,
-                        most of which never come near Florida, times how many storms a year the historical record holds. Most years
-                        cost nothing; a bad year costs far more than the average. The once-in-50-years column shows the size of a
-                        bad one.
-                      </p>
-                    </div>
-                  </>
-                )}
               </section>
             </>
           )}

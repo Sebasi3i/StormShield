@@ -95,10 +95,6 @@ version 1.1, snake_case, documented at `/docs`.
   directly, and every row says which features the home already has and which the
   upgrade adds, so a client can label an upgrade by what it changes. Optional `storms` prices storms
   sent with the request (such as generated ones) instead of the stored catalog.
-- `POST /api/v1/storm-losses/average-year` — an average year for the demo properties
-  over the simulated storm climatology (below): expected yearly repair cost and
-  insurance cover as they are, the chance of damage in a year, once-per-N-years repair
-  costs, and what each upgrade would save per year. The report's "Average year" tab.
 - `GET /api/v1/storm-catalog` — the storms available to price, with animatable tracks.
 - `GET /api/v1/damage-curves` — the curves and policy template, with their provenance.
 - `POST /api/v1/storms/generate` — new storms from a starting point you choose (see
@@ -181,22 +177,6 @@ Endpoints, all under the same prefix as the rest of the API and documented at `/
   editable demo assumption carried back with every result. `optimize` enumerates every
   subset of the costed proposals and picks the highest insurer NPV within the upfront
   budget, the empty subset included.
-- `app/climatology.py` and `scripts/build_storm_climatology.py` — the frequency the
-  catalog cannot give. The script asks the simulator for thousands of storms whose
-  starting points are drawn at random from the whole historical record, so the sample
-  is unselected (most never approach Florida), runs each through the calibrated wind
-  field, and stores only the peak gust at each demo property
-  (`app/fixtures/storm_climatology.json`). Pricing from gusts is instant, so the
-  service re-prices any project selection or deductible against the whole sample on
-  request. Expected yearly figures are the mean per storm times a storms-per-year rate
-  for the same population; the fixture records the whole record's rate and the last
-  thirty years', the default. In the Lab this is the "simulated climate" annual option,
-  the defensible alternative to the invented probability, and it reports break-even as
-  storms per year. Rebuild after adding a property or changing the wind fixtures:
-
-  ```bash
-  python scripts/build_storm_climatology.py          # 5,000 storms, seed 2026, a few minutes
-  ```
 - `scripts/import_insurer_workbook.py` — rebuilds those fixtures from
   `data/insurer_demo/workbook_extract.json`, checks the join to the portfolio field by
   field, and refuses to write unless the engine reproduces the workbook's totals to the
@@ -303,7 +283,6 @@ backend/            FastAPI service, risk engine, ETL scripts
     premium.py      Sample insurer: mitigation credits -> wind premium, quotes, grants (pure)
     mitigation_states.py  Sample insurer: current vs upgraded physical state on the same wind (pure)
     insurer.py      Sample insurer: program arms, event results, annual NPV, budget optimizer (pure)
-    climatology.py  Expected yearly losses over the simulated storm sample (pure, vectorised)
     wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?

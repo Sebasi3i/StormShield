@@ -19,7 +19,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import claims, climatology, generator, insurer, premium, risk, wind
+from . import claims, generator, insurer, premium, risk, wind
 from .schemas import (
     CountyConcentration,
     CountyDetail,
@@ -28,7 +28,6 @@ from .schemas import (
     GenerateFloridaStormsRequest,
     GenerateStormsRequest,
     HurricaneCategoryInfo,
-    AverageYearRequest,
     InsurerCompareRequest,
     InsurerOptimizeRequest,
     MitigationRequest,
@@ -1001,61 +1000,9 @@ def insurer_demo() -> dict:
         "policies_note": book["note"],
         "available_storm_ids": catalog["storm_ids"],
         "storm_catalog_id": catalog["catalog_id"],
-        "climatology": _climatology_summary(),
         "reference_totals": demo["reference_totals"],
         "provenance": demo["provenance"],
     }
-
-
-def _climatology_summary() -> dict | None:
-    """What a client needs to offer the simulated-climate annual model, or None when
-    the fixture has not been built."""
-    try:
-        data = climatology.load_climatology()
-    except climatology.ClimatologyError:
-        return None
-    return {
-        "climatology_id": data["climatology_id"],
-        "evidence_status": data["evidence_status"],
-        "sample_storms": len(data["storms"]),
-        "summary": data["summary"],
-        "storms_per_year": data["storms_per_year"],
-        "simulator": data["simulator"],
-        "pruning": data["pruning"],
-        "generated_at": data["generated_at"],
-    }
-
-
-@app.post(f"{API_PREFIX}/v1/storm-losses/average-year", tags=["storm losses"])
-def storm_losses_average_year(request: AverageYearRequest) -> dict:
-    """An average year for the demo properties: expected yearly repair cost and
-    insurance cover as they are, and what each upgrade would save per year, over the
-    simulated storm climatology. Accepts the frontend Property shape; the climatology
-    covers the demo portfolio only, so an id it does not know is a 422."""
-    try:
-        data = climatology.load_climatology()
-    except climatology.ClimatologyError as error:
-        raise HTTPException(status_code=503, detail={"message": str(error), "error": "ClimatologyUnavailable"}) from error
-    known = set(data["gust_columns"])
-    id_map = {}
-    for prop in request.properties:
-        candidate = prop.property_id if prop.property_id in known else (
-            f"P{int(prop.property_id):03d}" if prop.property_id.isdigit() else prop.property_id
-        )
-        if candidate not in known:
-            raise HTTPException(
-                status_code=422,
-                detail={"message": f"the storm climatology has no gusts for property {prop.property_id!r}; it covers the demo portfolio {sorted(known)}", "error": "UnknownProperty"},
-            )
-        id_map[prop.property_id] = candidate
-    properties = [
-        claims.Property(p.property_id, p.replacement_cost_usd, p.vulnerability_class, p.roof_shape) for p in request.properties
-    ]
-    policies = [claims.policy_from_template(p.property_id, p.coverage_a_usd or p.replacement_cost_usd) for p in request.properties]
-    try:
-        return climatology.average_year_for_properties(properties, policies, id_map, data, storms_per_year_override=request.storms_per_year)
-    except (climatology.ClimatologyError, claims.EngineError) as error:
-        raise HTTPException(status_code=422, detail={"message": str(error), "error": type(error).__name__}) from error
 
 
 @app.post(f"{API_PREFIX}/v1/insurer/compare", tags=["sample insurer"])

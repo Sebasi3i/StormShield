@@ -674,25 +674,6 @@ class OneEventOrNoneAnnualModel(BaseModel):
     )
 
 
-class SimulatedClimateAnnualModel(BaseModel):
-    """Expected values over the simulated storm climatology (an unselected sample of
-    synthetic Atlantic storms), times a storms-per-year rate."""
-
-    kind: Literal["simulated_climate"]
-    storms_per_year: float | None = Field(
-        default=None, gt=0, le=100,
-        description="Defaults to the climatology's recent-record rate; the whole-record rate is lower.",
-    )
-    climatology_id: str | None = Field(default=None, description="Must match the fixture on disk if given.")
-
-
-class AverageYearRequest(BaseModel):
-    """The map's question: an average year for these properties, per upgrade."""
-
-    properties: list[StormLossPropertyInput] = Field(min_length=1, max_length=500)
-    storms_per_year: float | None = Field(default=None, gt=0, le=100)
-
-
 class InsurerCompareRequest(BaseModel):
     """Compare the current book with the selected projects, homeowner-funded and
     insurer co-funded, on the requested catalog storms."""
@@ -707,7 +688,7 @@ class InsurerCompareRequest(BaseModel):
         description="Sensitivity: reprice every policy at this fraction of Coverage A with the premium held fixed.",
     )
     program: InsurerProgramInput = Field(default_factory=InsurerProgramInput)
-    annual_model: EventOnlyAnnualModel | OneEventOrNoneAnnualModel | SimulatedClimateAnnualModel = Field(
+    annual_model: EventOnlyAnnualModel | OneEventOrNoneAnnualModel = Field(
         default_factory=EventOnlyAnnualModel, discriminator="kind"
     )
 
