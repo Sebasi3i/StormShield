@@ -135,7 +135,18 @@ command in `tests/test_storm_losses_api.py`.
 The groundwork for the Insurer Lab: a fictional insurer covering the ten demo
 properties, with the workbook's premium-credit tiers and project quotes, so avoided
 payouts can later be set against the premium an insurer gives up to encourage upgrades.
-No endpoint yet; this step is the fixtures and the pure premium engine.
+Endpoints, all under the same prefix as the rest of the API and documented at `/docs`:
+
+- `GET /api/v1/insurer/demo` — the insurer, its ten policies joined to the demo
+  portfolio, both presets, the credit plan, proposals, program defaults, the storms
+  that can be run, and provenance. Everything a client needs to build a request.
+- `POST /api/v1/insurer/compare` — current book versus the selected projects,
+  homeowner-funded and co-funded, per storm. Optional `annual_model`,
+  `selected_proposal_ids`, `policy_ids`, `program` overrides and a `deductible_fraction`
+  sensitivity. Bad ids, state conflicts and a malformed annual model are 422s that
+  name the input.
+- `POST /api/v1/insurer/optimize` — the same request under the `one_event_or_none`
+  model, plus the budget selection and the comparison re-run on the chosen subset.
 
 - `app/premium.py` — feature union -> credit -> wind premium, effective project cost,
   grants and the homeowner's premium-only payback. Credits are looked up for the union
