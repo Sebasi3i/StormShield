@@ -461,7 +461,7 @@ def test_wind_model_is_wind_field_with_the_agreed_gust_factor(example):
     assert wind_model["package_version"] == wind_field.__version__
     assert wind_model["gust_factor"] == wind.GUST_FACTOR == wind.load_gust_factor_model()["gust_factor"]
     assert wind_model["evidence_status"] == "sourced"
-    assert wind_model["validation"]["wind_validation_id"] == "fl-asos-hurricane-peaks-v1"
+    assert wind_model["validation"]["wind_validation_id"] == "fl-asos-hurricane-peaks-v2"
     assert wind_model["storm_parameters"]["parameter_status"] == "sourced"
     assert wind_model["storm_parameters"]["storm_size_model_id"] == "hurdat2-radii-fit-v1"
     assert example["metadata"]["storm_size"][0]["storm_id"] == "SYN0155"

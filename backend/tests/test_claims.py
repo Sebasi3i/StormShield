@@ -267,8 +267,12 @@ def test_unknown_roof_shape_falls_back_to_blended():
 def test_a_curve_set_with_no_shape_specific_curves_still_honours_a_declared_shape():
     """Declaring roof_shape="hip" against a curve set that never split gable from
     hip (every fixture in this file, and every curve set built before this feature)
-    falls back to blended rather than raising. Declaring a shape can never make a
-    property worse off than not declaring one."""
+    falls back to blended rather than raising: this curve set has nothing else to
+    give it. That is a guarantee about lookup, not about outcome - once a curve set
+    does split by shape (see test_declared_roof_shape_selects_the_matching_curve and
+    test_a_propertys_roof_shape_changes_its_computed_damage, below), declaring a
+    shape can raise or lower modeled damage relative to blended; it is not bounded to
+    be no worse."""
     curve_for_hip = claims.find_curve(CURVE_SET["curves"], "fixture_class", "baseline", "hip")
     assert curve_for_hip == BASELINE_CURVE
 

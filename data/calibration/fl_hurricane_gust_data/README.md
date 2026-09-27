@@ -55,7 +55,7 @@ begin by 2005 were requested; the windows are in `storms_2004_2005.csv`.
 ## Key columns
 
 - `mean2min_kt`, `mean2min_dir_deg`: ASOS 2-minute mean wind speed and direction, reported every minute. Speeds are integer knots.
-- `gust1min_peak_kt`: the peak gust within that single minute. For the sonic anemometers now used at ASOS sites this is a 3-s gust, as in the NOAA/AOML (Kaplan) hurricane gust study. NCEI's older format documentation calls it a 5-s peak, so check NCEI's current documentation if the exact duration matters.
+- `gust1min_peak_kt`: the peak gust within that single minute. Sonic anemometers, now standard at ASOS sites, report a 3-s gust, the convention the NOAA/AOML (Kaplan) hurricane gust study assumes; NCEI's older format documentation calls it a 5-s peak. Neither sensor type nor verified gust duration is recorded per station or per storm in this dataset, so which convention actually applies to a given observation here is assumed, not confirmed - a correction previously stated as settled fact. Treat the reporting era (pre- versus post-2016, roughly tracking ASOS's sonic-anemometer rollout) as a rough temporal proxy for which convention is more likely, never as a substitute for a verified per-station sensor record; `backend/scripts/calibration_common.py`'s `policy.note` on each gust-factor fixture states this same caveat in the numbers that come from this file. Check NCEI's current documentation if the exact duration matters for a specific station.
 - `gust_2min_kt` = max(gust at t, gust at t-1 min): the peak gust over the same 2-minute window as the mean. This follows the same alignment as the AOML study. It is NaN if the previous minute is missing.
 - `gf_3s_2min` = `gust_2min_kt / mean2min_kt`.
 - Storm geometry is interpolated linearly from the best track to each minute:
@@ -77,6 +77,12 @@ begin by 2005 were requested; the windows are in `storms_2004_2005.csv`.
 
 ## Gust factor summary (pairs file)
 
+This table is the 2016-2024 storms only (334,762 of the 526,303 rows in the pairs
+file) - it predates the 2004-2005 rows added 2026-09-27 below and was never
+recomputed over the full file. It happens to line up with what the fitting scripts
+now call the `primary_2016_2024` cohort (`backend/scripts/calibration_common.py`),
+the one used for production, so it is left as is and relabeled rather than replaced:
+
 | 2-min mean | Pairs | Median G(3s,2min) | 10th to 90th percentile |
 |---|---|---|---|
 | 10 to 20 kt | 246,121 | 1.375 | 1.22 to 1.62 |
@@ -87,6 +93,31 @@ begin by 2005 were requested; the windows are in `storms_2004_2005.csv`.
 
 With a mean of at least 20 kt, the median is 1.37 for land-fetch winds and 1.32 when
 most of the upwind 10 km is ocean.
+
+**Full current file, all 19 storms** (526,303 rows) - noticeably lower than the table
+above, because the 2004-2005 storms alone (below) gust distinctly less:
+
+| 2-min mean | Pairs | Median G(3s,2min) | 10th to 90th percentile |
+|---|---|---|---|
+| 10 to 20 kt | 400,359 | 1.312 | 1.18 to 1.54 |
+| 20 to 34 kt | 110,741 | 1.320 | 1.19 to 1.52 |
+| 34 to 50 kt | 14,337 | 1.297 | 1.19 to 1.46 |
+| 50 to 64 kt | 774 | 1.283 | 1.18 to 1.44 |
+| 64 kt or more | 92 | 1.343 | 1.17 to 1.48 |
+
+**2004-2005 storms only** (191,541 rows):
+
+| 2-min mean | Pairs | Median G(3s,2min) | 10th to 90th percentile |
+|---|---|---|---|
+| 10 to 20 kt | 154,238 | 1.250 | 1.14 to 1.40 |
+| 20 to 34 kt | 33,095 | 1.240 | 1.15 to 1.39 |
+| 34 to 50 kt | 3,709 | 1.239 | 1.16 to 1.36 |
+| 50 to 64 kt | 456 | 1.245 | 1.16 to 1.36 |
+| 64 kt or more | 43 | 1.215 | 1.15 to 1.30 |
+
+None of these three tables is "the" gust factor: which one a fitting script uses
+depends on the `--cohort` it is given, and `docs/calibration.md` sections 2-4 explain
+why production uses the first one alone rather than the full file.
 
 ## Things to know before fitting
 

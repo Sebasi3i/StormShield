@@ -86,48 +86,157 @@
       ]
     }
   ],
+  "roof_shape_selection": [
+    {
+      "property_id": "P001",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P002",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "post_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "shutters": "post_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P003",
+      "declared_roof_shape": "hip",
+      "resolved_roof_shape": "hip",
+      "baseline_curve_id": "pre_fbc_2002.baseline.hip.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.hip.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.hip.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P004",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P005",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "post_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "shutters": "post_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P006",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P007",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P008",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "post_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "shutters": "post_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P009",
+      "declared_roof_shape": "hip",
+      "resolved_roof_shape": "hip",
+      "baseline_curve_id": "pre_fbc_2002.baseline.hip.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.hip.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.hip.hazus.v1"
+      },
+      "fallback_reason": null
+    },
+    {
+      "property_id": "P010",
+      "declared_roof_shape": "gable",
+      "resolved_roof_shape": "gable",
+      "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
+      "upgrade_curve_ids": {
+        "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+      },
+      "fallback_reason": null
+    }
+  ],
   "evidence_status": "sourced",
   "rows": [
     {
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 152.2,
-      "baseline_damage_usd": 642248.78,
-      "upgraded_damage_usd": 447718.8,
-      "baseline_payout_usd": 599748.78,
-      "upgraded_payout_usd": 405218.8,
-      "avoided_payout_usd": 194529.98
+      "peak_gust_mph": 149.4,
+      "baseline_damage_usd": 596199.35,
+      "upgraded_damage_usd": 399101.35,
+      "baseline_payout_usd": 553699.35,
+      "upgraded_payout_usd": 356601.35,
+      "avoided_payout_usd": 197098.0
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 152.2,
-      "baseline_damage_usd": 642248.78,
-      "upgraded_damage_usd": 351050.17,
-      "baseline_payout_usd": 599748.78,
-      "upgraded_payout_usd": 308550.17,
-      "avoided_payout_usd": 291198.61
+      "peak_gust_mph": 149.4,
+      "baseline_damage_usd": 596199.35,
+      "upgraded_damage_usd": 310545.8,
+      "baseline_payout_usd": 553699.35,
+      "upgraded_payout_usd": 268045.8,
+      "avoided_payout_usd": 285653.55
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P002",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 152.4,
-      "baseline_damage_usd": 344025.6,
-      "upgraded_damage_usd": 102849.6,
-      "baseline_payout_usd": 284025.6,
-      "upgraded_payout_usd": 42849.6,
-      "avoided_payout_usd": 241176.0
+      "peak_gust_mph": 149.7,
+      "baseline_damage_usd": 287556.0,
+      "upgraded_damage_usd": 88818.0,
+      "baseline_payout_usd": 227556.0,
+      "upgraded_payout_usd": 28818.0,
+      "avoided_payout_usd": 198738.0
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 68.4,
-      "baseline_damage_usd": 231.14,
-      "upgraded_damage_usd": 231.14,
+      "peak_gust_mph": 71.4,
+      "baseline_damage_usd": 481.12,
+      "upgraded_damage_usd": 481.12,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -136,9 +245,9 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 68.4,
-      "baseline_damage_usd": 231.14,
-      "upgraded_damage_usd": 231.14,
+      "peak_gust_mph": 71.4,
+      "baseline_damage_usd": 481.12,
+      "upgraded_damage_usd": 481.12,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -147,9 +256,9 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 68.6,
-      "baseline_damage_usd": 595.4,
-      "upgraded_damage_usd": 580.18,
+      "peak_gust_mph": 71.6,
+      "baseline_damage_usd": 922.43,
+      "upgraded_damage_usd": 922.43,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -158,9 +267,9 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 68.6,
-      "baseline_damage_usd": 595.4,
-      "upgraded_damage_usd": 580.18,
+      "peak_gust_mph": 71.6,
+      "baseline_damage_usd": 922.43,
+      "upgraded_damage_usd": 922.43,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -169,9 +278,9 @@
       "storm_id": "SYN0155",
       "property_id": "P005",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 67.2,
-      "baseline_damage_usd": 406.98,
-      "upgraded_damage_usd": 406.98,
+      "peak_gust_mph": 70.2,
+      "baseline_damage_usd": 639.73,
+      "upgraded_damage_usd": 638.02,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -180,7 +289,7 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 39.3,
+      "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -191,7 +300,7 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 39.3,
+      "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
       "baseline_payout_usd": 0.0,
@@ -202,9 +311,9 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 101.8,
-      "baseline_damage_usd": 11843.94,
-      "upgraded_damage_usd": 11746.81,
+      "peak_gust_mph": 103.4,
+      "baseline_damage_usd": 13217.36,
+      "upgraded_damage_usd": 13098.08,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -213,9 +322,9 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 101.8,
-      "baseline_damage_usd": 11843.94,
-      "upgraded_damage_usd": 10981.14,
+      "peak_gust_mph": 103.4,
+      "baseline_damage_usd": 13217.36,
+      "upgraded_damage_usd": 12044.44,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -224,9 +333,9 @@
       "storm_id": "SYN0155",
       "property_id": "P008",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 119.3,
-      "baseline_damage_usd": 13915.55,
-      "upgraded_damage_usd": 9423.56,
+      "peak_gust_mph": 117.2,
+      "baseline_damage_usd": 12412.27,
+      "upgraded_damage_usd": 8830.16,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -235,9 +344,9 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 98.0,
-      "baseline_damage_usd": 13986.95,
-      "upgraded_damage_usd": 13986.95,
+      "peak_gust_mph": 98.3,
+      "baseline_damage_usd": 14255.08,
+      "upgraded_damage_usd": 14255.08,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -246,9 +355,9 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 98.0,
-      "baseline_damage_usd": 13986.95,
-      "upgraded_damage_usd": 13615.14,
+      "peak_gust_mph": 98.3,
+      "baseline_damage_usd": 14255.08,
+      "upgraded_damage_usd": 13862.1,
       "baseline_payout_usd": 0.0,
       "upgraded_payout_usd": 0.0,
       "avoided_payout_usd": 0.0
@@ -257,23 +366,23 @@
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "roof_straps",
-      "peak_gust_mph": 152.2,
-      "baseline_damage_usd": 510819.75,
-      "upgraded_damage_usd": 356400.0,
-      "baseline_payout_usd": 477069.75,
-      "upgraded_payout_usd": 322650.0,
-      "avoided_payout_usd": 154419.75
+      "peak_gust_mph": 149.5,
+      "baseline_damage_usd": 473722.16,
+      "upgraded_damage_usd": 317197.76,
+      "baseline_payout_usd": 439972.16,
+      "upgraded_payout_usd": 283447.76,
+      "avoided_payout_usd": 156524.4
     },
     {
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "shutters",
-      "peak_gust_mph": 152.2,
-      "baseline_damage_usd": 510819.75,
-      "upgraded_damage_usd": 279487.12,
-      "baseline_payout_usd": 477069.75,
-      "upgraded_payout_usd": 245737.12,
-      "avoided_payout_usd": 231332.63
+      "peak_gust_mph": 149.5,
+      "baseline_damage_usd": 473722.16,
+      "upgraded_damage_usd": 246834.54,
+      "baseline_payout_usd": 439972.16,
+      "upgraded_payout_usd": 213084.54,
+      "avoided_payout_usd": 226887.62
     }
   ],
   "warnings": [
@@ -281,7 +390,7 @@
   ],
   "assumptions": [
     "Illustrative gross insurer payouts before reinsurance. Not calibrated and not validated against loss experience.",
-    "Damage curves (hazus-msf1-suburban-v1) are published FEMA Hazus building loss functions mapped to the platform's classes. A property's declared roof_shape ('gable' or 'hip') selects the matching curve; without one, the blended (equal gable/hip mix) curve is used, an assumption recorded in metadata.curve_provenance. Not checked against this portfolio's own claims, and the Finance workbook's upgrade damage-effect request is still unanswered.",
+    "Damage curves (hazus-msf1-suburban-v2) are published FEMA Hazus building loss functions mapped to the platform's classes. A property's declared roof_shape ('gable' or 'hip') selects the matching curve; without one, or with an unrecognised value (see warnings), the blended (equal gable/hip mix) curve is used, an assumption recorded in metadata.curve_provenance. Exactly which curve each property used is in roof_shape_selection, not just this note. Not checked against this portfolio's own claims, and the Finance workbook's upgrade damage-effect request is still unanswered.",
     "payout = min(coverage_limit, max(0, damage - deductible)). The prototype's agreed contract, pending Finance approval of its scope.",
     "Each storm is priced independently: the deductible resets and the building is assumed fully repaired beforehand. No annual accumulation, and no annual event rate is applied here.",
     "Replacement cost is taken as the property's insured value; no square-footage rebuild cost was available.",
@@ -290,7 +399,7 @@
   ],
   "metadata": {
     "result_basis": "illustrative gross insurer payouts before reinsurance",
-    "curve_set_id": "hazus-msf1-suburban-v1",
+    "curve_set_id": "hazus-msf1-suburban-v2",
     "curve_ids": [
       "post_fbc_2002.baseline.blended.hazus.v1",
       "post_fbc_2002.baseline.gable.hazus.v1",
@@ -316,6 +425,7 @@
         "hip",
         "blended"
       ],
+      "version_note": "v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
       "source": "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), machine-readable copy from the NHERI SimCenter Damage and Loss Model Library (BSD 3-Clause), commit 662999759cc59bf9cfc099d4ff5a5814a7bf01c8. Method and validation against insurance losses: Vickery et al. 2006, Natural Hazards Review 7(2). Extract and provenance: data/calibration/hazus_hurricane_loss.",
       "wind_basis": "Hazus loss functions take the open-terrain peak gust at 10 m, the metric the wind step produces; no conversion is applied. The home's surroundings enter through the Hazus terrain field, set to suburban (z0 = 0.35 m) for every home.",
       "class_mapping": {
@@ -326,8 +436,213 @@
         "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them"
       },
       "roof_shape": "Published separately: the Hazus gable curve, the Hazus hip curve, and their mean ('blended') at each speed. A hip roof loses about half as much as a gable roof at 140 mph. A property that declares its own roof_shape ('gable' or 'hip') gets the matching curve; without one it gets 'blended', an equal-weight assumption with no source for Florida's actual gable/hip mix. That fallback, not the split itself, is the largest remaining assumption in these curves - which roof shape an unlabeled Florida home actually has is a separate, larger open question.",
-      "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost.",
-      "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph.",
+      "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost, on curve post_fbc_2002.shutters.gable at 205 mph. Every curve's own adjustment, and where on its wind axis it happens, is in monotone_adjustment_detail below, largest first.",
+      "monotone_adjustment_detail": [
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "gable",
+          "wind_mph": 205.0,
+          "adjustment": 0.0254
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "hip",
+          "wind_mph": 245.0,
+          "adjustment": 0.009
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "blended",
+          "wind_mph": 205.0,
+          "adjustment": 0.0048
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "blended",
+          "wind_mph": 245.0,
+          "adjustment": 0.0042
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "gable",
+          "wind_mph": 215.0,
+          "adjustment": 0.0033
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "roof_straps",
+          "roof_shape": "hip",
+          "wind_mph": 245.0,
+          "adjustment": 0.0015
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "hip",
+          "wind_mph": 210.0,
+          "adjustment": 0.001
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "roof_straps",
+          "roof_shape": "blended",
+          "wind_mph": 245.0,
+          "adjustment": 0.0008
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "blended",
+          "wind_mph": 210.0,
+          "adjustment": 0.0005
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "roof_straps",
+          "roof_shape": "gable",
+          "wind_mph": 215.0,
+          "adjustment": 0.0005
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "gable",
+          "wind_mph": 245.0,
+          "adjustment": 0.0004
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "gable",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "hip",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "blended",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "hip",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        }
+      ],
+      "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.roof_straps.hip at 100 mph (capped to pre_fbc_2002.baseline). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
+      "ordering_adjustment_detail": [
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "roof_straps",
+          "roof_shape": "hip",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 100.0,
+          "adjustment": 0.0003
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "roof_straps",
+          "roof_shape": "gable",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0001
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "hip",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 90.0,
+          "adjustment": 0.0001
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "hip",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 85.0,
+          "adjustment": 0.0001
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "roof_straps",
+          "roof_shape": "blended",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 100.0,
+          "adjustment": 0.0001
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "gable",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "gable",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "gable",
+          "capped_to": "post_fbc_2002.baseline",
+          "wind_mph": 60.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "hip",
+          "capped_to": "post_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "baseline",
+          "roof_shape": "blended",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "blended",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "post_fbc_2002",
+          "upgrade_id": "shutters",
+          "roof_shape": "blended",
+          "capped_to": "post_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        }
+      ],
       "scope": "Building structure only; contents and loss of use are separate Hazus functions and are not included. Hazus tends to understate small losses below about 100 mph, where fallen trees (not modelled) do much of the damage.",
       "not_validated_here": "Hazus was validated by its authors against insurance losses from past storms; these curves have not been checked against this portfolio's own claims. The Finance workbook's upgrade damage-effect request is still unanswered.",
       "script": "backend/scripts/build_damage_curves.py"
@@ -363,31 +678,62 @@
       "model": "wind_field",
       "model_version": "symmetric_rankine_v1",
       "package_version": "0.3.0",
-      "gust_factor": 1.314,
+      "gust_factor": 1.333,
       "gust_duration_seconds": 3.0,
-      "gust_factor_note": "fl-asos-hurricane-gust-v1: median G(3s, 2min), land-fetch stations, two-minute mean >= 34 kt, n=10490 windows, 10th-90th percentile 1.2-1.472. Observed against a two-minute mean. The platform's sustained wind is the best-track one-minute convention; G(3s, 2min) is an upper bound on G(3s, 1min) for the same window (the larger one-minute mean is at least the two-minute mean), and the two are close in steady hurricane wind. No averaging-period conversion factor has been applied.",
-      "land_exposure_factor": 0.775,
+      "gust_factor_note": "fl-asos-hurricane-gust-v2: median G(3s, 2min), land-fetch stations, two-minute mean >= 34 kt, n=7853 windows, 10th-90th percentile 1.226-1.5. Observed against a two-minute mean. The platform's sustained wind is the best-track one-minute convention; G(3s, 2min) is an upper bound on G(3s, 1min) for the same window (the larger one-minute mean is at least the two-minute mean), and the two are close in steady hurricane wind. No averaging-period conversion factor has been applied.",
+      "land_exposure_factor": 0.75,
       "calibration": {
-        "wind_calibration_id": "fl-asos-hurricane-peaks-v1",
-        "outer_decay_exponent": 0.3,
-        "land_exposure_factor": 0.775,
-        "objective": "minimum mean absolute error among candidates with median modelled/observed ratio within 5% of 1 overall and within 10% of 1 where the observed gust was 64 kt or more",
-        "station_storm_pairs": 209,
-        "in_sample_mean_absolute_error_kt": 13.43,
-        "out_of_sample_mean_absolute_error_kt": 14.28,
-        "out_of_sample_method": "leave one storm out: refit the selection on the other storms, score the held-out storm",
-        "interpretation": "The decay exponent is flatter than the radii-implied mean-wind value because observed peak gusts away from the centre include convective gusts the mean profile lacks; the land factor stands in for the surface roughness the marine profile ignores. Both are effective, calibrated values for reproducing station peak gusts, not physical measurements, and they were fitted jointly: only their combination is validated."
+        "wind_calibration_id": "fl-asos-hurricane-peaks-v2",
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "objective": "minimum mean absolute error among candidates with median modelled/observed ratio within 5% of 1 overall and within 10% of 1 where the observed gust was 64 kt or more (the second constraint is skipped, not treated as passed, when a training subset has no 64 kt+ pairs)",
+        "station_storm_pairs": 156,
+        "in_sample_mean_absolute_error_kt": 14.11,
+        "out_of_sample_mean_absolute_error_kt": 15.7,
+        "out_of_sample_method": "leave one storm out: refit the gust factor, decay and land factor on the other cohort storms, score the held-out storm with all three",
+        "interpretation": "The decay exponent is flatter than the radii-implied mean-wind value because observed peak gusts away from the centre include convective gusts the mean profile lacks; the land factor stands in for the surface roughness the marine profile ignores. Both are effective, calibrated values for reproducing station peak gusts, not physical measurements, and they were fitted jointly with the gust factor: only the combination is validated. A grid-edge choice is a diagnostic to look at, not by itself a sign the fit is wrong."
       },
       "validation": {
-        "wind_validation_id": "fl-asos-hurricane-peaks-v1",
-        "storms": 19,
-        "station_storm_pairs": 209,
-        "median_ratio_modeled_over_observed": 1.038,
-        "mean_absolute_error_kt": 13.5,
-        "within_15_percent": 0.4,
-        "within_75_km_median_ratio": 1.113,
-        "beyond_75_km_median_ratio": 1.014,
-        "observed_64kt_or_more_median_ratio": 0.909
+        "wind_validation_id": "fl-asos-hurricane-peaks-v2",
+        "fitted": {
+          "validation_type": "fitted (in-sample): the production bundle scored on the same primary-cohort pairs it was fitted from",
+          "storms": 11,
+          "station_storm_pairs": 156,
+          "median_ratio_modeled_over_observed": 1.033,
+          "mean_absolute_error_kt": 14.1,
+          "within_15_percent": 0.37,
+          "within_75_km_median_ratio": 1.131,
+          "beyond_75_km_median_ratio": 0.986,
+          "observed_64kt_or_more_median_ratio": 0.901
+        },
+        "holdout": {
+          "validation_type": "storm holdout (out-of-sample): each primary-cohort storm scored with the gust factor, decay and land factor refit on the other primary-cohort storms alone. Conditional on the fixed HURDAT2 size model, which is not independently held out.",
+          "cohort_id": "primary_2016_2024",
+          "out_of_sample_mean_absolute_error_kt": 15.7,
+          "out_of_sample_median_ratio": 0.993
+        },
+        "legacy_frozen_primary": {
+          "validation_type": "frozen evaluation: the production (primary) bundle, with no refitting at all, scored on the 8 legacy (2004-2005) storms it has never seen",
+          "storms": 8,
+          "station_storm_pairs": 53,
+          "median_ratio_modeled_over_observed": 1.091,
+          "mean_absolute_error_kt": 12.4
+        },
+        "validation_type": "fitted (in-sample): the production bundle scored on the same primary-cohort pairs it was fitted from",
+        "storms": 11,
+        "station_storm_pairs": 156,
+        "median_ratio_modeled_over_observed": 1.033,
+        "mean_absolute_error_kt": 14.1,
+        "within_15_percent": 0.37,
+        "within_75_km_median_ratio": 1.131,
+        "beyond_75_km_median_ratio": 0.986,
+        "observed_64kt_or_more_median_ratio": 0.901,
+        "combined_sensitivity": {
+          "validation_type": "an alternative bundle (typically fitted on all 19 storms) scored on all 19 storms",
+          "wind_calibration_id": "fl-asos-hurricane-peaks-v2",
+          "median_ratio_modeled_over_observed": 1.049,
+          "mean_absolute_error_kt": 13.4
+        }
       },
       "kt_to_mph": 1.1507794480235425,
       "storm_parameters": {
@@ -438,133 +784,133 @@
       {
         "storm_id": "SYN0155",
         "property_id": "P001",
-        "peak_gust_mph": 152.2,
+        "peak_gust_mph": 149.4,
         "peak_sustained_kt": 129.9,
         "peak_time_utc": "2026-09-19T10:56:00",
         "closest_approach": {
           "distance_km": 17.5
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P002",
-        "peak_gust_mph": 152.4,
-        "peak_sustained_kt": 130.0,
+        "peak_gust_mph": 149.7,
+        "peak_sustained_kt": 130.1,
         "peak_time_utc": "2026-09-19T10:34:00",
         "closest_approach": {
           "distance_km": 12.3
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P003",
-        "peak_gust_mph": 68.4,
-        "peak_sustained_kt": 58.4,
+        "peak_gust_mph": 71.4,
+        "peak_sustained_kt": 62.0,
         "peak_time_utc": "2026-09-19T14:13:00",
         "closest_approach": {
           "distance_km": 101.1
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P004",
-        "peak_gust_mph": 68.6,
-        "peak_sustained_kt": 58.5,
+        "peak_gust_mph": 71.6,
+        "peak_sustained_kt": 62.2,
         "peak_time_utc": "2026-09-19T14:07:00",
         "closest_approach": {
           "distance_km": 101.1
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P005",
-        "peak_gust_mph": 67.2,
-        "peak_sustained_kt": 57.4,
+        "peak_gust_mph": 70.2,
+        "peak_sustained_kt": 61.0,
         "peak_time_utc": "2026-09-19T14:30:00",
         "closest_approach": {
           "distance_km": 68.2
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P006",
-        "peak_gust_mph": 39.3,
-        "peak_sustained_kt": 33.5,
+        "peak_gust_mph": 41.0,
+        "peak_sustained_kt": 35.6,
         "peak_time_utc": "2026-09-20T07:17:00",
         "closest_approach": {
           "distance_km": 202.5
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P007",
-        "peak_gust_mph": 101.8,
-        "peak_sustained_kt": 86.9,
+        "peak_gust_mph": 103.4,
+        "peak_sustained_kt": 89.9,
         "peak_time_utc": "2026-09-19T12:00:00",
         "closest_approach": {
           "distance_km": 84.3
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P008",
-        "peak_gust_mph": 119.3,
+        "peak_gust_mph": 117.2,
         "peak_sustained_kt": 101.8,
         "peak_time_utc": "2026-09-19T19:21:00",
         "closest_approach": {
           "distance_km": 21.3
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P009",
-        "peak_gust_mph": 98.0,
-        "peak_sustained_kt": 83.6,
-        "peak_time_utc": "2026-09-19T17:21:00",
+        "peak_gust_mph": 98.3,
+        "peak_sustained_kt": 85.5,
+        "peak_time_utc": "2026-09-19T17:16:00",
         "closest_approach": {
           "distance_km": 53.0
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       },
       {
         "storm_id": "SYN0155",
         "property_id": "P010",
-        "peak_gust_mph": 152.2,
+        "peak_gust_mph": 149.5,
         "peak_sustained_kt": 129.9,
         "peak_time_utc": "2026-09-19T11:39:00",
         "closest_approach": {
           "distance_km": 22.0
         },
         "rmw_km": 22.8,
-        "land_exposure_factor": 0.775
+        "land_exposure_factor": 0.75
       }
     ],
     "storm_size": [
       {
         "storm_id": "SYN0155",
         "rmw_km": 22.8,
-        "outer_decay_exponent": 0.3,
+        "outer_decay_exponent": 0.275,
         "taper_start_km": 259.0,
         "cutoff_km": 444.0,
         "parameter_status": "sourced",
-        "source_note": "hurdat2-radii-fit-v1: RMW from the storm's peak near Florida of 131.2 kt at 25.4661 N; decay from fl-asos-hurricane-peaks-v1; taper from record medians.",
+        "source_note": "hurdat2-radii-fit-v1: RMW from the storm's peak near Florida of 131.2 kt at 25.4661 N; decay from fl-asos-hurricane-peaks-v2; taper from record medians.",
         "size_basis": {
           "peak_wind_kt": 131.2,
           "latitude": 25.4661,

@@ -126,25 +126,55 @@ def build_curve_set(path: Path = SOURCE) -> dict:
 
     # A few Hazus curves dip by a fraction of a percent as wind rises; the engine
     # refuses a decreasing curve, so every curve is made nondecreasing on its own.
-    largest_monotone_fix = 0.0
+    # Recorded per curve (not just the aggregate largest), with the wind speed the
+    # biggest adjustment happened at, so "where does this happen" has an answer.
+    monotone_adjustments: list[dict] = []
     values: dict[tuple[tuple[str, str], str], np.ndarray] = {}
     for entry_key, arr in raw.items():
         monotone = np.maximum.accumulate(arr)
-        largest_monotone_fix = max(largest_monotone_fix, float((monotone - arr).max()))
+        fix = monotone - arr
+        idx = int(np.argmax(fix))
+        (vclass, upgrade), shape = entry_key
+        monotone_adjustments.append(
+            {
+                "vulnerability_class": vclass,
+                "upgrade_id": upgrade,
+                "roof_shape": shape,
+                "wind_mph": float(winds_ref[idx]),
+                "adjustment": round(float(fix[idx]), 4),
+            }
+        )
         values[entry_key] = monotone
+    monotone_adjustments.sort(key=lambda a: a["adjustment"], reverse=True)
+    largest_monotone_fix = monotone_adjustments[0]["adjustment"] if monotone_adjustments else 0.0
 
     # The source is noisy at low speeds: within each roof shape, cap the post-2002
     # baseline at the pre-2002 one, and each upgrade at its own class baseline. The
     # minimum of two nondecreasing curves is nondecreasing, so the curves stay valid.
-    largest_order_fix = 0.0
+    # Recorded per curve for the same reason as the monotone fix above.
+    ordering_adjustments: list[dict] = []
     order = [(("post_fbc_2002", "baseline"), ("pre_fbc_2002", "baseline"))] + [
         (key, (key[0], "baseline")) for key in CONFIGS if key[1] != "baseline"
     ]
     for shape in OUTPUT_ROOF_SHAPES:
         for key, ceiling in order:
             capped = np.minimum(values[(key, shape)], values[(ceiling, shape)])
-            largest_order_fix = max(largest_order_fix, float((values[(key, shape)] - capped).max()))
+            fix = values[(key, shape)] - capped
+            idx = int(np.argmax(fix))
+            vclass, upgrade = key
+            ordering_adjustments.append(
+                {
+                    "vulnerability_class": vclass,
+                    "upgrade_id": upgrade,
+                    "roof_shape": shape,
+                    "capped_to": f"{ceiling[0]}.{ceiling[1]}",
+                    "wind_mph": float(winds_ref[idx]),
+                    "adjustment": round(float(fix[idx]), 4),
+                }
+            )
             values[(key, shape)] = capped
+    ordering_adjustments.sort(key=lambda a: a["adjustment"], reverse=True)
+    largest_order_fix = ordering_adjustments[0]["adjustment"] if ordering_adjustments else 0.0
 
     def source_note(vclass: str, upgrade: str, shape: str) -> str:
         base = f"FEMA Hazus hurricane building loss function. {CLASS_TEXT[vclass]}, {UPGRADE_TEXT[upgrade]}"
@@ -179,7 +209,7 @@ def build_curve_set(path: Path = SOURCE) -> dict:
             )
 
     return {
-        "curve_set_id": "hazus-msf1-suburban-v1",
+        "curve_set_id": "hazus-msf1-suburban-v2",
         "wind_metric": WIND_METRIC,
         "evidence_status": "sourced",
         "upper_supported_wind_mph": int(winds_ref.max()),
@@ -192,6 +222,12 @@ def build_curve_set(path: Path = SOURCE) -> dict:
                 "is a modelling choice, recorded below."
             ),
             "roof_shape_variants": list(OUTPUT_ROOF_SHAPES),
+            "version_note": (
+                "v2 (27 September 2026): every curve split into gable, hip and blended "
+                "variants (5 -> 15 curves) and roof_shape added as a field; v1 published "
+                "only the single blended-equivalent curve per class/upgrade. See "
+                "roof_shape below."
+            ),
             "source": (
                 "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), "
                 "machine-readable copy from the NHERI SimCenter Damage and Loss Model "
@@ -226,14 +262,24 @@ def build_curve_set(path: Path = SOURCE) -> dict:
             "monotone_adjustment": (
                 "Every curve (gable, hip and blended alike) made nondecreasing with a "
                 f"running maximum; the largest adjustment was {largest_monotone_fix:.4f} of "
-                "replacement cost."
+                "replacement cost, on curve "
+                f"{monotone_adjustments[0]['vulnerability_class']}.{monotone_adjustments[0]['upgrade_id']}."
+                f"{monotone_adjustments[0]['roof_shape']} at {monotone_adjustments[0]['wind_mph']:g} mph. "
+                "Every curve's own adjustment, and where on its wind axis it happens, is in "
+                "monotone_adjustment_detail below, largest first."
             ),
+            "monotone_adjustment_detail": monotone_adjustments,
             "ordering_adjustment": (
                 "Within each roof shape, every upgrade capped at its class baseline, and "
                 "the post-2002 baseline at the pre-2002 one, so an upgrade never adds "
                 f"damage; the largest cap was {largest_order_fix:.4f} of replacement cost, "
-                "where the source curves cross by simulation noise below 105 mph."
+                "where the source curves cross by simulation noise below 105 mph, on curve "
+                f"{ordering_adjustments[0]['vulnerability_class']}.{ordering_adjustments[0]['upgrade_id']}."
+                f"{ordering_adjustments[0]['roof_shape']} at {ordering_adjustments[0]['wind_mph']:g} mph "
+                f"(capped to {ordering_adjustments[0]['capped_to']}). Every curve's own cap is in "
+                "ordering_adjustment_detail below, largest first."
             ),
+            "ordering_adjustment_detail": ordering_adjustments,
             "scope": (
                 "Building structure only; contents and loss of use are separate Hazus "
                 "functions and are not included. Hazus tends to understate small losses "

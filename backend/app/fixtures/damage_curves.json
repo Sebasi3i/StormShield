@@ -1,5 +1,5 @@
 {
-  "curve_set_id": "hazus-msf1-suburban-v1",
+  "curve_set_id": "hazus-msf1-suburban-v2",
   "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
   "evidence_status": "sourced",
   "upper_supported_wind_mph": 250,
@@ -10,6 +10,7 @@
       "hip",
       "blended"
     ],
+    "version_note": "v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
     "source": "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), machine-readable copy from the NHERI SimCenter Damage and Loss Model Library (BSD 3-Clause), commit 662999759cc59bf9cfc099d4ff5a5814a7bf01c8. Method and validation against insurance losses: Vickery et al. 2006, Natural Hazards Review 7(2). Extract and provenance: data/calibration/hazus_hurricane_loss.",
     "wind_basis": "Hazus loss functions take the open-terrain peak gust at 10 m, the metric the wind step produces; no conversion is applied. The home's surroundings enter through the Hazus terrain field, set to suburban (z0 = 0.35 m) for every home.",
     "class_mapping": {
@@ -20,8 +21,213 @@
       "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them"
     },
     "roof_shape": "Published separately: the Hazus gable curve, the Hazus hip curve, and their mean ('blended') at each speed. A hip roof loses about half as much as a gable roof at 140 mph. A property that declares its own roof_shape ('gable' or 'hip') gets the matching curve; without one it gets 'blended', an equal-weight assumption with no source for Florida's actual gable/hip mix. That fallback, not the split itself, is the largest remaining assumption in these curves - which roof shape an unlabeled Florida home actually has is a separate, larger open question.",
-    "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost.",
-    "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph.",
+    "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost, on curve post_fbc_2002.shutters.gable at 205 mph. Every curve's own adjustment, and where on its wind axis it happens, is in monotone_adjustment_detail below, largest first.",
+    "monotone_adjustment_detail": [
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "wind_mph": 205.0,
+        "adjustment": 0.0254
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "wind_mph": 245.0,
+        "adjustment": 0.009
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "wind_mph": 205.0,
+        "adjustment": 0.0048
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "wind_mph": 245.0,
+        "adjustment": 0.0042
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "wind_mph": 215.0,
+        "adjustment": 0.0033
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "hip",
+        "wind_mph": 245.0,
+        "adjustment": 0.0015
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "hip",
+        "wind_mph": 210.0,
+        "adjustment": 0.001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "blended",
+        "wind_mph": 245.0,
+        "adjustment": 0.0008
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "blended",
+        "wind_mph": 210.0,
+        "adjustment": 0.0005
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "gable",
+        "wind_mph": 215.0,
+        "adjustment": 0.0005
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "gable",
+        "wind_mph": 245.0,
+        "adjustment": 0.0004
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "gable",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "hip",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "blended",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      }
+    ],
+    "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.roof_straps.hip at 100 mph (capped to pre_fbc_2002.baseline). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
+    "ordering_adjustment_detail": [
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 100.0,
+        "adjustment": 0.0003
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 90.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 85.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 100.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "capped_to": "post_fbc_2002.baseline",
+        "wind_mph": 60.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "capped_to": "post_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "capped_to": "post_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      }
+    ],
     "scope": "Building structure only; contents and loss of use are separate Hazus functions and are not included. Hazus tends to understate small losses below about 100 mph, where fallen trees (not modelled) do much of the damage.",
     "not_validated_here": "Hazus was validated by its authors against insurance losses from past storms; these curves have not been checked against this portfolio's own claims. The Finance workbook's upgrade damage-effect request is still unanswered.",
     "script": "backend/scripts/build_damage_curves.py"

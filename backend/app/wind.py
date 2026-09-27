@@ -90,12 +90,20 @@ GUST_FACTOR = float(load_gust_factor_model()["gust_factor"])
 GUST_DURATION_SECONDS = DEMO_GUST_DURATION_SECONDS
 
 
-def land_exposure_factor() -> float:
+def land_exposure_factor(bundle: dict | None = None) -> float:
     """Open-terrain land reduction applied to the marine profile's sustained wind.
 
     Every priced property is on land; the profile is a marine one with no surface
     friction. Calibrated jointly with the decay exponent against station peak gusts.
+
+    `bundle`, when given, overrides the production fixture with an explicit
+    `{gust_factor, land_exposure_factor, outer_decay_exponent, wind_calibration_id}`
+    (see `_config` and `storm_parameters`) - for scoring an alternative jointly-fitted
+    combination (a cohort's own fit, a leave-one-storm-out fold) without mutating this
+    module's globals, its lru_cache state, or any fixture file.
     """
+    if bundle is not None:
+        return float(bundle["land_exposure_factor"])
     return float(load_wind_calibration()["land_exposure_factor"])
 
 
@@ -110,15 +118,22 @@ FLORIDA_WINDOW = {"min_lat": 22.5, "max_lat": 32.5, "min_lon": -89.5, "max_lon":
 NEGLIGIBLE_GUST_MPH = 20.0
 
 
-def _config(catalog_id: str = "storm_catalog") -> WindFieldConfig:
+def _config(catalog_id: str = "storm_catalog", bundle: dict | None = None) -> WindFieldConfig:
+    """wind_field's own config: run/catalog identity, gust factor, gust duration.
+
+    `bundle`, when given, overrides `gust_factor` (see `land_exposure_factor` for the
+    full override shape); anything not present in this config - decay, land exposure -
+    is applied downstream in `storm_parameters` and `exposures_for_storm`, not here.
+    """
+    gust_factor = float(bundle["gust_factor"]) if bundle is not None else GUST_FACTOR
     return WindFieldConfig(
         run_id="weather-risk-platform",
         catalog_id=catalog_id,
-        gust_factor=GUST_FACTOR,
+        gust_factor=gust_factor,
         gust_duration_seconds=GUST_DURATION_SECONDS,
         assumption_notes=(
             "Storm size per storm from the HURDAT2 wind-radii fit; gust factor "
-            f"{GUST_FACTOR} measured at Florida ASOS stations; decay and land exposure "
+            f"{gust_factor} measured at Florida ASOS stations; decay and land exposure "
             "calibrated to station peak gusts. See metadata() for the model ids."
         ),
     )
@@ -158,28 +173,34 @@ def size_basis_point(storm: dict) -> dict:
     return max(inside or storm["track"], key=lambda point: point["max_wind_kt"])
 
 
-def storm_parameters(storm: dict, model: dict | None = None) -> dict:
+def storm_parameters(storm: dict, model: dict | None = None, bundle: dict | None = None) -> dict:
     """This storm's size parameters: one row in wind_field's storm_parameters shape.
 
     The radius of maximum wind is the storm-size model at `size_basis_point`, constant
-    through the event; the decay exponent is the station-calibrated value; taper and
-    cutoff are the record medians. `size_basis` records the point used so the value can
-    be audited against the track.
+    through the event; the decay exponent is the station-calibrated value (or `bundle`'s,
+    see `land_exposure_factor`); taper and cutoff are the record medians. `size_basis`
+    records the point used so the value can be audited against the track.
     """
     model = model or load_storm_size_model()
-    calibration = load_wind_calibration()
+    if bundle is not None:
+        outer_decay_exponent = float(bundle["outer_decay_exponent"])
+        calibration_id = bundle.get("wind_calibration_id", "bundle override")
+    else:
+        calibration = load_wind_calibration()
+        outer_decay_exponent = calibration["outer_decay_exponent"]
+        calibration_id = calibration["wind_calibration_id"]
     peak = size_basis_point(storm)
     return {
         "storm_id": storm["storm_id"],
         "rmw_km": round(rmw_km(peak["max_wind_kt"], peak["latitude"], model), 1),
-        "outer_decay_exponent": calibration["outer_decay_exponent"],
+        "outer_decay_exponent": outer_decay_exponent,
         "taper_start_km": model["taper"]["taper_start_km"],
         "cutoff_km": model["taper"]["cutoff_km"],
         "parameter_status": "sourced",
         "source_note": (
             f"{model['storm_size_model_id']}: RMW from the storm's peak near Florida of "
             f"{peak['max_wind_kt']:g} kt at {peak['latitude']:g} N; decay from "
-            f"{calibration['wind_calibration_id']}; taper from record medians."
+            f"{calibration_id}; taper from record medians."
         ),
         "size_basis": {
             "peak_wind_kt": peak["max_wind_kt"],
@@ -234,13 +255,23 @@ def track_gaps(storm: dict) -> list[str]:
 
 
 def exposures_for_storm(
-    storm: dict, properties: list[tuple[str, float, float]]
+    storm: dict,
+    properties: list[tuple[str, float, float]],
+    bundle: dict | None = None,
 ) -> tuple[list[WindExposure], list[dict]]:
     """One exposure row per property, including explicit zeros for homes missed.
 
     `properties` is (property_id, latitude, longitude). Returns the exposure rows and,
     alongside them, the closest-approach detail for each - which is what makes a zero
     row auditable: "0 mph, centre passed 480 km away" is a finding, "no row" is a bug.
+
+    `bundle`, when given, is an explicit
+    `{gust_factor, land_exposure_factor, outer_decay_exponent, wind_calibration_id}`
+    override (see `land_exposure_factor`) scoring this storm under a different
+    jointly-fitted combination - a cohort's own fit, a leave-one-storm-out fold, a
+    sensitivity comparison - than the production fixtures. It never mutates this
+    module's globals, its lru_cache state, or any fixture file; omit it (the default)
+    to score against the production bundle exactly as before.
 
     Raises ValueError, with wind_field's message, for inputs it cannot model (for
     example a property id that appears twice).
@@ -257,7 +288,7 @@ def exposures_for_storm(
     )
 
     # One size for the whole event, from the storm-size model.
-    parameters = storm_parameters(storm)
+    parameters = storm_parameters(storm, bundle=bundle)
     parameter_table = pd.DataFrame([{k: v for k, v in parameters.items() if k != "size_basis"}])
 
     # Peak over every continuous stretch of the track, and the closest pass of any.
@@ -276,7 +307,7 @@ def exposures_for_storm(
             track,
             property_table,
             parameter_table,
-            _config(),
+            _config(bundle=bundle),
         )
         stretch = result.exposures.set_index("property_id")
         if peaks is None:
@@ -297,7 +328,7 @@ def exposures_for_storm(
         # The profile is marine; every property is on land. Rounded to 0.01 mph so
         # results are identical across platforms whose maths libraries differ in the
         # last bit; far below any meaningful difference.
-        gust = round(float(row["peak_gust_mph"]) * land_exposure_factor(), 2)
+        gust = round(float(row["peak_gust_mph"]) * land_exposure_factor(bundle), 2)
         if gust < NEGLIGIBLE_GUST_MPH:
             gust = 0.0
         exposures.append(
@@ -323,7 +354,7 @@ def exposures_for_storm(
                     "distance_km": round(float(row["min_sampled_center_distance_km"]), 1),
                 },
                 "rmw_km": parameters["rmw_km"],
-                "land_exposure_factor": land_exposure_factor(),
+                "land_exposure_factor": land_exposure_factor(bundle),
             }
         )
 
@@ -346,22 +377,66 @@ def storm_by_id(storm_id: str, catalog: dict | None = None) -> dict | None:
 
 
 def _validation_summary() -> dict:
-    """The headline numbers of fixtures/wind_validation.json, if it has been produced."""
+    """The headline numbers of fixtures/wind_validation.json, if it has been produced.
+
+    scripts/validate_wind_field.py separates fitted (in-sample), holdout
+    (out-of-sample, refit per fold), legacy-frozen (scored on storms the bundle never
+    saw) and an optional combined-cohort sensitivity result rather than publishing one
+    pooled figure - this keeps that split rather than collapsing it back into a single
+    number, and generates every count from the fixture itself rather than repeating a
+    hardcoded storm count in prose here.
+
+    The flat top-level keys (storms, mean_absolute_error_kt, ...) are kept, equal to
+    the fitted section, only so a caller reading metadata()["validation"] the way this
+    function published it before the fitted/holdout/legacy split existed keeps working
+    unchanged; "fitted" is the section to read going forward.
+    """
     path = FIXTURES / "wind_validation.json"
     if not path.exists():
         return {"status": "not run"}
-    summary = json.loads(path.read_text(encoding="utf-8"))
-    return {
-        "wind_validation_id": summary["wind_validation_id"],
-        "storms": summary["selection"]["storms"],
-        "station_storm_pairs": summary["selection"]["station_storm_pairs"],
-        "median_ratio_modeled_over_observed": summary["all"]["median_ratio_modeled_over_observed"],
-        "mean_absolute_error_kt": summary["all"]["mean_absolute_error_kt"],
-        "within_15_percent": summary["all"]["within_15_percent"],
-        "within_75_km_median_ratio": summary["within_75_km"]["median_ratio_modeled_over_observed"],
-        "beyond_75_km_median_ratio": summary["beyond_75_km"]["median_ratio_modeled_over_observed"],
-        "observed_64kt_or_more_median_ratio": summary["observed_64kt_or_more"]["median_ratio_modeled_over_observed"],
+    report = json.loads(path.read_text(encoding="utf-8"))
+    fitted = report["primary_fitted"]
+    holdout = report["primary_holdout"]
+    legacy = report["legacy_frozen_primary"]
+
+    fitted_summary = {
+        "validation_type": fitted["validation_type"],
+        "storms": fitted["selection"]["storms"],
+        "station_storm_pairs": fitted["selection"]["station_storm_pairs"],
+        "median_ratio_modeled_over_observed": fitted["all"]["median_ratio_modeled_over_observed"],
+        "mean_absolute_error_kt": fitted["all"]["mean_absolute_error_kt"],
+        "within_15_percent": fitted["all"]["within_15_percent"],
+        "within_75_km_median_ratio": fitted["within_75_km"]["median_ratio_modeled_over_observed"],
+        "beyond_75_km_median_ratio": fitted["beyond_75_km"]["median_ratio_modeled_over_observed"],
+        "observed_64kt_or_more_median_ratio": fitted["observed_64kt_or_more"]["median_ratio_modeled_over_observed"],
     }
+    summary = {
+        "wind_validation_id": report["wind_validation_id"],
+        "fitted": fitted_summary,
+        "holdout": {
+            "validation_type": holdout["validation_type"],
+            "cohort_id": holdout["cohort_id"],
+            "out_of_sample_mean_absolute_error_kt": holdout["out_of_sample"]["mean_absolute_error_kt"],
+            "out_of_sample_median_ratio": holdout["out_of_sample"]["median_ratio"],
+        },
+        "legacy_frozen_primary": {
+            "validation_type": legacy["validation_type"],
+            "storms": legacy["selection"]["storms"],
+            "station_storm_pairs": legacy["selection"]["station_storm_pairs"],
+            "median_ratio_modeled_over_observed": legacy["all"]["median_ratio_modeled_over_observed"],
+            "mean_absolute_error_kt": legacy["all"]["mean_absolute_error_kt"],
+        },
+        **fitted_summary,
+    }
+    if "combined_sensitivity" in report:
+        combined = report["combined_sensitivity"]
+        summary["combined_sensitivity"] = {
+            "validation_type": combined["validation_type"],
+            "wind_calibration_id": combined["wind_calibration_id"],
+            "median_ratio_modeled_over_observed": combined["all"]["median_ratio_modeled_over_observed"],
+            "mean_absolute_error_kt": combined["all"]["mean_absolute_error_kt"],
+        }
+    return summary
 
 
 def metadata() -> dict:

@@ -34,3 +34,24 @@ because the cloud environment could not reach the host. The 76 stations in
 `build.py`; `merge_extension.py` then appended the results to the committed tables.
 The 2016-2024 rows are byte-identical after the merge. No parser-misalignment runs were
 found in the 2004-2005 records.
+
+## Cohort usage (added 27 September 2026)
+
+This section documents how the two manifest files above are used; it changes nothing
+about the receipt or build history recorded higher up. `backend/scripts/
+calibration_common.py` treats `storms_2016_2024.csv` and `storms_2004_2005.csv` as the
+only two authoritative cohort manifests, joined and excluded strictly by `storm_id`:
+
+- **`primary_2016_2024`** - exactly `storms_2016_2024.csv`'s 11 storms. The production
+  cohort: every fixture `backend/scripts/build_calibration.py` promotes is fitted on
+  this cohort alone.
+- **`legacy_2004_2005`** - exactly `storms_2004_2005.csv`'s 8 storms. Used only to
+  evaluate the production (primary) bundle frozen, never to fit a bundle of its own and
+  never merged into production.
+- **`combined_2004_2024`** - the union of both manifests, 19 storms (all of
+  `fl_gust_pairs_2min_qc.csv.gz`). An explicit alternative and sensitivity comparison,
+  never a silent default; scored by `backend/scripts/compare_calibration_cohorts.py`.
+
+Requesting a cohort id other than these three is an error, not a guess at a storm-year
+boundary. See `docs/calibration.md` for what each cohort's fit actually produced and
+why production uses the primary cohort alone.

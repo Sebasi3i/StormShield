@@ -445,6 +445,25 @@ class EligibleOption(BaseModel):
     upgrade_ids: list[str]
 
 
+class RoofShapeSelection(BaseModel):
+    """Which curve a property actually used, auditable independently of the curve_ids
+    the run publishes for the whole portfolio in metadata.
+
+    fallback_reason is null when the declared shape was recognised and this class/
+    upgrade had a curve for it; otherwise it names why the blended curve was used - an
+    unrecognised declared value (also raised as a warning, since that is a caller-input
+    problem) or simply a curve set with no shape-specific curve for this class/upgrade
+    (a fact about the curve set, not the input).
+    """
+
+    property_id: str
+    declared_roof_shape: str
+    resolved_roof_shape: str
+    baseline_curve_id: str
+    upgrade_curve_ids: dict[str, str]
+    fallback_reason: list[str] | None
+
+
 class StormTrackPointInput(BaseModel):
     """One six-hourly fix of a storm supplied with a request, in the catalog's shape."""
 
@@ -533,6 +552,10 @@ class StormLossResponse(BaseModel):
     storm_ids: list[str]
     property_ids: list[str]
     eligible_options: list[EligibleOption]
+    roof_shape_selection: list[RoofShapeSelection] = Field(
+        description="Per property: declared and resolved roof_shape, the actual "
+        "baseline/upgrade curve_ids used, and why (if at all) it fell back to blended."
+    )
     evidence_status: EvidenceStatus = Field(
         description="assumed if any material input is assumed. Describes provenance, "
         "not whether the model has been validated."

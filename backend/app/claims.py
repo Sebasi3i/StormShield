@@ -241,10 +241,12 @@ def _curve_assumption(curve_set: dict, evidence_statuses: set[str]) -> str:
     return (
         f"Damage curves ({curve_set['curve_set_id']}) are published FEMA Hazus building "
         "loss functions mapped to the platform's classes. A property's declared "
-        "roof_shape ('gable' or 'hip') selects the matching curve; without one, the "
-        "blended (equal gable/hip mix) curve is used, an assumption recorded in "
-        "metadata.curve_provenance. Not checked against this portfolio's own claims, and "
-        "the Finance workbook's upgrade damage-effect request is still unanswered."
+        "roof_shape ('gable' or 'hip') selects the matching curve; without one, or with "
+        "an unrecognised value (see warnings), the blended (equal gable/hip mix) curve "
+        "is used, an assumption recorded in metadata.curve_provenance. Exactly which "
+        "curve each property used is in roof_shape_selection, not just this note. Not "
+        "checked against this portfolio's own claims, and the Finance workbook's "
+        "upgrade damage-effect request is still unanswered."
     )
 
 
@@ -263,18 +265,40 @@ def _resolve_roof_shape(roof_shape: str | None) -> str:
     return shape if shape in KNOWN_ROOF_SHAPES else BLENDED_ROOF_SHAPE
 
 
-def find_curve(
+def _select_curve(
     curves: dict[tuple[str, str, str], Curve],
     vulnerability_class: str,
     upgrade_id: str,
-    roof_shape: str = BLENDED_ROOF_SHAPE,
-) -> Curve:
-    shape = _resolve_roof_shape(roof_shape)
-    curve = curves.get((vulnerability_class, upgrade_id, shape))
-    if curve is None and shape != BLENDED_ROOF_SHAPE:
-        # This class/upgrade has no curve split out for the declared shape (a supplied
-        # curve set may only carry "blended"): fall back to the same curve an
-        # unspecified roof shape would use, rather than treating it as missing data.
+    declared_roof_shape: str | None,
+) -> tuple[Curve, str, str | None, bool]:
+    """The curve for this class/upgrade/declared shape, plus two things `find_curve`'s
+    return value alone cannot tell a caller: the shape actually used (curve.roof_shape
+    of the curve returned - a curve set may not have a shape-specific curve even when
+    the declared shape itself was fine), and why, when it differs from what was
+    declared.
+
+    Two independent fallbacks can each land on the blended curve, and are reported
+    differently because they mean different things:
+
+      - the declared value itself is not recognised - anything other than "gable",
+        "hip", "unknown", or empty/missing (a likely typo). This is a caller-input
+        problem worth a warning, distinct from "unknown", which is an intentional
+        "not specified".
+      - the curve set simply has no shape-specific curve for this class/upgrade (every
+        curve set built before this feature, or a caller-supplied one that only ever
+        carries "blended"). This is a fact about the curve set's coverage, not the
+        caller's input, and applies even to a validly-declared "gable" or "hip".
+    """
+    declared = (declared_roof_shape or "").strip().lower()
+    normalized_shape = _resolve_roof_shape(declared_roof_shape)
+    invalid_input = normalized_shape == BLENDED_ROOF_SHAPE and declared not in ("", "unknown")
+
+    curve = curves.get((vulnerability_class, upgrade_id, normalized_shape))
+    unavailable_for_shape = curve is None and normalized_shape != BLENDED_ROOF_SHAPE
+    if unavailable_for_shape:
+        # This class/upgrade has no curve split out for the declared shape: fall back
+        # to the same curve an unspecified roof shape would use, rather than treating
+        # it as missing data.
         curve = curves.get((vulnerability_class, upgrade_id, BLENDED_ROOF_SHAPE))
     if curve is None:
         available = sorted({u for c, u, _ in curves if c == vulnerability_class})
@@ -282,6 +306,28 @@ def find_curve(
             f"no {upgrade_id} curve for vulnerability class {vulnerability_class}. "
             f"Available upgrades for that class: {', '.join(available) or 'none'}"
         )
+
+    fallback_reason = None
+    if invalid_input:
+        fallback_reason = (
+            f"declared roof_shape {declared_roof_shape!r} is not a recognised value "
+            "(expected 'gable', 'hip', 'unknown', or empty/missing); used the blended curve"
+        )
+    elif unavailable_for_shape:
+        fallback_reason = (
+            f"no {normalized_shape} curve for {vulnerability_class}/{upgrade_id} in "
+            "this curve set; used the blended curve"
+        )
+    return curve, curve.roof_shape, fallback_reason, invalid_input
+
+
+def find_curve(
+    curves: dict[tuple[str, str, str], Curve],
+    vulnerability_class: str,
+    upgrade_id: str,
+    roof_shape: str = BLENDED_ROOF_SHAPE,
+) -> Curve:
+    curve, _, _, _ = _select_curve(curves, vulnerability_class, upgrade_id, roof_shape)
     return curve
 
 
@@ -450,6 +496,13 @@ def compute_losses(
     every declared storm/property/upgrade combination gets a row, including zero-loss
     rows for homes a storm missed, and every declared id is published so the consumer
     can check nothing was dropped.
+
+    `roof_shape_selection` makes curve choice itself auditable per property: the
+    declared roof_shape, the shape it resolved to, the actual baseline and upgrade
+    curve_ids used, and (when a fallback happened) why - a caller-input problem
+    (an unrecognised declared value, warned about separately) or simply a curve set
+    with no shape-specific curve for that class/upgrade. `rows` lists curve_ids
+    available to the whole run, not which one a given property used; this is that.
     """
     curve_set = curve_set or load_curve_set()
     curves = curve_set["curves"]
@@ -468,6 +521,8 @@ def compute_losses(
     evidence_statuses = {curve.evidence_status for curve in curves.values()}
     rows: list[dict] = []
     resolved_options: list[dict] = []
+    roof_shape_selection: list[dict] = []
+    curve_selection_by_property: dict[str, dict] = {}
 
     for prop in properties:
         if prop.property_id not in policies_by_id:
@@ -492,6 +547,52 @@ def compute_losses(
                 f"class {prop.vulnerability_class}; only baseline loss is reported"
             )
 
+        # Curve selection depends only on the property and the curve set, never on a
+        # storm's exposure, so it is resolved once here and reused for every storm
+        # below - the single source of truth for "which curve did this property use",
+        # rather than re-deriving it (and its warning) once per storm.
+        baseline_curve, resolved_shape, baseline_fallback, baseline_invalid = _select_curve(
+            curves, prop.vulnerability_class, BASELINE, prop.roof_shape
+        )
+        upgrade_curves: dict[str, Curve] = {}
+        fallback_reasons: list[str] = []
+        invalid_declared_value = baseline_invalid
+        if baseline_fallback:
+            fallback_reasons.append(baseline_fallback)
+        for upgrade_id in options:
+            upgrade_curve, _, upgrade_fallback, upgrade_invalid = _select_curve(
+                curves, prop.vulnerability_class, upgrade_id, prop.roof_shape
+            )
+            upgrade_curves[upgrade_id] = upgrade_curve
+            invalid_declared_value = invalid_declared_value or upgrade_invalid
+            if upgrade_fallback and upgrade_fallback not in fallback_reasons:
+                fallback_reasons.append(upgrade_fallback)
+
+        curve_selection_by_property[prop.property_id] = {
+            "baseline_curve": baseline_curve,
+            "upgrade_curves": upgrade_curves,
+        }
+        roof_shape_selection.append(
+            {
+                "property_id": prop.property_id,
+                "declared_roof_shape": prop.roof_shape,
+                "resolved_roof_shape": resolved_shape,
+                "baseline_curve_id": baseline_curve.curve_id,
+                "upgrade_curve_ids": {u: c.curve_id for u, c in upgrade_curves.items()},
+                "fallback_reason": fallback_reasons or None,
+            }
+        )
+        # Only the caller-input problem gets a warning: an "unknown"/empty roof_shape
+        # intentionally falls back to blended and is not a data problem, and a curve
+        # set with no shape-specific curve is a fact about the curve set, surfaced in
+        # fallback_reason above rather than as a warning about the property's input.
+        if invalid_declared_value:
+            warnings.append(
+                f"property {prop.property_id}: declared roof_shape {prop.roof_shape!r} is "
+                "not a recognised value (expected 'gable', 'hip', 'unknown', or "
+                "empty/missing); used the blended curve"
+            )
+
     for storm_id in storm_ids:
         for prop in properties:
             exposure = indexed_exposures.get((storm_id, prop.property_id))
@@ -503,7 +604,8 @@ def compute_losses(
                 )
 
             policy = policies_by_id[prop.property_id]
-            baseline_curve = find_curve(curves, prop.vulnerability_class, BASELINE, prop.roof_shape)
+            selection = curve_selection_by_property[prop.property_id]
+            baseline_curve = selection["baseline_curve"]
 
             # Computed once per storm/property so it is identical across upgrade rows.
             baseline_fraction = damage_fraction(
@@ -519,7 +621,7 @@ def compute_losses(
             )
 
             for upgrade_id in options:
-                upgrade_curve = find_curve(curves, prop.vulnerability_class, upgrade_id, prop.roof_shape)
+                upgrade_curve = selection["upgrade_curves"][upgrade_id]
                 upgraded_fraction = damage_fraction(
                     upgrade_curve, exposure.peak_gust_mph, exposure.wind_metric
                 )
@@ -595,6 +697,7 @@ def compute_losses(
         "storm_ids": list(storm_ids),
         "property_ids": [p.property_id for p in properties],
         "eligible_options": resolved_options,
+        "roof_shape_selection": roof_shape_selection,
         # 'assumed' if any material input is assumed. It describes provenance, not
         # whether the model has been validated.
         "evidence_status": "assumed" if "assumed" in evidence_statuses else "sourced",
