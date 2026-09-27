@@ -91,7 +91,9 @@ version 1.1, snake_case, documented at `/docs`.
 - `GET /api/v1/storm-losses/example` — a complete worked run, no request body needed.
   Takes `?storm_id=`; defaults to the Category 4 Miami landfall.
 - `POST /api/v1/storm-losses` — the contract. Accepts the frontend `Property` shape
-  (`id`, `value`, `latitude`, `longitude`) directly. Optional `storms` prices storms
+  (`id`, `value`, `latitude`, `longitude`, plus `vulnerability_class` and `roof_shape`)
+  directly, and every row says which features the home already has and which the
+  upgrade adds, so a client can label an upgrade by what it changes. Optional `storms` prices storms
   sent with the request (such as generated ones) instead of the stored catalog.
 - `GET /api/v1/storm-catalog` — the storms available to price, with animatable tracks.
 - `GET /api/v1/damage-curves` — the curves and policy template, with their provenance.

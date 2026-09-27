@@ -527,6 +527,17 @@ class StormLossRow(BaseModel):
     storm_id: str
     property_id: str
     upgrade_id: str
+    installed_features: list[str] | None = Field(
+        default=None,
+        description="Mitigation features the home has in its baseline state, from the "
+        "baseline curve (a post_fbc_2002 home has roof_straps by construction). Null "
+        "for a curve set that does not record features.",
+    )
+    features_added: list[str] | None = Field(
+        default=None,
+        description="What this upgrade adds on top of installed_features; label an "
+        "upgrade by this rather than by upgrade_id.",
+    )
     peak_gust_mph: float
     baseline_damage_usd: float
     upgraded_damage_usd: float

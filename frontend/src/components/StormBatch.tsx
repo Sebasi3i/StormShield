@@ -118,7 +118,7 @@ function StormBatch({
                         {formatCurrency(baselinePayout(losses, storm.storm_id))}
                       </strong>
 
-                      <small>payout</small>
+                      <small>covered</small>
                     </>
                   ) : (
                     <small>—</small>

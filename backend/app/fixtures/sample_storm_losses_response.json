@@ -215,6 +215,10 @@
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 149.4,
       "baseline_damage_usd": 596199.35,
       "upgraded_damage_usd": 399101.35,
@@ -226,6 +230,10 @@
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 149.4,
       "baseline_damage_usd": 596199.35,
       "upgraded_damage_usd": 310545.8,
@@ -237,6 +245,11 @@
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 149.4,
       "baseline_damage_usd": 596199.35,
       "upgraded_damage_usd": 272981.75,
@@ -248,6 +261,12 @@
       "storm_id": "SYN0155",
       "property_id": "P002",
       "upgrade_id": "shutters",
+      "installed_features": [
+        "roof_straps"
+      ],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 149.7,
       "baseline_damage_usd": 287556.0,
       "upgraded_damage_usd": 88818.0,
@@ -259,6 +278,10 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 71.4,
       "baseline_damage_usd": 481.12,
       "upgraded_damage_usd": 481.12,
@@ -270,6 +293,10 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 71.4,
       "baseline_damage_usd": 481.12,
       "upgraded_damage_usd": 481.12,
@@ -281,6 +308,11 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 71.4,
       "baseline_damage_usd": 481.12,
       "upgraded_damage_usd": 481.12,
@@ -292,6 +324,10 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 71.6,
       "baseline_damage_usd": 922.43,
       "upgraded_damage_usd": 922.43,
@@ -303,6 +339,10 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 71.6,
       "baseline_damage_usd": 922.43,
       "upgraded_damage_usd": 922.43,
@@ -314,6 +354,11 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 71.6,
       "baseline_damage_usd": 922.43,
       "upgraded_damage_usd": 922.43,
@@ -325,6 +370,12 @@
       "storm_id": "SYN0155",
       "property_id": "P005",
       "upgrade_id": "shutters",
+      "installed_features": [
+        "roof_straps"
+      ],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 70.2,
       "baseline_damage_usd": 639.73,
       "upgraded_damage_usd": 638.02,
@@ -336,6 +387,10 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
@@ -347,6 +402,10 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
@@ -358,6 +417,11 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
@@ -369,6 +433,10 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 103.4,
       "baseline_damage_usd": 13217.36,
       "upgraded_damage_usd": 13098.08,
@@ -380,6 +448,10 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 103.4,
       "baseline_damage_usd": 13217.36,
       "upgraded_damage_usd": 12044.44,
@@ -391,6 +463,11 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 103.4,
       "baseline_damage_usd": 13217.36,
       "upgraded_damage_usd": 11999.0,
@@ -402,6 +479,12 @@
       "storm_id": "SYN0155",
       "property_id": "P008",
       "upgrade_id": "shutters",
+      "installed_features": [
+        "roof_straps"
+      ],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 117.2,
       "baseline_damage_usd": 12412.27,
       "upgraded_damage_usd": 8830.16,
@@ -413,6 +496,10 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 98.3,
       "baseline_damage_usd": 14255.08,
       "upgraded_damage_usd": 14255.08,
@@ -424,6 +511,10 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 98.3,
       "baseline_damage_usd": 14255.08,
       "upgraded_damage_usd": 13862.1,
@@ -435,6 +526,11 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 98.3,
       "baseline_damage_usd": 14255.08,
       "upgraded_damage_usd": 13862.1,
@@ -446,6 +542,10 @@
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 149.5,
       "baseline_damage_usd": 473722.16,
       "upgraded_damage_usd": 317197.76,
@@ -457,6 +557,10 @@
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 149.5,
       "baseline_damage_usd": 473722.16,
       "upgraded_damage_usd": 246834.54,
@@ -468,6 +572,11 @@
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 149.5,
       "baseline_damage_usd": 473722.16,
       "upgraded_damage_usd": 216967.27,

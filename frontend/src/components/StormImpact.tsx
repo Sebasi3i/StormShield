@@ -112,7 +112,7 @@ function StormImpact({
         </div>
 
         <span className="impact-estimate-badge">
-          Illustrative
+          Estimate
         </span>
       </div>
 
@@ -126,13 +126,13 @@ function StormImpact({
             mph
           </span>
 
-          <p>Highest peak property gust</p>
+          <p>Strongest wind at a property</p>
         </div>
       </div>
 
       <div className="impact-financials">
         <div className="impact-stat">
-          <span>Modeled building damage</span>
+          <span>Repair cost</span>
 
           <strong>
             {formatCurrency(totalDamage)}
@@ -140,7 +140,7 @@ function StormImpact({
         </div>
 
         <div className="impact-stat">
-          <span>Modeled insurer payout</span>
+          <span>Covered by insurance</span>
 
           <strong>
             {formatCurrency(totalPayout)}
@@ -151,11 +151,11 @@ function StormImpact({
       <div className="impact-highlight">
         <div>
           <span>
-            Selected-storm avoidable payout
+            Claims avoided with upgrades
           </span>
 
           <p>
-            Best returned upgrade per property
+            Best upgrade per property, this storm
           </p>
         </div>
 
@@ -208,7 +208,7 @@ function StormImpact({
                     )}
                   </strong>
 
-                  <span>damage</span>
+                  <span>repair cost</span>
                 </div>
               </div>
             )
@@ -217,7 +217,7 @@ function StormImpact({
 
 
       <div className="impact-disclaimer">
-        Illustrative estimate — includes assumptions
+        Estimate for this storm, not a forecast
       </div>
     </div>
   )

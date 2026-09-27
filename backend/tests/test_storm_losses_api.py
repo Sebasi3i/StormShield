@@ -533,3 +533,14 @@ indent=2) + chr(10), encoding='utf-8')"
     sample = json.loads(sample_path.read_text(encoding="utf-8"))
 
     assert sample == example, "sample_storm_losses_response.json is stale"
+
+
+def test_rows_say_what_the_home_has_and_what_the_upgrade_adds(example):
+    """A post-2002 home already has straps, so its only option adds shutters; a
+    pre-2002 home's package adds both. Clients label upgrades by features_added."""
+    by_key = {(r["property_id"], r["upgrade_id"]): r for r in example["rows"]}
+    assert by_key[(POST_FBC, "shutters")]["installed_features"] == ["roof_straps"]
+    assert by_key[(POST_FBC, "shutters")]["features_added"] == ["shutters"]
+    assert by_key[("P001", "shutters_roof_straps")]["installed_features"] == []
+    assert by_key[("P001", "shutters_roof_straps")]["features_added"] == ["roof_straps", "shutters"]
+    assert by_key[("P001", "roof_straps")]["features_added"] == ["roof_straps"]

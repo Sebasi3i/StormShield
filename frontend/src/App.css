@@ -2320,3 +2320,16 @@
 .lab-loading {
   color: #52627a;
 }
+
+.analysis-muted {
+  color: #52627a;
+  font-weight: 500;
+}
+
+.analysis-breakdown {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: #52627a;
+  white-space: normal;
+}

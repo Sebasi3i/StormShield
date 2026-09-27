@@ -648,11 +648,19 @@ def compute_losses(
                         f"{upgrade_curve.curve_id}."
                     )
 
+                # What the home has and what this upgrade adds, read off the curves'
+                # feature lists so a client can label an upgrade by what it changes
+                # (a post-2002 home already has straps; "shutters" adds shutters only).
+                known_features = baseline_curve.features is not None and upgrade_curve.features is not None
                 rows.append(
                     {
                         "storm_id": storm_id,
                         "property_id": prop.property_id,
                         "upgrade_id": upgrade_id,
+                        "installed_features": list(baseline_curve.features) if baseline_curve.features is not None else None,
+                        "features_added": (
+                            sorted(set(upgrade_curve.features) - set(baseline_curve.features)) if known_features else None
+                        ),
                         "peak_gust_mph": round(exposure.peak_gust_mph, 1),
                         "baseline_damage_usd": _money(baseline_damage),
                         "upgraded_damage_usd": _money(upgraded_damage),
