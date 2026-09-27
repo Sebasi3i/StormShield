@@ -1,46 +1,43 @@
+import { API_BASE_URL } from './config'
 import type {
-  GenerateStormsRequest,
-  GeneratedStormCatalog,
-  Storm,
+  FloridaStormBatch,
+  GenerateFloridaStormsRequest,
   StormCatalog,
 } from '../types/Storm'
 
-const API_BASE_URL = 'http://127.0.0.1:8000'
-
-export async function getStorm(stormId: string): Promise<Storm> {
+/*
+ * The stored catalog: the selectable storm tracks, with everything needed to
+ * draw and animate them.
+ */
+export async function getStormCatalog(): Promise<StormCatalog> {
   const response = await fetch(`${API_BASE_URL}/api/v1/storm-catalog`)
 
   if (!response.ok) {
     throw new Error('Failed to load storm catalog')
   }
 
-  const catalog: StormCatalog = await response.json()
-
-  const storm = catalog.storms.find(
-    (catalogStorm) => catalogStorm.storm_id === stormId,
-  )
-
-  if (!storm) {
-    throw new Error(`Storm ${stormId} was not found`)
-  }
-
-  return storm
+  return response.json()
 }
 
 /*
- * Runs the hurricane simulator on the API from one starting point. The first
- * call loads the simulator, so it takes a few seconds; later calls are quick.
+ * A batch of storms from a random starting point that reaches Florida. The API
+ * searches starting points until enough of the batch cross Florida at Category
+ * 3 or stronger, so a call takes a few seconds; the first one also loads the
+ * simulator. The same seed always returns the same batch within a season year.
  */
-export async function generateStorms(
-  request: GenerateStormsRequest,
-): Promise<GeneratedStormCatalog> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/storms/generate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+export async function generateFloridaStorms(
+  request: GenerateFloridaStormsRequest,
+): Promise<FloridaStormBatch> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/storms/generate-florida`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
     },
-    body: JSON.stringify(request),
-  })
+  )
 
   if (!response.ok) {
     throw new Error(await errorMessage(response, 'Storm generation failed'))
@@ -50,8 +47,8 @@ export async function generateStorms(
 }
 
 /*
- * The API explains a rejected start (over land, too far from where storms
- * form) in detail.message, and a rejected field in FastAPI's detail list.
+ * The API explains a failed search in detail.message, and a rejected field in
+ * FastAPI's detail list.
  */
 async function errorMessage(
   response: Response,

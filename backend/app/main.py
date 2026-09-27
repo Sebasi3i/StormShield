@@ -25,6 +25,7 @@ from .schemas import (
     CountyDetail,
     CountySummary,
     EligibleOption,
+    GenerateFloridaStormsRequest,
     GenerateStormsRequest,
     HurricaneCategoryInfo,
     MitigationRequest,
@@ -770,6 +771,33 @@ def generate_storms(request: GenerateStormsRequest) -> dict:
     except ValueError as error:
         # The simulator names what it rejected (a start over land, or far from where
         # Atlantic storms have formed); that is the caller's to change.
+        raise HTTPException(
+            status_code=422,
+            detail={"message": str(error), "error": "GenerationInputError"},
+        ) from error
+    return {**catalog, "wind_model": wind.metadata()}
+
+
+@app.post(f"{API_PREFIX}/v1/storms/generate-florida", tags=["storm losses"])
+def generate_florida_storms(request: GenerateFloridaStormsRequest) -> dict:
+    """Generate a batch of storms from a random starting point that reaches Florida.
+
+    Draws a starting point at random from the historical record, runs `count` storms
+    from it, and keeps the first starting point whose batch puts at least
+    `min_florida_hits` storms over Florida at Category 3 or stronger. The whole batch is
+    returned, in the storm catalog's shape, with each storm's `florida_hit` flag and the
+    search recorded under `florida`. Price the batch by sending it back in the `storms`
+    field of POST /api/v1/storm-losses. Nothing is stored server-side.
+    """
+    try:
+        catalog = generator.florida_batch(
+            request.seed,
+            request.count,
+            request.max_wind_kt,
+            request.min_florida_hits,
+            request.season_year,
+        )
+    except ValueError as error:
         raise HTTPException(
             status_code=422,
             detail={"message": str(error), "error": "GenerationInputError"},

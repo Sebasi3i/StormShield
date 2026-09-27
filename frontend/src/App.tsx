@@ -4,43 +4,75 @@ import Portfolio from './components/Portfolio'
 import { properties } from './data/properties'
 import type { Property } from './types/Property'
 import type {
-  GeneratedStormCatalog,
-  GenerationStart,
+  FloridaStormBatch,
   Storm,
+  StormCatalog,
 } from './types/Storm'
-import { generateStorms, getStorm } from './api/storms'
+import { generateFloridaStorms, getStormCatalog } from './api/storms'
 import type { StormLossResponse } from './types/StormLoss'
-import { getStormLosses } from './api/stormLosses'
+import { getStormLosses, lossesForStorm } from './api/stormLosses'
 import StormImpact from './components/StormImpact'
+import StormBatch from './components/StormBatch'
 import FullAnalysis from './components/FullAnalysis'
 import GenerateStorms from './components/GenerateStorms'
 import type { GenerationOptions } from './components/GenerateStorms'
 import './App.css'
 
+// The Storm Scenario value that means "the whole generated batch".
+const FLORIDA_BATCH = 'florida-batch'
+const DEFAULT_CATALOG_STORM = 'SYN0155'
+
 function App() {
   const [selectedProperties, setSelectedProperties] = useState<Property[]>([])
-  const [activeStorm, setActiveStorm] = useState<Storm | null>(null)
+
+  // The three catalog tracks, loaded from the API.
+  const [catalog, setCatalog] = useState<StormCatalog | null>(null)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+
+  // Storm Scenario: a catalog storm id, or the generated Florida batch.
+  const [scenario, setScenario] = useState(DEFAULT_CATALOG_STORM)
+
+  // The storms being simulated (one catalog storm, or the whole batch),
+  // animated together by track step. The focused one drives the status
+  // panel and the impact cards.
+  const [activeStorms, setActiveStorms] = useState<Storm[]>([])
+  const [focusedStormId, setFocusedStormId] = useState<string | null>(null)
   const [stormLoading, setStormLoading] = useState(false)
   const [stormStep, setStormStep] = useState(0)
   const [stormAnimating, setStormAnimating] = useState(false)
-  const [selectedStormId, setSelectedStormId] = useState('SYN0155')
   const [stormLosses, setStormLosses] =
-  useState<StormLossResponse | null>(null)
+    useState<StormLossResponse | null>(null)
+  const [stormError, setStormError] = useState<string | null>(null)
   const [analysisOpen, setAnalysisOpen] = useState(false)
 
-  // Storm generator. The south-east Bahamas is open water where storms have
-  // formed, and close enough to Florida for some members to reach it.
-  const [generationStart, setGenerationStart] = useState<GenerationStart>({
-    latitude: 22.5,
-    longitude: -72.0,
-  })
-  const [pickingStart, setPickingStart] = useState(false)
-  const [generatedCatalog, setGeneratedCatalog] =
-    useState<GeneratedStormCatalog | null>(null)
+  // Florida batch generator.
+  const [batch, setBatch] = useState<FloridaStormBatch | null>(null)
   const [generating, setGenerating] = useState(false)
   const [generationError, setGenerationError] = useState<string | null>(null)
 
-  const generatedStorms = generatedCatalog?.storms ?? []
+  useEffect(() => {
+    let cancelled = false
+
+    getStormCatalog()
+      .then((loaded) => {
+        if (!cancelled) {
+          setCatalog(loaded)
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setCatalogError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load storm catalog',
+          )
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const toggleProperty = (property: Property) => {
     setSelectedProperties((currentProperties) => {
@@ -58,27 +90,31 @@ function App() {
     })
   }
 
+  const resetSimulation = () => {
+    setActiveStorms([])
+    setFocusedStormId(null)
+    setStormStep(0)
+    setStormAnimating(false)
+    setStormLosses(null)
+    setStormError(null)
+    setAnalysisOpen(false)
+  }
+
   const runGeneration = async (options: GenerationOptions) => {
     try {
       setGenerating(true)
       setGenerationError(null)
-      setPickingStart(false)
 
-      const catalog = await generateStorms({
-        latitude: generationStart.latitude,
-        longitude: generationStart.longitude,
-        max_wind_kt: options.maxWindKt,
-        start_date: options.startDate,
+      const generated = await generateFloridaStorms({
         seed: options.seed,
-        count: options.count,
+        count: 10,
+        max_wind_kt: options.maxWindKt,
+        min_florida_hits: 2,
       })
 
-      setGeneratedCatalog(catalog)
-      setSelectedStormId(catalog.storms[0].storm_id)
-      setActiveStorm(null)
-      setStormStep(0)
-      setStormLosses(null)
-      setAnalysisOpen(false)
+      setBatch(generated)
+      setScenario(FLORIDA_BATCH)
+      resetSimulation()
     } catch (error) {
       setGenerationError(
         error instanceof Error ? error.message : 'Storm generation failed.',
@@ -89,66 +125,112 @@ function App() {
   }
 
   const simulateCatastrophe = async () => {
+    // Which storms this scenario runs. The batch is not in the API's catalog,
+    // so it travels with the pricing request.
+    let storms: Storm[]
+    let supplied: Storm[] | undefined
+
+    if (scenario === FLORIDA_BATCH) {
+      if (!batch) {
+        return
+      }
+
+      storms = batch.storms
+      supplied = batch.storms
+    } else {
+      const catalogStorm = catalog?.storms.find(
+        (storm) => storm.storm_id === scenario,
+      )
+
+      if (!catalogStorm) {
+        setStormError(`Storm ${scenario} was not found in the catalog.`)
+        return
+      }
+
+      storms = [catalogStorm]
+    }
+
     try {
       setStormLoading(true)
       setStormStep(0)
       setStormLosses(null)
+      setStormError(null)
       setAnalysisOpen(false)
+      setActiveStorms(storms)
 
-      // Generated storms live here, not in the API's catalog.
-      const generatedStorm = generatedStorms.find(
-        (storm) => storm.storm_id === selectedStormId,
-      )
-      const storm = generatedStorm ?? (await getStorm(selectedStormId))
-
-      setActiveStorm(storm)
+      // Focus the first Florida hit so the batch opens on a storm that matters.
+      const firstHit = storms.find((storm) => storm.florida_hit)
+      setFocusedStormId((firstHit ?? storms[0]).storm_id)
 
       if (selectedProperties.length > 0) {
         const losses = await getStormLosses(
           selectedProperties,
-          selectedStormId,
-          generatedStorm,
+          storms.map((storm) => storm.storm_id),
+          supplied,
         )
 
         setStormLosses(losses)
-
-        console.log('Storm loss results:', losses)
       }
 
-      setStormAnimating(true)
+      // A one-point track has nothing to animate.
+      setStormAnimating(
+        storms.some((storm) => storm.track.length > 1),
+      )
     } catch (error) {
       console.error('Unable to simulate catastrophe:', error)
+      setStormError(
+        error instanceof Error ? error.message : 'Unable to simulate.',
+      )
     } finally {
       setStormLoading(false)
     }
   }
 
-  useEffect(() => {
-    if (!activeStorm || !stormAnimating) {
-      return
-    }
+  // Every active track advances one step per tick; shorter tracks hold their
+  // last point until the longest one finishes.
+  const lastStep = Math.max(
+    0,
+    ...activeStorms.map((storm) => storm.track.length - 1),
+  )
 
-    if (stormStep >= activeStorm.track.length - 1) {
-      setStormAnimating(false)
+  useEffect(() => {
+    if (activeStorms.length === 0 || !stormAnimating || stormStep >= lastStep) {
       return
     }
 
     // Generated tracks run from formation to dissipation and can be twice as
     // long as catalog ones, so long tracks step faster to keep playback short.
-    const trackLength = activeStorm.track.length
+    const trackLength = lastStep + 1
     const stepDelay =
       trackLength > 40 ? Math.max(200, 26000 / trackLength) : 650
 
     const timer = window.setTimeout(() => {
-      setStormStep((currentStep) => currentStep + 1)
+      setStormStep(stormStep + 1)
+
+      if (stormStep + 1 >= lastStep) {
+        setStormAnimating(false)
+      }
     }, stepDelay)
 
     return () => window.clearTimeout(timer)
-  }, [activeStorm, stormAnimating, stormStep])
+  }, [activeStorms, stormAnimating, stormStep, lastStep])
 
-  const currentStormPoint = activeStorm
-    ? activeStorm.track[stormStep]
+  const focusedStorm =
+    activeStorms.find((storm) => storm.storm_id === focusedStormId) ??
+    activeStorms[0] ??
+    null
+
+  const focusedPoint = focusedStorm
+    ? focusedStorm.track[Math.min(stormStep, focusedStorm.track.length - 1)]
     : null
+
+  // Single-storm views read the focused storm's rows out of the batch run.
+  const focusedLosses =
+    stormLosses && focusedStorm
+      ? lossesForStorm(stormLosses, focusedStorm.storm_id)
+      : null
+
+  const isBatch = activeStorms.length > 1
 
   return (
     <main className="app">
@@ -173,43 +255,52 @@ function App() {
 
       <section className="workspace">
         <div className="storm-controls">
-  <label htmlFor="storm-select">Storm Scenario</label>
+          <label htmlFor="storm-select">Storm Scenario</label>
 
-  <select
-    id="storm-select"
-    value={selectedStormId}
-    onChange={(event) => {
-      setSelectedStormId(event.target.value)
-      setActiveStorm(null)
-      setStormStep(0)
-      setStormAnimating(false)
-    }}
-    disabled={stormAnimating || stormLoading || generating}
-  >
-    <optgroup label="Catalog">
-      <option value="SYN0155">SYN0155</option>
-      <option value="SYN0697">SYN0697</option>
-      <option value="SYN0973">SYN0973</option>
-    </optgroup>
+          <select
+            id="storm-select"
+            value={scenario}
+            onChange={(event) => {
+              setScenario(event.target.value)
+              resetSimulation()
+            }}
+            disabled={stormAnimating || stormLoading || generating}
+          >
+            <optgroup label="Catalog">
+              {(catalog?.storms ?? []).map((storm) => (
+                <option key={storm.storm_id} value={storm.storm_id}>
+                  {storm.storm_id} · {Math.round(storm.peak_wind_kt)} kt
+                  {storm.landfall ? ' · landfall' : ''}
+                </option>
+              ))}
 
-    {generatedStorms.length > 0 && (
-      <optgroup label="Generated">
-        {generatedStorms.map((storm) => (
-          <option key={storm.storm_id} value={storm.storm_id}>
-            {storm.storm_id} · {Math.round(storm.peak_wind_kt)} kt
-            {storm.landfall ? ' · landfall' : ''}
-          </option>
-        ))}
-      </optgroup>
-    )}
-  </select>
-</div>
+              {!catalog && (
+                <option value={DEFAULT_CATALOG_STORM}>
+                  {catalogError ? 'Catalog unavailable' : 'Loading catalog…'}
+                </option>
+              )}
+            </optgroup>
+
+            {batch && (
+              <optgroup label="Generated">
+                <option value={FLORIDA_BATCH}>
+                  Florida batch · {batch.storms.length} storms · seed{' '}
+                  {batch.generator.seed}
+                </option>
+              </optgroup>
+            )}
+          </select>
+        </div>
         <div className="map-container">
           <button
             className="simulate-button"
             type="button"
             onClick={simulateCatastrophe}
-            disabled={stormLoading || stormAnimating}
+            disabled={
+              stormLoading ||
+              stormAnimating ||
+              (scenario === FLORIDA_BATCH ? !batch : !catalog)
+            }
           >
             <span className="simulate-icon">◉</span>
 
@@ -217,29 +308,56 @@ function App() {
               ? 'Loading Storm...'
               : stormAnimating
                 ? 'Simulating...'
-                : activeStorm
+                : activeStorms.length > 0
                   ? 'Replay Catastrophe'
-                  : 'Simulate Catastrophe'}
+                  : scenario === FLORIDA_BATCH
+                    ? 'Simulate Batch'
+                    : 'Simulate Catastrophe'}
           </button>
 
-          {activeStorm && currentStormPoint && (
+          {(stormError || catalogError) && (
+            <div className="storm-error" role="alert">
+              {stormError ?? catalogError}
+            </div>
+          )}
+
+          {focusedStorm && focusedPoint && (
             <div className="storm-status">
               <div className="storm-status-header">
                 <div>
                   <span className="storm-status-label">
-                    ACTIVE SCENARIO
+                    {isBatch ? 'FOCUSED STORM' : 'ACTIVE SCENARIO'}
                   </span>
 
-                  <h2>{activeStorm.storm_id}</h2>
+                  <h2>{focusedStorm.storm_id}</h2>
                 </div>
 
                 <div className="storm-category">
-                  {currentStormPoint.category}
+                  {focusedPoint.category}
                 </div>
               </div>
 
+              {isBatch && (
+                <div
+                  className={
+                    focusedStorm.florida_hit
+                      ? 'storm-status-batch hit'
+                      : 'storm-status-batch'
+                  }
+                >
+                  {focusedStorm.florida_hit
+                    ? 'Crosses Florida at Category 3+'
+                    : 'Misses Florida at Category 3+'}
+                  {' · '}
+                  {activeStorms.findIndex(
+                    (storm) => storm.storm_id === focusedStorm.storm_id,
+                  ) + 1}{' '}
+                  of {activeStorms.length}
+                </div>
+              )}
+
               <div className="storm-status-time">
-                {new Date(currentStormPoint.timestamp).toLocaleString([], {
+                {new Date(focusedPoint.timestamp).toLocaleString([], {
                   month: 'short',
                   day: 'numeric',
                   hour: 'numeric',
@@ -249,24 +367,25 @@ function App() {
 
               <div className="storm-metric">
                 <span className="storm-metric-value">
-                  {currentStormPoint.max_wind_kt.toFixed(1)}
+                  {focusedPoint.max_wind_kt.toFixed(1)}
                 </span>
 
                 <div>
                   <span className="storm-metric-unit">kt</span>
-                  <p>Storm-center wind</p>
+                  <p>Storm maximum sustained wind</p>
                 </div>
               </div>
 
               <div className="storm-status-footer">
                 <span>
-                  {currentStormPoint.is_over_land
+                  {focusedPoint.is_over_land
                     ? 'Over land'
                     : 'Over water'}
                 </span>
 
                 <span>
-                  Step {stormStep + 1} of {activeStorm.track.length}
+                  Step {Math.min(stormStep, focusedStorm.track.length - 1) + 1}{' '}
+                  of {focusedStorm.track.length}
                 </span>
               </div>
 
@@ -275,7 +394,10 @@ function App() {
                   className="storm-progress-bar"
                   style={{
                     width: `${
-                      ((stormStep + 1) / activeStorm.track.length) * 100
+                      ((Math.min(stormStep, focusedStorm.track.length - 1) +
+                        1) /
+                        focusedStorm.track.length) *
+                      100
                     }%`,
                   }}
                 />
@@ -287,52 +409,55 @@ function App() {
             properties={properties}
             selectedProperties={selectedProperties}
             onToggleProperty={toggleProperty}
-            storm={activeStorm}
+            storms={activeStorms}
             stormStep={stormStep}
-            generationStart={generationStart}
-            pickingStart={pickingStart}
-            onPickStart={(start) => {
-              setGenerationStart(start)
-              setPickingStart(false)
-            }}
+            focusedStormId={focusedStorm?.storm_id ?? null}
+            onFocusStorm={setFocusedStormId}
+            start={isBatch && batch ? batch.generator.start : null}
           />
         </div>
 
         <div className="sidebar">
-        <Portfolio
-          properties={selectedProperties}
-          onRemoveProperty={toggleProperty}
-        />
-
-        {!stormAnimating &&
-        stormLosses &&
-        selectedProperties.length > 0 && (
-          <StormImpact
+          <Portfolio
             properties={selectedProperties}
-            losses={stormLosses}
-            onViewAnalysis={() => setAnalysisOpen(true)}
+            onRemoveProperty={toggleProperty}
           />
-        )}
 
-        <GenerateStorms
-          start={generationStart}
-          pickingStart={pickingStart}
-          onTogglePickStart={() => setPickingStart((picking) => !picking)}
-          onGenerate={runGeneration}
-          generating={generating}
-          disabled={stormLoading || stormAnimating}
-          error={generationError}
-          result={generatedCatalog}
-        />
-      </div>
+          {isBatch && (
+            <StormBatch
+              storms={activeStorms}
+              focusedStormId={focusedStorm?.storm_id ?? null}
+              onFocusStorm={setFocusedStormId}
+              losses={stormAnimating ? null : stormLosses}
+            />
+          )}
+
+          {!stormAnimating &&
+            focusedLosses &&
+            selectedProperties.length > 0 && (
+              <StormImpact
+                properties={selectedProperties}
+                losses={focusedLosses}
+                onViewAnalysis={() => setAnalysisOpen(true)}
+              />
+            )}
+
+          <GenerateStorms
+            onGenerate={runGeneration}
+            generating={generating}
+            disabled={stormLoading || stormAnimating}
+            error={generationError}
+            result={batch}
+          />
+        </div>
       </section>
-      {analysisOpen && stormLosses && (
-      <FullAnalysis
-        properties={selectedProperties}
-        losses={stormLosses}
-        onClose={() => setAnalysisOpen(false)}
-      />
-    )}
+      {analysisOpen && focusedLosses && (
+        <FullAnalysis
+          properties={selectedProperties}
+          losses={focusedLosses}
+          onClose={() => setAnalysisOpen(false)}
+        />
+      )}
     </main>
   )
 }

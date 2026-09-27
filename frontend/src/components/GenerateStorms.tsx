@@ -1,85 +1,65 @@
 import { useState } from 'react'
-import type {
-  GeneratedStormCatalog,
-  GenerationStart,
-} from '../types/Storm'
+import type { FloridaStormBatch } from '../types/Storm'
 
 export interface GenerationOptions {
-  maxWindKt: number
-  startDate: string
-  count: number
   seed: number
+  maxWindKt: number
 }
 
 interface GenerateStormsProps {
-  start: GenerationStart
-  pickingStart: boolean
-  onTogglePickStart: () => void
   onGenerate: (options: GenerationOptions) => void
   generating: boolean
   disabled: boolean
   error: string | null
-  result: GeneratedStormCatalog | null
+  result: FloridaStormBatch | null
 }
 
+const BATCH_SIZE = 10
+const MAX_SEED = 2 ** 32 - 1
+
 function formatCoordinate(value: number, positive: string, negative: string) {
-  return `${Math.abs(value).toFixed(2)}°${value >= 0 ? positive : negative}`
+  return `${Math.abs(value).toFixed(1)}°${value >= 0 ? positive : negative}`
 }
 
 function GenerateStorms({
-  start,
-  pickingStart,
-  onTogglePickStart,
   onGenerate,
   generating,
   disabled,
   error,
   result,
 }: GenerateStormsProps) {
-  const [maxWindKt, setMaxWindKt] = useState(60)
-  const [startDate, setStartDate] = useState(
-    `${new Date().getFullYear()}-09-10`,
-  )
-  const [count, setCount] = useState(10)
   const [seed, setSeed] = useState(42)
+  const [maxWindKt, setMaxWindKt] = useState(70)
 
   const busy = generating || disabled
-  const landfalls = result
-    ? result.storms.filter((storm) => storm.landfall).length
-    : 0
 
   return (
     <section className="generate-storms">
       <span className="generate-label">STORM GENERATOR</span>
 
-      <h2>Generate Storms</h2>
+      <h2>Generate {BATCH_SIZE} Florida Storms</h2>
 
       <p className="generate-intro">
-        Run the hurricane simulator from a starting point you choose. Every
-        storm starts there; each follows its own seed.
+        Runs the hurricane simulator from a starting point drawn at random
+        from the historical record, anywhere from the Cape Verde islands to
+        the Gulf, and keeps the first batch in which at least two storms cross
+        Florida at Category 3 or stronger. All {BATCH_SIZE} are simulated and
+        priced together.
       </p>
 
-      <div className="generate-start">
-        <div>
-          <span>Start</span>
-
-          <strong>
-            {formatCoordinate(start.latitude, 'N', 'S')},{' '}
-            {formatCoordinate(start.longitude, 'E', 'W')}
-          </strong>
-        </div>
-
-        <button
-          type="button"
-          className={pickingStart ? 'pick-start active' : 'pick-start'}
-          onClick={onTogglePickStart}
-          disabled={busy}
-        >
-          {pickingStart ? 'Click the map…' : 'Pick on map'}
-        </button>
-      </div>
-
       <div className="generate-fields">
+        <label>
+          Seed
+          <input
+            type="number"
+            min={0}
+            max={MAX_SEED}
+            value={seed}
+            onChange={(event) => setSeed(Number(event.target.value))}
+            disabled={busy}
+          />
+        </label>
+
         <label>
           Start wind (kt)
           <input
@@ -92,53 +72,33 @@ function GenerateStorms({
             disabled={busy}
           />
         </label>
-
-        <label>
-          Start date
-          <input
-            type="date"
-            value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
-            disabled={busy}
-          />
-        </label>
-
-        <label>
-          Storms
-          <input
-            type="number"
-            min={1}
-            max={10}
-            value={count}
-            onChange={(event) => setCount(Number(event.target.value))}
-            disabled={busy}
-          />
-        </label>
-
-        <label>
-          Seed
-          <input
-            type="number"
-            min={0}
-            value={seed}
-            onChange={(event) => setSeed(Number(event.target.value))}
-            disabled={busy}
-          />
-        </label>
       </div>
 
-      <button
-        type="button"
-        className="generate-button"
-        onClick={() => onGenerate({ maxWindKt, startDate, count, seed })}
-        disabled={busy}
-      >
-        {generating ? 'Generating…' : 'Generate'}
-      </button>
+      <div className="generate-actions">
+        <button
+          type="button"
+          className="generate-button"
+          onClick={() => onGenerate({ seed, maxWindKt })}
+          disabled={busy}
+        >
+          {generating ? 'Searching…' : `Generate ${BATCH_SIZE} storms`}
+        </button>
+
+        <button
+          type="button"
+          className="reroll-button"
+          onClick={() => setSeed(Math.floor(Math.random() * 100000))}
+          disabled={busy}
+          title="Pick a new random seed"
+        >
+          New seed
+        </button>
+      </div>
 
       {generating && (
         <p className="generate-note">
-          The first run loads the simulator, which takes a few seconds.
+          Trying random starting points until enough storms reach Florida.
+          This takes a few seconds; the first run also loads the simulator.
         </p>
       )}
 
@@ -151,14 +111,24 @@ function GenerateStorms({
       {result && !error && !generating && (
         <div className="generate-result">
           <strong>
-            {result.storms.length}{' '}
-            {result.storms.length === 1 ? 'storm' : 'storms'} generated
+            {result.storms.length} storms · {result.florida.hits.length} reach
+            Florida as Cat 3+
           </strong>
 
           <span>
-            {landfalls} make landfall · choose one under Storm Scenario, then
-            Simulate
+            Start{' '}
+            {formatCoordinate(result.generator.start.latitude, 'N', 'S')},{' '}
+            {formatCoordinate(result.generator.start.longitude, 'E', 'W')} on{' '}
+            {result.generator.start.date} · {result.florida.starts_tried}{' '}
+            {result.florida.starts_tried === 1 ? 'start' : 'starts'} tried ·
+            seed {result.generator.seed}
           </span>
+
+          <p>
+            Choose “Florida batch” under Storm Scenario, then Simulate to run
+            all {result.storms.length} together. Click a track to see that
+            storm's details.
+          </p>
 
           <p>{result.completeness_warning}</p>
         </div>

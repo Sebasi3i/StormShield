@@ -7,24 +7,31 @@ import {
   TileLayer,
   Tooltip,
   useMap,
-  useMapEvents,
 } from 'react-leaflet'
 
-import { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
 import type { Property } from '../types/Property'
-import type { GenerationStart, Storm } from '../types/Storm'
+import type { Storm, StormStart } from '../types/Storm'
 import 'leaflet/dist/leaflet.css'
 
 interface PropertyMapProps {
   properties: Property[]
   selectedProperties: Property[]
   onToggleProperty: (property: Property) => void
-  storm: Storm | null
+  // Every storm being simulated, animated together by track step.
+  storms: Storm[]
   stormStep: number
-  generationStart: GenerationStart
-  pickingStart: boolean
-  onPickStart: (start: GenerationStart) => void
+  focusedStormId: string | null
+  onFocusStorm: (stormId: string) => void
+  // Where a generated batch started, if one is on screen.
+  start: StormStart | null
 }
+
+// Blue for a track like the catalog's; red for one that crosses Florida at
+// Category 3 or stronger, which is what a Florida batch is generated for.
+const TRACK_COLOR = '#1677ff'
+const FLORIDA_HIT_COLOR = '#d92d20'
+
 function MapResizeHandler() {
   const map = useMap()
 
@@ -47,47 +54,23 @@ function MapResizeHandler() {
 
   return null
 }
-/*
- * While the generator is picking a start, the next map click sets it. Other
- * clicks leave it alone, so browsing the map never moves it by accident.
- */
-function StartPicker({
-  active,
-  onPick,
-}: {
-  active: boolean
-  onPick: (start: GenerationStart) => void
-}) {
-  const map = useMapEvents({
-    click(event) {
-      if (!active) {
-        return
-      }
-
-      // Leaflet reports longitudes past +/-180 after panning around the globe.
-      const longitude = ((((event.latlng.lng + 180) % 360) + 360) % 360) - 180
-
-      onPick({ latitude: event.latlng.lat, longitude })
-    },
-  })
-
-  useEffect(() => {
-    map.getContainer().classList.toggle('picking-start', active)
-  }, [map, active])
-
-  return null
-}
 
 function PropertyMap({
   properties,
   selectedProperties,
   onToggleProperty,
-  storm,
+  storms,
   stormStep,
-  generationStart,
-  pickingStart,
-  onPickStart,
+  focusedStormId,
+  onFocusStorm,
+  start,
 }: PropertyMapProps) {
+  // The focused track is drawn last so it sits on top of the others.
+  const orderedStorms = [
+    ...storms.filter((storm) => storm.storm_id !== focusedStormId),
+    ...storms.filter((storm) => storm.storm_id === focusedStormId),
+  ]
+
   return (
     <MapContainer
      center={[27.0, -78.5]}
@@ -99,72 +82,94 @@ function PropertyMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapResizeHandler />
-      <StartPicker active={pickingStart} onPick={onPickStart} />
 
-      <CircleMarker
-        center={[generationStart.latitude, generationStart.longitude]}
-        radius={7}
-        pathOptions={{
-          color: '#ffffff',
-          weight: 3,
-          fillColor: '#16a34a',
-          fillOpacity: 1,
-        }}
-      >
-        <Tooltip>Storm generator start</Tooltip>
-      </CircleMarker>
-      {storm && (
-  <>
-    <Polyline
-      positions={storm.track
-        .slice(0, stormStep + 1)
-        .map((point) => [
-          point.latitude,
-          point.longitude,
-        ])}
-      pathOptions={{
-        color: '#1677ff',
-        weight: 4,
-        opacity: 0.9,
-      }}
-    />
+      {start && (
+        <CircleMarker
+          center={[start.latitude, start.longitude]}
+          radius={7}
+          pathOptions={{
+            color: '#ffffff',
+            weight: 3,
+            fillColor: '#16a34a',
+            fillOpacity: 1,
+          }}
+        >
+          <Tooltip>
+            Batch start · {start.max_wind_kt} kt on {start.date}
+          </Tooltip>
+        </CircleMarker>
+      )}
 
-    <CircleMarker
-      center={[
-        storm.track[stormStep].latitude,
-        storm.track[stormStep].longitude,
-      ]}
-      radius={10}
-      pathOptions={{
-        color: '#ffffff',
-        weight: 3,
-        fillColor: '#1677ff',
-        fillOpacity: 1,
-      }}
-    >
-      <Popup>
-        <div>
-          <strong>{storm.storm_id}</strong>
+      {orderedStorms.map((storm) => {
+        // A track that has already ended holds its last point while the
+        // longer ones finish.
+        const step = Math.min(stormStep, storm.track.length - 1)
+        const point = storm.track[step]
+        const focused =
+          storms.length === 1 || storm.storm_id === focusedStormId
+        const color = storm.florida_hit ? FLORIDA_HIT_COLOR : TRACK_COLOR
 
-          <p>
-            Category: {storm.track[stormStep].category}
-          </p>
+        return (
+          <Fragment key={storm.storm_id}>
+            <Polyline
+              positions={storm.track
+                .slice(0, step + 1)
+                .map((trackPoint) => [
+                  trackPoint.latitude,
+                  trackPoint.longitude,
+                ])}
+              pathOptions={{
+                color,
+                weight: focused ? 5 : 3,
+                opacity: focused ? 0.95 : 0.45,
+              }}
+              eventHandlers={{
+                click: () => onFocusStorm(storm.storm_id),
+              }}
+            >
+              <Tooltip sticky>
+                {storm.storm_id} · peak {Math.round(storm.peak_wind_kt)} kt
+                {storm.florida_hit ? ' · Florida Cat 3+' : ''}
+              </Tooltip>
+            </Polyline>
 
-          <p>
-            Center wind:{' '}
-            {storm.track[stormStep].max_wind_kt.toFixed(1)} kt
-          </p>
+            <CircleMarker
+              center={[point.latitude, point.longitude]}
+              radius={focused ? 10 : 6}
+              pathOptions={{
+                color: '#ffffff',
+                weight: focused ? 3 : 2,
+                fillColor: color,
+                fillOpacity: focused ? 1 : 0.7,
+              }}
+              eventHandlers={{
+                click: () => onFocusStorm(storm.storm_id),
+              }}
+            >
+              <Popup>
+                <div>
+                  <strong>{storm.storm_id}</strong>
 
-          <p>{storm.track[stormStep].timestamp}</p>
+                  <p>Category: {point.category}</p>
 
-          {storm.track[stormStep].is_over_land && (
-            <p>Over land</p>
-          )}
-        </div>
-      </Popup>
-    </CircleMarker>
-  </>
-)}
+                  <p>Center wind: {point.max_wind_kt.toFixed(1)} kt</p>
+
+                  <p>{point.timestamp}</p>
+
+                  {point.is_over_land && <p>Over land</p>}
+
+                  {storm.florida_hit && (
+                    <p>
+                      Over Florida at Category 3+ (peak{' '}
+                      {storm.florida_peak_wind_kt?.toFixed(1)} kt)
+                    </p>
+                  )}
+                </div>
+              </Popup>
+            </CircleMarker>
+          </Fragment>
+        )
+      })}
 
       {properties.map((property) => {
         const selected = selectedProperties.some(

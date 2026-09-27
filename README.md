@@ -97,6 +97,8 @@ version 1.1, snake_case, documented at `/docs`.
 - `GET /api/v1/damage-curves` — the curves and policy template, with their provenance.
 - `POST /api/v1/storms/generate` — new storms from a starting point you choose (see
   below), returned in the catalog's shape.
+- `POST /api/v1/storms/generate-florida` — a batch of storms from a random starting
+  point, of which at least two cross Florida as major hurricanes (see below).
 
 The gust at each property comes from **wind_field**, the property-level wind model
 from the hurricane simulator project, called by `app/wind.py`: a radial wind profile
@@ -130,9 +132,41 @@ simulator's global land/sea map). Later requests take milliseconds. Nothing is s
 server-side; to price a generated storm, send it back in the `storms` field of
 `POST /api/v1/storm-losses`.
 
-In the dashboard, the Generate Storms card does this: **Pick on map** sets the start,
-**Generate** runs it, and the new storms appear under Storm Scenario, where Simulate
-Catastrophe animates and prices them like catalog storms.
+### Generating a Florida batch
+
+`POST /api/v1/storms/generate-florida` answers "give me ten random storms that hit
+Florida". The simulator has no such mode: it samples starting points from the whole
+Atlantic record and knows land from sea but not one state from another. So the API
+searches. It draws candidate starting points at random from historical genesis positions
+(Cape Verde, the Caribbean, the Bahamas, the Gulf and so on, with the simulator's own
+jitter), gives each the requested start wind (`max_wind_kt`, default 70), runs a
+`count`-member ensemble (default 10) from it, and keeps the first ensemble in which at
+least `min_florida_hits` storms (default 2) cross Florida at Category 3 or stronger. The
+whole batch is returned: every storm carries `florida_hit`, `florida_peak_wind_kt` and
+`florida_first_time`, and the `florida` block records the criterion, the hits and how many
+starts were tried. Members that miss Florida are returned too, so the batch shows the
+spread of paths from one origin.
+
+"Crosses Florida at Category 3 or stronger" means the storm centre is over Florida land
+(`app/florida.py`, a simplified outline of the state, combined with the simulator's land
+mask) with one-minute sustained wind of at least 96 kt at some six-hourly track point. A
+storm that came ashore in Cuba first still counts; one that weakened below 96 kt before
+reaching Florida does not.
+
+Everything follows from `seed`, so the same request returns the same batch within a
+season year (`season_year`, defaulting to the current year, sets the storms' dates). The
+search typically tries a few dozen starts and takes a few seconds with the default start
+wind; it gives up with a 422 after 400 starts, which a weaker start wind makes more
+likely. Like every generated set, a batch is a **selected** subset: do not derive annual
+rates from it.
+
+In the dashboard, the Generate Storms card does this: **Generate 10 storms** runs the
+search for the given seed (**New seed** picks another), and the batch appears under Storm
+Scenario as "Florida batch". **Simulate Batch** animates all ten tracks together and
+prices them in one storm-losses run; Florida hits are drawn in red. Click a track on the
+map, or a row in the Florida Batch list, to focus that storm: the status panel, Portfolio
+Impact and Full Analysis then show that storm. The three catalog tracks stay selectable
+individually and are loaded from `GET /api/v1/storm-catalog`.
 
 Re-import a new simulator run:
 
@@ -154,6 +188,9 @@ npm install
 npm run dev          # http://127.0.0.1:5173
 ```
 
+The dashboard talks to `http://127.0.0.1:8000` by default. Set `VITE_API_BASE_URL` (for
+example in `frontend/.env.local`) to point it at another backend.
+
 ## Layout
 
 ```
@@ -165,6 +202,7 @@ backend/            FastAPI service, risk engine, ETL scripts
     claims.py       Damage and insurer payout engine (pure, no HTTP)
     wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
+    florida.py      Florida outline: is this track point over Florida?
     fixtures/       Curves, policy template, storm catalog, sample response
   scripts/          Adapters that import outside data
   tests/            pytest suite

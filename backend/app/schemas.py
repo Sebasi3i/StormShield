@@ -15,7 +15,7 @@ with the developer consuming them.
 from datetime import date
 from typing import Literal
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def to_camel(snake: str) -> str:
@@ -561,3 +561,42 @@ class GenerateStormsRequest(BaseModel):
     )
     seed: int = Field(default=42, ge=0, le=2**32 - 1)
     count: int = Field(default=5, ge=1, le=10, description="How many storms to generate.")
+
+
+class GenerateFloridaStormsRequest(BaseModel):
+    """Generate a batch of storms from a random starting point that reaches Florida.
+
+    The API draws a starting point at random from historical Atlantic genesis positions
+    (Cape Verde, the Caribbean, the Bahamas, the Gulf and so on), runs `count` storms
+    from it, and keeps the first starting point whose batch puts at least
+    `min_florida_hits` storms over Florida at Category 3 or stronger. Everything follows
+    from `seed`: the same request in the same season year returns the same batch.
+    """
+
+    seed: int = Field(default=42, ge=0, le=2**32 - 1)
+    count: int = Field(default=10, ge=1, le=10, description="How many storms in the batch.")
+    max_wind_kt: float = Field(
+        default=70.0,
+        ge=20,
+        le=185,
+        description="Sustained centre wind given to every storm at its start, knots. "
+        "Weaker starts rarely reach Florida as major hurricanes, so the search takes longer.",
+    )
+    min_florida_hits: int = Field(
+        default=2,
+        ge=1,
+        le=10,
+        description="How many of the batch must be over Florida at Category 3 or stronger.",
+    )
+    season_year: int | None = Field(
+        default=None,
+        ge=1900,
+        le=2100,
+        description="Calendar year for the storms' timestamps. Defaults to the current year.",
+    )
+
+    @model_validator(mode="after")
+    def _hits_within_count(self) -> "GenerateFloridaStormsRequest":
+        if self.min_florida_hits > self.count:
+            raise ValueError("min_florida_hits cannot exceed count.")
+        return self
