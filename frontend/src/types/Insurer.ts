@@ -266,6 +266,7 @@ export interface ProgramResult {
 export interface InsurerCompareResponse {
   schema_version: string
   preset_id: string
+  policy_ids: string[]
   storm_ids: string[]
   selected_proposal_ids: string[]
   program: InsurerProgram

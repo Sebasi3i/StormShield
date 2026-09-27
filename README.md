@@ -204,8 +204,10 @@ Endpoints, all under the same prefix as the rest of the API and documented at `/
   preset; $104,436.40 -> $87,476.85 for the normalized one). `--workbook` verifies a
   local copy of the spreadsheet against the recorded hash.
 
-The dashboard's **Insurer Lab** (the switch in the header) is the client for these:
-the book and its proposals with tick boxes, an assumptions drawer that edits the
+The dashboard's **Insurer Lab** (the switch in the header) is the client for these.
+It opens on the policies for whatever is selected on the map, or the whole book when
+nothing is, runs the comparison straight away, and lets you widen or narrow the book
+from a checklist: the book and its proposals with tick boxes, an assumptions drawer that edits the
 program and the deductible sensitivity, each storm as an alternative event with a
 policy drill-down, the three program arms side by side, an explicit switch for the
 illustrative annual assumptions that reveals NPV and break-even, "Optimize within

@@ -2377,3 +2377,19 @@
   flex-direction: column;
   gap: 0.3rem;
 }
+
+.lab-checks-column {
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.lab-sub-inline {
+  color: #52627a;
+  font-size: 0.78rem;
+}
+
+.lab-small {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+}

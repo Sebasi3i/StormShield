@@ -378,7 +378,12 @@ function App() {
         </div>
       </header>
 
-      {view === 'insurer' && <InsurerLab onClose={() => setView('map')} />}
+      {view === 'insurer' && (
+        <InsurerLab
+          mapSelectedPropertyIds={selectedProperties.map((property) => property.id)}
+          onClose={() => setView('map')}
+        />
+      )}
 
       <section className="workspace" style={view === 'insurer' ? { display: 'none' } : undefined}>
         <div className="map-container">

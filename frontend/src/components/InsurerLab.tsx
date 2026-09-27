@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { compareInsurer, getInsurerDemo, optimizeInsurer } from '../api/insurer'
 import type {
@@ -30,6 +30,7 @@ type AnnualMode = 'off' | 'invented' | 'climate'
 interface StoredConfig {
   program: InsurerProgram
   stormIds: string[]
+  policyIds: string[] | null
   selectedProposalIds: string[] | null
   annualMode: AnnualMode
   probability: number
@@ -132,6 +133,11 @@ function describeSettings(result: InsurerCompareResponse, demo: InsurerDemo, pro
   const preset = demo.presets[result.preset_id]
 
   parts.push(`Preset: ${preset ? preset.label : result.preset_id}`)
+  parts.push(
+    result.policy_ids.length === demo.policies.length
+      ? `Policies: all ${demo.policies.length}`
+      : `Policies: ${result.policy_ids.length} of ${demo.policies.length} (${result.policy_ids.join(', ')})`,
+  )
   parts.push(`Storms: ${result.storm_ids.join(', ')}`)
   parts.push(
     result.selected_proposal_ids.length === proposalCount
@@ -171,10 +177,16 @@ function describeSettings(result: InsurerCompareResponse, demo: InsurerDemo, pro
   return parts
 }
 
-function sameSettings(result: InsurerCompareResponse, request: InsurerCompareRequest, allProposalIds: string[]): boolean {
+function sameSettings(
+  result: InsurerCompareResponse,
+  request: InsurerCompareRequest,
+  allProposalIds: string[],
+  allPolicyIds: string[],
+): boolean {
   const sorted = (ids: string[]) => [...ids].sort().join(',')
   const requested = request.selected_proposal_ids ?? allProposalIds
 
+  if (sorted(result.policy_ids) !== sorted(request.policy_ids ?? allPolicyIds)) return false
   if (sorted(result.storm_ids) !== sorted(request.storm_ids ?? [])) return false
   if (sorted(result.selected_proposal_ids) !== sorted(requested)) return false
   if ((result.deductible_fraction ?? null) !== (request.deductible_fraction ?? null)) return false
@@ -193,15 +205,20 @@ function sameSettings(result: InsurerCompareResponse, request: InsurerCompareReq
 }
 
 interface InsurerLabProps {
+  // The map's current selection (frontend property ids). When there is one, the Lab
+  // opens on the policies for those properties; otherwise on the whole book.
+  mapSelectedPropertyIds: number[]
   onClose: () => void
 }
 
-function InsurerLab({ onClose }: InsurerLabProps) {
+function InsurerLab({ mapSelectedPropertyIds, onClose }: InsurerLabProps) {
   const [demo, setDemo] = useState<InsurerDemo | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   const [program, setProgram] = useState<InsurerProgram | null>(null)
   const [stormIds, setStormIds] = useState<string[]>([])
+  const [policyIds, setPolicyIds] = useState<string[] | null>(null)
+  const autoRan = useRef(false)
   const [selectedProposalIds, setSelectedProposalIds] = useState<string[] | null>(null)
   const [annualMode, setAnnualMode] = useState<AnnualMode>('off')
   const [probability, setProbability] = useState(0.1)
@@ -234,6 +251,18 @@ function InsurerLab({ onClose }: InsurerLabProps) {
             ? validStorms(stored.stormIds)
             : loaded.available_storm_ids,
         )
+        // The map's selection wins over whatever was stored; with no selection, the
+        // stored book, else everything.
+        const fromMap = loaded.policies
+          .filter((p) => mapSelectedPropertyIds.includes(p.frontend_property_id))
+          .map((p) => p.policy_id)
+        const known = new Set(loaded.policies.map((p) => p.policy_id))
+        const storedIds = stored?.policyIds?.filter((id) => known.has(id)) ?? null
+        setPolicyIds(
+          fromMap.length > 0
+            ? fromMap.length === loaded.policies.length ? null : fromMap
+            : storedIds && storedIds.length > 0 ? storedIds : null,
+        )
         setSelectedProposalIds(stored?.selectedProposalIds ?? null)
         setAnnualMode(stored?.annualMode === 'climate' && !loaded.climatology ? 'off' : stored?.annualMode ?? 'off')
         setProbability(
@@ -252,6 +281,8 @@ function InsurerLab({ onClose }: InsurerLabProps) {
     return () => {
       cancelled = true
     }
+    // The map selection is read once, when the Lab opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Remember the settings for next time.
@@ -261,6 +292,7 @@ function InsurerLab({ onClose }: InsurerLabProps) {
     writeStored({
       program,
       stormIds,
+      policyIds,
       selectedProposalIds,
       annualMode,
       probability,
@@ -268,7 +300,7 @@ function InsurerLab({ onClose }: InsurerLabProps) {
       stormsPerYear,
       deductibleFraction,
     })
-  }, [program, stormIds, selectedProposalIds, annualMode, probability, weights, stormsPerYear, deductibleFraction])
+  }, [program, stormIds, policyIds, selectedProposalIds, annualMode, probability, weights, stormsPerYear, deductibleFraction])
 
   const annualModel: AnnualModel = useMemo(() => {
     if (annualMode === 'off') return { kind: 'event_only' }
@@ -288,12 +320,19 @@ function InsurerLab({ onClose }: InsurerLabProps) {
     }
   }, [annualMode, probability, weights, stormIds, stormsPerYear])
 
+  const proposalIdsFor = (records: InsurerDemo['policies']) =>
+    records.map((p) => p.proposal?.proposal_id).filter((id): id is string => Boolean(id))
+
   const request = (): InsurerCompareRequest | null => {
-    if (!program || stormIds.length === 0) return null
+    if (!demo || !program || stormIds.length === 0 || (policyIds !== null && policyIds.length === 0)) return null
+
+    const inRun = demo.policies.filter((p) => policyIds === null || policyIds.includes(p.policy_id))
+    const inScope = new Set(proposalIdsFor(inRun))
 
     return {
+      policy_ids: policyIds ?? undefined,
       storm_ids: stormIds,
-      selected_proposal_ids: selectedProposalIds ?? undefined,
+      selected_proposal_ids: selectedProposalIds ? selectedProposalIds.filter((id) => inScope.has(id)) : undefined,
       deductible_fraction: deductibleFraction,
       program,
       annual_model: annualModel,
@@ -325,11 +364,21 @@ function InsurerLab({ onClose }: InsurerLabProps) {
     }
   }
 
+  // Run once as soon as the settings are in place, so the Lab opens on numbers.
+  useEffect(() => {
+    if (!demo || !program || autoRan.current) return
+
+    autoRan.current = true
+    void run('compare')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo, program])
+
   const resetToSeed = () => {
     if (!demo) return
 
     setProgram(demo.program_defaults)
     setStormIds(demo.available_storm_ids)
+    setPolicyIds(null)
     setSelectedProposalIds(null)
     setAnnualMode('off')
     setProbability(demo.optional_annual_preset.annual_event_probability)
@@ -345,12 +394,20 @@ function InsurerLab({ onClose }: InsurerLabProps) {
     )
   }
 
+  const togglePolicy = (policyId: string) => {
+    if (!demo) return
+
+    const all = demo.policies.map((p) => p.policy_id)
+    const current = policyIds ?? all
+    const next = current.includes(policyId) ? current.filter((id) => id !== policyId) : all.filter((id) => id === policyId || current.includes(id))
+
+    setPolicyIds(next.length === all.length ? null : next)
+  }
+
   const toggleProposal = (proposalId: string) => {
     if (!demo) return
 
-    const all = demo.policies
-      .map((p) => p.proposal?.proposal_id)
-      .filter((id): id is string => Boolean(id))
+    const all = proposalIdsFor(demo.policies.filter((p) => policyIds === null || policyIds.includes(p.policy_id)))
     const current = selectedProposalIds ?? all
     const next = current.includes(proposalId)
       ? current.filter((id) => id !== proposalId)
@@ -376,15 +433,16 @@ function InsurerLab({ onClose }: InsurerLabProps) {
   }
 
   const preset = demo.presets[demo.default_preset_id]
-  const insuredValue = demo.policies.reduce((total, p) => total + p.coverage_a_usd, 0)
-  const currentPremium = result
-    ? result.programs.current_book.premium.current_wind_premium_usd
-    : Number(demo.reference_totals.app_consistent_demo.current_wind_premium_usd)
+  const policiesInRun = demo.policies.filter((p) => policyIds === null || policyIds.includes(p.policy_id))
+  const allPolicyIds = demo.policies.map((p) => p.policy_id)
+  const insuredValue = policiesInRun.reduce((total, p) => total + p.coverage_a_usd, 0)
+  const currentPremium = result ? result.programs.current_book.premium.current_wind_premium_usd : null
   const pricedById = new Map((result?.policies ?? []).map((p) => [p.policy_id, p]))
-  const allProposalIds = demo.policies
-    .map((p) => p.proposal?.proposal_id)
-    .filter((id): id is string => Boolean(id))
+  const allProposalIds = proposalIdsFor(policiesInRun)
   const selectedSet = new Set(selectedProposalIds ?? allProposalIds)
+  const mapPolicyIds = demo.policies
+    .filter((p) => mapSelectedPropertyIds.includes(p.frontend_property_id))
+    .map((p) => p.policy_id)
   const focusedEvent = result && focusedStormId ? result.events[focusedStormId] : null
   const cofunded = result?.programs.insurer_cofunded ?? null
   const annualOn = annualMode !== 'off'
@@ -394,7 +452,7 @@ function InsurerLab({ onClose }: InsurerLabProps) {
   const defaultStormsPerYear = climatology?.storms_per_year.recent.storms_per_year ?? null
   const currentRequest = request()
   const settingsLines = result ? describeSettings(result, demo, allProposalIds.length) : []
-  const resultIsStale = result !== null && currentRequest !== null && !sameSettings(result, currentRequest, allProposalIds)
+  const resultIsStale = result !== null && currentRequest !== null && !sameSettings(result, currentRequest, allProposalIds, allPolicyIds)
 
   return (
     <div className="lab">
@@ -403,8 +461,12 @@ function InsurerLab({ onClose }: InsurerLabProps) {
           <span className="analysis-eyebrow">INSURER LAB · FICTIONAL</span>
           <h2>{demo.insurer.name}</h2>
           <p>
-            {demo.policies.length} policies · {usd(insuredValue)} insured value ·{' '}
-            {usd(currentPremium)} current annual wind premium · preset “{preset.label}”
+            {policiesInRun.length === demo.policies.length
+              ? `${demo.policies.length} policies`
+              : `${policiesInRun.length} of ${demo.policies.length} policies`}
+            {mapPolicyIds.length > 0 && policiesInRun.length === mapPolicyIds.length ? ' (the map\'s selection)' : ''} ·{' '}
+            {usd(insuredValue)} insured value · {currentPremium !== null ? `${usd(currentPremium)} current annual wind premium` : 'premium: run Compare'} ·
+            preset “{preset.label}”
           </p>
         </div>
 
@@ -509,6 +571,36 @@ function InsurerLab({ onClose }: InsurerLabProps) {
 
       <section className="lab-controls">
         <div>
+          <h4>Policies in this run</h4>
+          <div className="lab-checks lab-checks-column">
+            {demo.policies.map((p) => (
+              <label key={p.policy_id}>
+                <input
+                  type="checkbox"
+                  checked={policyIds === null || policyIds.includes(p.policy_id)}
+                  onChange={() => togglePolicy(p.policy_id)}
+                />
+                {p.policy_id} <span className="lab-sub-inline">{p.property.address}</span>
+              </label>
+            ))}
+          </div>
+          <div className="lab-header-actions">
+            <button type="button" className="lab-secondary lab-small" onClick={() => setPolicyIds(null)}>
+              All
+            </button>
+            {mapPolicyIds.length > 0 && (
+              <button
+                type="button"
+                className="lab-secondary lab-small"
+                onClick={() => setPolicyIds(mapPolicyIds.length === allPolicyIds.length ? null : mapPolicyIds)}
+              >
+                Map selection ({mapPolicyIds.length})
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div>
           <h4>Storms</h4>
           <div className="lab-checks">
             {demo.available_storm_ids.map((id) => (
@@ -596,7 +688,7 @@ function InsurerLab({ onClose }: InsurerLabProps) {
           <button
             type="button"
             className="analyze-button"
-            disabled={running !== null || stormIds.length === 0}
+            disabled={running !== null || stormIds.length === 0 || (policyIds !== null && policyIds.length === 0)}
             onClick={() => run('compare')}
           >
             {running === 'compare' ? 'Comparing…' : 'Compare'}
@@ -691,7 +783,7 @@ function InsurerLab({ onClose }: InsurerLabProps) {
               </tr>
             </thead>
             <tbody>
-              {demo.policies.map((policy) => {
+              {policiesInRun.map((policy) => {
                 const state = policy.states[demo.default_preset_id]
                 const priced = pricedById.get(policy.policy_id)
                 const proposalId = policy.proposal?.proposal_id ?? null
