@@ -1,0 +1,691 @@
+{
+  "schema_version": "insurer-demo-v1",
+  "insurer_id": "insurer-demo-001",
+  "portfolio_id": "demo-fl-10",
+  "evidence_status": "assumed",
+  "note": "Ten illustrative policies on the demo portfolio. Coverage A and the limit equal the property's replacement cost (a demo assumption); the deductible is the existing 5% template; the rating value and zone are the workbook's; class and roof shape are the portfolio's assigned placeholders. installed_features and credited_features are kept separate per preset even where they coincide, so a credit-only change can be modeled.",
+  "frontend_property_map": {
+    "1": "P001",
+    "2": "P002",
+    "3": "P003",
+    "4": "P004",
+    "5": "P005",
+    "6": "P006",
+    "7": "P007",
+    "8": "P008",
+    "9": "P009",
+    "10": "P010"
+  },
+  "policies": [
+    {
+      "policy_id": "DEMO-P001",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P001",
+      "frontend_property_id": 1,
+      "property": {
+        "property_id": "P001",
+        "address": "1200 Brickell Ave",
+        "city": "Miami",
+        "county": "Miami-Dade",
+        "latitude": 25.7617,
+        "longitude": -80.1918,
+        "replacement_cost_usd": 850000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 850000.0,
+      "coverage_limit_usd": 850000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 850000.0,
+      "rating_zone": "HVHZ",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P001",
+        "policy_id": "DEMO-P001",
+        "requested_features": [
+          "shutters"
+        ],
+        "quoted_scope": [
+          "shutters"
+        ],
+        "quote_usd": 8234.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A5:AA5",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "shutters"
+          ],
+          "original_quote_usd": 8234.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P002",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P002",
+      "frontend_property_id": 2,
+      "property": {
+        "property_id": "P002",
+        "address": "350 Ocean Dr",
+        "city": "Miami Beach",
+        "county": "Miami-Dade",
+        "latitude": 25.7907,
+        "longitude": -80.13,
+        "replacement_cost_usd": 1200000,
+        "vulnerability_class": "post_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 1200000.0,
+      "coverage_limit_usd": 1200000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 1200000.0,
+      "rating_zone": "HVHZ",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [
+            "roof_straps"
+          ],
+          "credited_features": [
+            "roof_straps"
+          ],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [
+            "roof_straps"
+          ],
+          "credited_features": [
+            "roof_straps"
+          ],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P002",
+        "policy_id": "DEMO-P002",
+        "requested_features": [
+          "shutters"
+        ],
+        "quoted_scope": [
+          "shutters"
+        ],
+        "quote_usd": 5593.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A6:AA6",
+          "original_current_features": [
+            "roof_straps"
+          ],
+          "original_proposed_features": [
+            "shutters"
+          ],
+          "original_quote_usd": 5593.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P003",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P003",
+      "frontend_property_id": 3,
+      "property": {
+        "property_id": "P003",
+        "address": "725 Bayshore Blvd",
+        "city": "Tampa",
+        "county": "Hillsborough",
+        "latitude": 27.9506,
+        "longitude": -82.4572,
+        "replacement_cost_usd": 620000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "hip"
+      },
+      "coverage_a_usd": 620000.0,
+      "coverage_limit_usd": 620000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 620000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P003",
+        "policy_id": "DEMO-P003",
+        "requested_features": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quoted_scope": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quote_usd": 7542.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A7:AA7",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "roof_straps",
+            "shutters"
+          ],
+          "original_quote_usd": 7542.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P004",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P004",
+      "frontend_property_id": 4,
+      "property": {
+        "property_id": "P004",
+        "address": "410 Central Ave",
+        "city": "St. Petersburg",
+        "county": "Pinellas",
+        "latitude": 27.7676,
+        "longitude": -82.6403,
+        "replacement_cost_usd": 540000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 540000.0,
+      "coverage_limit_usd": 540000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 540000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P004",
+        "policy_id": "DEMO-P004",
+        "requested_features": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quoted_scope": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quote_usd": 6950.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A8:AA8",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "roof_straps",
+            "shutters"
+          ],
+          "original_quote_usd": 6950.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P005",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P005",
+      "frontend_property_id": 5,
+      "property": {
+        "property_id": "P005",
+        "address": "800 Orange Ave",
+        "city": "Orlando",
+        "county": "Orange",
+        "latitude": 28.5383,
+        "longitude": -81.3792,
+        "replacement_cost_usd": 475000,
+        "vulnerability_class": "post_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 475000.0,
+      "coverage_limit_usd": 475000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 475000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": "post_fbc_2002 includes roof_straps by construction but the workbook records none installed. Premium-only preset; use the app_consistent_demo preset for any physical loss comparison.",
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [
+            "roof_straps"
+          ],
+          "credited_features": [
+            "roof_straps"
+          ],
+          "physical_state_conflict": null,
+          "normalization_note": "Class-inherent straps assumed installed and credited at baseline."
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P005",
+        "policy_id": "DEMO-P005",
+        "requested_features": [
+          "shutters"
+        ],
+        "quoted_scope": [
+          "shutters"
+        ],
+        "quote_usd": 5307.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A9:AA9",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "shutters"
+          ],
+          "original_quote_usd": 5307.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P006",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P006",
+      "frontend_property_id": 6,
+      "property": {
+        "property_id": "P006",
+        "address": "2400 Atlantic Blvd",
+        "city": "Jacksonville",
+        "county": "Duval",
+        "latitude": 30.3322,
+        "longitude": -81.6557,
+        "replacement_cost_usd": 390000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 390000.0,
+      "coverage_limit_usd": 390000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 390000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P006",
+        "policy_id": "DEMO-P006",
+        "requested_features": [
+          "roof_straps"
+        ],
+        "quoted_scope": [
+          "roof_straps"
+        ],
+        "quote_usd": 4275.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A10:AA10",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "roof_straps"
+          ],
+          "original_quote_usd": 4275.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P007",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P007",
+      "frontend_property_id": 7,
+      "property": {
+        "property_id": "P007",
+        "address": "100 Clematis St",
+        "city": "West Palm Beach",
+        "county": "Palm Beach",
+        "latitude": 26.7153,
+        "longitude": -80.0534,
+        "replacement_cost_usd": 710000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 710000.0,
+      "coverage_limit_usd": 710000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 710000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P007",
+        "policy_id": "DEMO-P007",
+        "requested_features": [
+          "shutters"
+        ],
+        "quoted_scope": [
+          "shutters"
+        ],
+        "quote_usd": 5743.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A11:AA11",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "shutters"
+          ],
+          "original_quote_usd": 5743.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P008",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P008",
+      "frontend_property_id": 8,
+      "property": {
+        "property_id": "P008",
+        "address": "500 Main St",
+        "city": "Fort Myers",
+        "county": "Lee",
+        "latitude": 26.6406,
+        "longitude": -81.8723,
+        "replacement_cost_usd": 460000,
+        "vulnerability_class": "post_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 460000.0,
+      "coverage_limit_usd": 460000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 460000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": "post_fbc_2002 includes roof_straps by construction but the workbook records none installed. Premium-only preset; use the app_consistent_demo preset for any physical loss comparison.",
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [
+            "roof_straps"
+          ],
+          "credited_features": [
+            "roof_straps"
+          ],
+          "physical_state_conflict": null,
+          "normalization_note": "Class-inherent straps assumed installed and credited at baseline."
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P008",
+        "policy_id": "DEMO-P008",
+        "requested_features": [
+          "roof_straps"
+        ],
+        "quoted_scope": [
+          "roof_straps"
+        ],
+        "quote_usd": 1334.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A12:AA12",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "roof_straps"
+          ],
+          "original_quote_usd": 1334.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P009",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P009",
+      "frontend_property_id": 9,
+      "property": {
+        "property_id": "P009",
+        "address": "900 Gulf Shore Blvd",
+        "city": "Naples",
+        "county": "Collier",
+        "latitude": 26.1423,
+        "longitude": -81.7948,
+        "replacement_cost_usd": 980000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "hip"
+      },
+      "coverage_a_usd": 980000.0,
+      "coverage_limit_usd": 980000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 980000.0,
+      "rating_zone": "other_florida",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P009",
+        "policy_id": "DEMO-P009",
+        "requested_features": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quoted_scope": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quote_usd": 8028.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A13:AA13",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "roof_straps",
+            "shutters"
+          ],
+          "original_quote_usd": 8028.0
+        }
+      }
+    },
+    {
+      "policy_id": "DEMO-P010",
+      "insurer_id": "insurer-demo-001",
+      "property_id": "P010",
+      "frontend_property_id": 10,
+      "property": {
+        "property_id": "P010",
+        "address": "300 Las Olas Blvd",
+        "city": "Fort Lauderdale",
+        "county": "Broward",
+        "latitude": 26.1224,
+        "longitude": -80.1373,
+        "replacement_cost_usd": 675000,
+        "vulnerability_class": "pre_fbc_2002",
+        "roof_shape": "gable"
+      },
+      "coverage_a_usd": 675000.0,
+      "coverage_limit_usd": 675000.0,
+      "deductible": {
+        "kind": "percent",
+        "fraction": 0.05
+      },
+      "rating_value_usd": 675000.0,
+      "rating_zone": "HVHZ",
+      "annual_nonwind_premium_usd": null,
+      "states": {
+        "workbook_reference": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        },
+        "app_consistent_demo": {
+          "installed_features": [],
+          "credited_features": [],
+          "physical_state_conflict": null,
+          "normalization_note": null
+        }
+      },
+      "proposal": {
+        "proposal_id": "UPG-P010",
+        "policy_id": "DEMO-P010",
+        "requested_features": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quoted_scope": [
+          "roof_straps",
+          "shutters"
+        ],
+        "quote_usd": 15551.0,
+        "incremental_scope_confirmed": false,
+        "source": {
+          "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+          "sheet": "Synthetic Policies (yours)",
+          "range": "A14:AA14",
+          "original_current_features": [],
+          "original_proposed_features": [
+            "roof_straps",
+            "shutters"
+          ],
+          "original_quote_usd": 15551.0
+        }
+      }
+    }
+  ],
+  "provenance": {
+    "generated_at": "2026-09-27T08:52:40Z",
+    "script": "backend/scripts/import_insurer_workbook.py",
+    "extract": "data/insurer_demo/workbook_extract.json",
+    "workbook": {
+      "name": "StormShield_Premium_Discount_POC_Revised.xlsx",
+      "sha256": "29fa34e20d2f98ddba1b425c810b560a6a4cb78bc29970204c59dabee240c06e",
+      "sha256_verified": false,
+      "cells_verified": false
+    },
+    "example_portfolio_sha256": "b3f21f0d34e5a40b480cdebf18c02df0b7c8d5d0f4a52afbd9bf142fcfe91d2b",
+    "app_snapshot_sha256": "0f9ec253db438d93a9ad6dfe9834d84bb339fb8e016441c2c4d2f2f576cb448a",
+    "cells": {
+      "sheet": "Discount Tier Assumptions",
+      "credits": "A5:B8",
+      "rates": "A12:B13",
+      "policies": "Synthetic Policies (yours)!A5:AA14",
+      "summary": "Portfolio Summary!B4:B16"
+    }
+  }
+}

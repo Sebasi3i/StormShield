@@ -1,0 +1,137 @@
+{
+  "schema_version": "insurer-demo-v1",
+  "status": "fixtures_and_premium_engine_only",
+  "insurer": {
+    "insurer_id": "insurer-demo-001",
+    "name": "StormShield Sample Insurer",
+    "evidence_status": "assumed",
+    "portfolio_id": "demo-fl-10",
+    "version": 1
+  },
+  "default_preset_id": "app_consistent_demo",
+  "presets": {
+    "workbook_reference": {
+      "label": "Workbook reference",
+      "purpose": "Unchanged workbook inputs, premium-only reconciliation. Physical-state conflicts are reported, not resolved.",
+      "physical_state_conflicts": {
+        "DEMO-P005": "post_fbc_2002 includes roof_straps by construction but the workbook records none installed. Premium-only preset; use the app_consistent_demo preset for any physical loss comparison.",
+        "DEMO-P008": "post_fbc_2002 includes roof_straps by construction but the workbook records none installed. Premium-only preset; use the app_consistent_demo preset for any physical loss comparison."
+      }
+    },
+    "app_consistent_demo": {
+      "label": "App-consistent demo",
+      "purpose": "Default insurer simulation. Post-2002 homes have their class-inherent roof straps installed and credited at baseline, in both arms; this is a demo assumption, not property evidence.",
+      "normalized_policies": {
+        "DEMO-P005": "Class-inherent straps assumed installed and credited at baseline.",
+        "DEMO-P008": "Class-inherent straps assumed installed and credited at baseline."
+      }
+    }
+  },
+  "credit_plan_id": "workbook-discount-tiers-v1",
+  "policy_plan_id": "demo-deductible-5pct",
+  "deductible_sensitivity_fractions": [
+    0.02,
+    0.05,
+    0.1
+  ],
+  "program": {
+    "grant_share": 0.25,
+    "grant_cap_usd": 2500,
+    "inspection_usd_per_project": 100,
+    "fixed_setup_usd": 500,
+    "annual_admin_usd": 0,
+    "budget_usd": 20000,
+    "horizon_years": 10,
+    "discount_rate": 0.05
+  },
+  "program_note": "Grant share, cap, inspection, setup, admin, budget, horizon and discount rate are new demo assumptions from the specification, not workbook inputs.",
+  "annual_model": {
+    "kind": "event_only"
+  },
+  "optional_annual_preset": {
+    "kind": "one_event_or_none",
+    "evidence_status": "invented_demo_assumption",
+    "annual_event_probability": 0.1,
+    "conditional_storm_weights": {
+      "SYN0155": 1,
+      "SYN0697": 1,
+      "SYN0973": 1
+    }
+  },
+  "reference_totals": {
+    "workbook_reference": {
+      "project_cost_usd": 68557.0,
+      "current_wind_premium_usd": 105895.0,
+      "result_wind_premium_usd": 88526.6,
+      "annual_premium_foregone_usd": 17368.4,
+      "owner_funded_ten_year_undiscounted_premium_net_usd": 105127.0
+    },
+    "app_consistent_demo": {
+      "project_cost_usd": 67223.0,
+      "current_wind_premium_usd": 104436.4,
+      "result_wind_premium_usd": 87476.85,
+      "insurer_grants_usd": 15418.0,
+      "annual_premium_foregone_usd": 16959.55,
+      "owner_funded_ten_year_undiscounted_premium_net_usd": 102372.5,
+      "inspections_usd": 900.0,
+      "fixed_setup_usd": 500.0,
+      "insurer_upfront_usd": 16818.0,
+      "homeowner_upfront_usd": 51805.0
+    },
+    "note": "The workbook's own totals (Portfolio Summary) and the specification's normalized totals. The importer refuses to write these fixtures unless the premium engine reproduces both to the cent; see backend/tests/test_premium.py."
+  },
+  "computed_totals": {
+    "workbook_reference": {
+      "current_wind_premium_usd": 105895.0,
+      "result_wind_premium_usd": 88526.6,
+      "annual_premium_foregone_usd": 17368.4,
+      "annual_admin_usd": 0.0,
+      "annual_nonwind_premium_usd": null,
+      "project_cost_usd": 68557.0,
+      "insurer_grants_usd": 15751.5,
+      "inspections_usd": 1000.0,
+      "fixed_setup_usd": 500.0,
+      "insurer_upfront_usd": 17251.5,
+      "homeowner_upfront_usd": 52805.5,
+      "owner_funded_ten_year_undiscounted_premium_net_usd": 105127.0,
+      "homeowner_ten_year_undiscounted_premium_net_usd": 120878.5
+    },
+    "app_consistent_demo": {
+      "current_wind_premium_usd": 104436.4,
+      "result_wind_premium_usd": 87476.85,
+      "annual_premium_foregone_usd": 16959.55,
+      "annual_admin_usd": 0.0,
+      "annual_nonwind_premium_usd": null,
+      "project_cost_usd": 67223.0,
+      "insurer_grants_usd": 15418.0,
+      "inspections_usd": 900.0,
+      "fixed_setup_usd": 500.0,
+      "insurer_upfront_usd": 16818.0,
+      "homeowner_upfront_usd": 51805.0,
+      "owner_funded_ten_year_undiscounted_premium_net_usd": 102372.5,
+      "homeowner_ten_year_undiscounted_premium_net_usd": 117790.5
+    }
+  },
+  "loss_results": null,
+  "loss_results_note": "Physical loss comparison is not part of this step: the combined shutters/straps curve and the state-transition service come next.",
+  "provenance": {
+    "generated_at": "2026-09-27T08:52:40Z",
+    "script": "backend/scripts/import_insurer_workbook.py",
+    "extract": "data/insurer_demo/workbook_extract.json",
+    "workbook": {
+      "name": "StormShield_Premium_Discount_POC_Revised.xlsx",
+      "sha256": "29fa34e20d2f98ddba1b425c810b560a6a4cb78bc29970204c59dabee240c06e",
+      "sha256_verified": false,
+      "cells_verified": false
+    },
+    "example_portfolio_sha256": "b3f21f0d34e5a40b480cdebf18c02df0b7c8d5d0f4a52afbd9bf142fcfe91d2b",
+    "app_snapshot_sha256": "0f9ec253db438d93a9ad6dfe9834d84bb339fb8e016441c2c4d2f2f576cb448a",
+    "cells": {
+      "sheet": "Discount Tier Assumptions",
+      "credits": "A5:B8",
+      "rates": "A12:B13",
+      "policies": "Synthetic Policies (yours)!A5:AA14",
+      "summary": "Portfolio Summary!B4:B16"
+    }
+  }
+}

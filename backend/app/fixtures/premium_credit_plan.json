@@ -1,0 +1,28 @@
+{
+  "plan_id": "workbook-discount-tiers-v1",
+  "schema_version": "insurer-demo-v1",
+  "evidence_status": "assumed",
+  "features": [
+    "roof_straps",
+    "shutters"
+  ],
+  "credit_plan": {
+    "none": 0,
+    "shutters": 0.08,
+    "roof_straps": 0.12,
+    "shutters_roof_straps": 0.25
+  },
+  "zone_rates": {
+    "HVHZ": 0.02,
+    "other_florida": 0.013
+  },
+  "credit_basis": "Fraction of the uncredited wind premium, looked up for the union of credited features. Both features earn the combined tier, not the sum of the single tiers.",
+  "rate_basis": "Annual wind premium as a fraction of the policy's rating value (the workbook's home value), by rating zone.",
+  "source": {
+    "workbook": "StormShield_Premium_Discount_POC_Revised.xlsx",
+    "sha256": "29fa34e20d2f98ddba1b425c810b560a6a4cb78bc29970204c59dabee240c06e",
+    "sheet": "Discount Tier Assumptions",
+    "credits": "A5:B8",
+    "rates": "A12:B13"
+  }
+}
