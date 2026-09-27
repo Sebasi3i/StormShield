@@ -25,15 +25,19 @@ What maps to what (every choice is recorded in the fixture):
   - Post-2002 code: roof-to-wall straps, 8d roof-deck nails, secondary water
     resistance, no shutters.
   - Upgrades change one feature of their class: shutters on, or toe-nails to straps.
-  - Roof shape: the mean of the gable and hip curves at each speed. Hazus separates
-    them and a hip roof loses about half as much at 140 mph; no source for Florida's mix
-    was available, so equal weight is an assumption, and the largest remaining one.
+  - Roof shape: Hazus separates gable and hip roofs, and a hip roof loses about half as
+    much as a gable roof at 140 mph. Rather than picking one mix, this script publishes
+    all three: the gable curve, the hip curve, and their mean ("blended"). A property
+    that declares its own roof shape gets the matching curve; a property that does not
+    gets blended, the same equal-weight assumption the platform used before roof shape
+    existed as a field, and still no source for Florida's actual gable/hip mix.
 
 A few Hazus curves dip by a fraction of a percent as wind rises; the engine refuses a
-decreasing curve, so each averaged curve is made nondecreasing with a running maximum.
-Below about 105 mph some curves also cross by a hundredth of a percent, which would
-show as an upgrade adding damage, so each upgrade is capped at its baseline and the
-post-2002 baseline at the pre-2002 one. The largest of each adjustment is recorded.
+decreasing curve, so every curve (gable, hip and blended alike) is made nondecreasing
+with a running maximum. Below about 105 mph some also cross by a hundredth of a percent,
+which would show as an upgrade adding damage, so within each roof shape every upgrade is
+capped at its own baseline and the post-2002 baseline at the pre-2002 one. The largest of
+each adjustment is recorded.
 
     python scripts/build_damage_curves.py
 """
@@ -54,7 +58,11 @@ FIXTURE = BACKEND / "app" / "fixtures" / "damage_curves.json"
 
 WIND_METRIC = "peak_3s_gust_10m_open_terrain_mph"
 TERRAIN_CM = "35"
-ROOF_SHAPES = ("gab", "hip")
+
+# Hazus source codes for the two roof shapes it separates, and the platform's own
+# roof_shape values, in the order curves are built and published for each config.
+HAZUS_ROOF_CODE = {"gable": "gab", "hip": "hip"}
+OUTPUT_ROOF_SHAPES = ("gable", "hip", "blended")
 
 # (class, upgrade) -> Hazus M.SF.1 fields after the roof shape:
 #   roof-to-wall, roof frame, deck attachment, shutters, secondary water resistance,
@@ -98,63 +106,77 @@ def load_source(path: Path = SOURCE) -> dict[str, tuple[np.ndarray, np.ndarray, 
 
 def build_curve_set(path: Path = SOURCE) -> dict:
     source = load_source(path)
-    largest_monotone_fix = 0.0
     winds_ref = None
-    ids_by_key: dict[tuple[str, str], list[str]] = {}
-    values: dict[tuple[str, str], np.ndarray] = {}
+    hazus_ids: dict[tuple[str, str], dict[str, str]] = {}
+    raw: dict[tuple[tuple[str, str], str], np.ndarray] = {}
     for key, cfg in CONFIGS.items():
-        ids = [hazus_id(roof, cfg) for roof in ROOF_SHAPES]
-        missing = [i for i in ids if i not in source]
+        ids = {shape: hazus_id(code, cfg) for shape, code in HAZUS_ROOF_CODE.items()}
+        missing = [i for i in ids.values() if i not in source]
         if missing:
             raise KeyError(f"Hazus configuration not in the source table: {missing}")
-        for i in ids:
+        for i in ids.values():
             if winds_ref is None:
                 winds_ref = source[i][0]
             if not np.array_equal(source[i][0], winds_ref):
                 raise ValueError(f"{i} is on a different wind grid")
-        mean = np.mean([source[i][1] for i in ids], axis=0)
-        monotone = np.maximum.accumulate(mean)
-        largest_monotone_fix = max(largest_monotone_fix, float((monotone - mean).max()))
-        ids_by_key[key] = ids
-        values[key] = monotone
+        hazus_ids[key] = ids
+        raw[(key, "gable")] = source[ids["gable"]][1]
+        raw[(key, "hip")] = source[ids["hip"]][1]
+        raw[(key, "blended")] = np.mean([source[ids["gable"]][1], source[ids["hip"]][1]], axis=0)
 
-    # Ordering the source is noisy about at low speeds: cap the post-2002 baseline at
-    # the pre-2002 one, and each upgrade at its own class baseline. The minimum of two
-    # nondecreasing curves is nondecreasing, so the curves stay valid.
+    # A few Hazus curves dip by a fraction of a percent as wind rises; the engine
+    # refuses a decreasing curve, so every curve is made nondecreasing on its own.
+    largest_monotone_fix = 0.0
+    values: dict[tuple[tuple[str, str], str], np.ndarray] = {}
+    for entry_key, arr in raw.items():
+        monotone = np.maximum.accumulate(arr)
+        largest_monotone_fix = max(largest_monotone_fix, float((monotone - arr).max()))
+        values[entry_key] = monotone
+
+    # The source is noisy at low speeds: within each roof shape, cap the post-2002
+    # baseline at the pre-2002 one, and each upgrade at its own class baseline. The
+    # minimum of two nondecreasing curves is nondecreasing, so the curves stay valid.
     largest_order_fix = 0.0
     order = [(("post_fbc_2002", "baseline"), ("pre_fbc_2002", "baseline"))] + [
         (key, (key[0], "baseline")) for key in CONFIGS if key[1] != "baseline"
     ]
-    for key, ceiling in order:
-        capped = np.minimum(values[key], values[ceiling])
-        largest_order_fix = max(largest_order_fix, float((values[key] - capped).max()))
-        values[key] = capped
+    for shape in OUTPUT_ROOF_SHAPES:
+        for key, ceiling in order:
+            capped = np.minimum(values[(key, shape)], values[(ceiling, shape)])
+            largest_order_fix = max(largest_order_fix, float((values[(key, shape)] - capped).max()))
+            values[(key, shape)] = capped
+
+    def source_note(vclass: str, upgrade: str, shape: str) -> str:
+        base = f"FEMA Hazus hurricane building loss function. {CLASS_TEXT[vclass]}, {UPGRADE_TEXT[upgrade]}"
+        ids = hazus_ids[(vclass, upgrade)]
+        if shape == "blended":
+            gable_description = source[ids["gable"]][2].replace("Gable roof. ", "")
+            return f"{base}: mean of Hazus {ids['gable']} and {ids['hip']} (gable and hip roof). {gable_description}"
+        return f"{base}, {shape} roof: Hazus {ids[shape]}. {source[ids[shape]][2]}"
 
     curves = []
-    for (vclass, upgrade), ids in ids_by_key.items():
-        points = [[0, 0.0]] + [
-            [int(w) if float(w).is_integer() else float(w), round(float(v), 4)]
-            for w, v in zip(winds_ref, values[(vclass, upgrade)])
-        ]
-        # The first Hazus points are exactly zero; drop repeats so the curve starts
-        # (0, 0) and then rises from the last zero speed.
-        while len(points) > 2 and points[1][1] == 0.0 and points[2][1] == 0.0:
-            points.pop(1)
-        curves.append(
-            {
-                "curve_id": f"{vclass}.{upgrade}.hazus.v1",
-                "vulnerability_class": vclass,
-                "upgrade_id": upgrade,
-                "wind_metric": WIND_METRIC,
-                "evidence_status": "sourced",
-                "source_note": (
-                    f"FEMA Hazus hurricane building loss function. {CLASS_TEXT[vclass]}, "
-                    f"{UPGRADE_TEXT[upgrade]}: mean of Hazus {ids[0]} and {ids[1]} "
-                    f"(gable and hip roof). {source[ids[0]][2].replace('Gable roof. ', '')}"
-                ),
-                "points": points,
-            }
-        )
+    for (vclass, upgrade) in CONFIGS:
+        for shape in OUTPUT_ROOF_SHAPES:
+            points = [[0, 0.0]] + [
+                [int(w) if float(w).is_integer() else float(w), round(float(v), 4)]
+                for w, v in zip(winds_ref, values[((vclass, upgrade), shape)])
+            ]
+            # The first Hazus points are exactly zero; drop repeats so the curve starts
+            # (0, 0) and then rises from the last zero speed.
+            while len(points) > 2 and points[1][1] == 0.0 and points[2][1] == 0.0:
+                points.pop(1)
+            curves.append(
+                {
+                    "curve_id": f"{vclass}.{upgrade}.{shape}.hazus.v1",
+                    "vulnerability_class": vclass,
+                    "upgrade_id": upgrade,
+                    "roof_shape": shape,
+                    "wind_metric": WIND_METRIC,
+                    "evidence_status": "sourced",
+                    "source_note": source_note(vclass, upgrade, shape),
+                    "points": points,
+                }
+            )
 
     return {
         "curve_set_id": "hazus-msf1-suburban-v1",
@@ -169,6 +191,7 @@ def build_curve_set(path: Path = SOURCE) -> dict:
                 "two. The mapping from the platform's classes to Hazus building features "
                 "is a modelling choice, recorded below."
             ),
+            "roof_shape_variants": list(OUTPUT_ROOF_SHAPES),
             "source": (
                 "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), "
                 "machine-readable copy from the NHERI SimCenter Damage and Loss Model "
@@ -191,20 +214,25 @@ def build_curve_set(path: Path = SOURCE) -> dict:
                 "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them",
             },
             "roof_shape": (
-                "Mean of the Hazus gable and hip curves at each speed, equal weight. A hip "
-                "roof loses about half as much as a gable roof at 140 mph; no source for "
-                "the Florida mix was available, so the equal weighting is assumed. This is "
-                "the largest remaining assumption in the curves."
+                "Published separately: the Hazus gable curve, the Hazus hip curve, and "
+                "their mean ('blended') at each speed. A hip roof loses about half as much "
+                "as a gable roof at 140 mph. A property that declares its own roof_shape "
+                "('gable' or 'hip') gets the matching curve; without one it gets 'blended', "
+                "an equal-weight assumption with no source for Florida's actual gable/hip "
+                "mix. That fallback, not the split itself, is the largest remaining "
+                "assumption in these curves - which roof shape an unlabeled Florida home "
+                "actually has is a separate, larger open question."
             ),
             "monotone_adjustment": (
-                "Each averaged curve made nondecreasing with a running maximum; the "
-                f"largest adjustment was {largest_monotone_fix:.4f} of replacement cost."
+                "Every curve (gable, hip and blended alike) made nondecreasing with a "
+                f"running maximum; the largest adjustment was {largest_monotone_fix:.4f} of "
+                "replacement cost."
             ),
             "ordering_adjustment": (
-                "Each upgrade capped at its class baseline, and the post-2002 baseline at "
-                "the pre-2002 one, so an upgrade never adds damage; the largest cap was "
-                f"{largest_order_fix:.4f} of replacement cost, where the source curves "
-                "cross by simulation noise below 105 mph."
+                "Within each roof shape, every upgrade capped at its class baseline, and "
+                "the post-2002 baseline at the pre-2002 one, so an upgrade never adds "
+                f"damage; the largest cap was {largest_order_fix:.4f} of replacement cost, "
+                "where the source curves cross by simulation noise below 105 mph."
             ),
             "scope": (
                 "Building structure only; contents and loss of use are separate Hazus "
@@ -234,10 +262,11 @@ def main(argv: list[str] | None = None) -> int:
     Path(args.fixture).write_text(json.dumps(curve_set, indent=2) + "\n", encoding="utf-8")
 
     grid = (105, 120, 140, 160, 180)
-    print("mph".ljust(30), *grid)
+    print("mph".ljust(38), *grid)
     for curve in curve_set["curves"]:
         winds, losses = zip(*curve["points"])
-        print(f"{curve['vulnerability_class'] + ' ' + curve['upgrade_id']:30s}", *[f"{np.interp(g, winds, losses):.3f}" for g in grid])
+        label = f"{curve['vulnerability_class']} {curve['upgrade_id']} {curve['roof_shape']}"
+        print(f"{label:38s}", *[f"{np.interp(g, winds, losses):.3f}" for g in grid])
     print(curve_set["provenance"]["monotone_adjustment"])
     print(curve_set["provenance"]["ordering_adjustment"])
     print(f"wrote {args.fixture}")

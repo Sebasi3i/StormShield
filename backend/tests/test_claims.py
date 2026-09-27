@@ -28,15 +28,16 @@ DEDUCTIBLE = 8_000.0
 COVERAGE_LIMIT = 400_000.0
 
 
-def curve(upgrade_id: str, damage_at_100: float) -> claims.Curve:
+def curve(upgrade_id: str, damage_at_100: float, roof_shape: str = "blended") -> claims.Curve:
     return claims.Curve(
-        curve_id=f"fixture.{upgrade_id}",
+        curve_id=f"fixture.{upgrade_id}.{roof_shape}",
         vulnerability_class="fixture_class",
         upgrade_id=upgrade_id,
         wind_metric=METRIC,
         points=((0.0, 0.0), (75.0, 0.0), (100.0, damage_at_100), (200.0, 1.0)),
         evidence_status="assumed",
         source_note="Synthetic fixture for tests. Not a model input.",
+        roof_shape=roof_shape,
     )
 
 
@@ -49,8 +50,8 @@ CURVE_SET = {
     "evidence_status": "assumed",
     "provenance": {"summary": "synthetic test fixture"},
     "curves": {
-        ("fixture_class", "baseline"): BASELINE_CURVE,
-        ("fixture_class", "shutters"): SHUTTERS_CURVE,
+        ("fixture_class", "baseline", "blended"): BASELINE_CURVE,
+        ("fixture_class", "shutters", "blended"): SHUTTERS_CURVE,
     },
 }
 
@@ -110,7 +111,7 @@ def test_zero_wind_is_zero_damage_and_zero_payout():
 def test_baseline_is_identical_across_upgrade_rows():
     """Two upgrades on one property must not disagree about the baseline."""
     curves = dict(CURVE_SET["curves"])
-    curves[("fixture_class", "roof_straps")] = curve("roof_straps", 0.06)
+    curves[("fixture_class", "roof_straps", "blended")] = curve("roof_straps", 0.06)
     curve_set = {**CURVE_SET, "curves": curves}
 
     result = claims.compute_losses(
@@ -199,10 +200,12 @@ def test_shipped_curve_set_validates():
     for shipped in curve_set["curves"].values():
         claims.validate_curve(shipped)
         assert shipped.wind_metric == curve_set["wind_metric"]
-    # Every class must have a baseline, or nothing can be compared against.
+    # Every class must have a baseline for every roof shape, or nothing can be
+    # compared against, and an unlabeled property could not fall back to blended.
     classes = {c.vulnerability_class for c in curve_set["curves"].values()}
     for name in classes:
-        assert (name, "baseline") in curve_set["curves"]
+        for shape in ("gable", "hip", "blended"):
+            assert (name, "baseline", shape) in curve_set["curves"]
 
 
 def test_shipped_curves_are_reproducible_from_hazus():
@@ -224,7 +227,8 @@ def test_shipped_curves_are_reproducible_from_hazus():
 def test_shipped_upgrades_never_add_damage():
     """An upgrade curve must sit at or below its class baseline at every speed, and the
     post-2002 baseline at or below the pre-2002 one; otherwise an avoided payout could go
-    negative for a reason the source does not support."""
+    negative for a reason the source does not support. Checked within each roof shape:
+    gable, hip and blended are independent curve families, each built to this rule."""
     import numpy as np
 
     claims.reset_caches()
@@ -235,10 +239,88 @@ def test_shipped_upgrades_never_add_damage():
         winds, damage = zip(*curves[key].points)
         return np.interp(grid, winds, damage)
 
-    for (vclass, upgrade) in curves:
+    for (vclass, upgrade, shape) in curves:
         if upgrade != "baseline":
-            assert (at((vclass, upgrade)) <= at((vclass, "baseline")) + 1e-9).all(), (vclass, upgrade)
-    assert (at(("post_fbc_2002", "baseline")) <= at(("pre_fbc_2002", "baseline")) + 1e-9).all()
+            assert (at((vclass, upgrade, shape)) <= at((vclass, "baseline", shape)) + 1e-9).all(), (vclass, upgrade, shape)
+    for shape in ("gable", "hip", "blended"):
+        assert (
+            at(("post_fbc_2002", "baseline", shape)) <= at(("pre_fbc_2002", "baseline", shape)) + 1e-9
+        ).all(), shape
+
+
+# --------------------------------------------------------------------------- #
+# Roof shape: declared curve selection and the blended fallback
+# --------------------------------------------------------------------------- #
+
+
+def test_unknown_roof_shape_falls_back_to_blended():
+    """A property with no declared roof shape (the default) gets exactly what every
+    property got before roof_shape existed: the blended curve. Declaring "unknown"
+    explicitly must behave identically."""
+    default_curve = claims.find_curve(CURVE_SET["curves"], "fixture_class", "baseline")
+    explicit_curve = claims.find_curve(CURVE_SET["curves"], "fixture_class", "baseline", "unknown")
+
+    assert default_curve == BASELINE_CURVE
+    assert explicit_curve == BASELINE_CURVE
+
+
+def test_a_curve_set_with_no_shape_specific_curves_still_honours_a_declared_shape():
+    """Declaring roof_shape="hip" against a curve set that never split gable from
+    hip (every fixture in this file, and every curve set built before this feature)
+    falls back to blended rather than raising. Declaring a shape can never make a
+    property worse off than not declaring one."""
+    curve_for_hip = claims.find_curve(CURVE_SET["curves"], "fixture_class", "baseline", "hip")
+    assert curve_for_hip == BASELINE_CURVE
+
+
+def test_declared_roof_shape_selects_the_matching_curve():
+    """Once a curve set does split gable from hip, a property's declared shape picks
+    the curve for that shape, not the blended average - and an unlabeled property
+    still gets blended."""
+    gable = curve("baseline", 0.20, roof_shape="gable")
+    hip = curve("baseline", 0.02, roof_shape="hip")
+    curves = dict(CURVE_SET["curves"])
+    curves[("fixture_class", "baseline", "gable")] = gable
+    curves[("fixture_class", "baseline", "hip")] = hip
+
+    assert claims.find_curve(curves, "fixture_class", "baseline", "gable") == gable
+    assert claims.find_curve(curves, "fixture_class", "baseline", "hip") == hip
+    assert claims.find_curve(curves, "fixture_class", "baseline") == BASELINE_CURVE
+
+
+def test_a_propertys_roof_shape_changes_its_computed_damage():
+    """End to end through compute_losses: two otherwise-identical properties with
+    different declared roof shapes get different damage from the same storm."""
+    gable = curve("baseline", 0.20, roof_shape="gable")
+    hip = curve("baseline", 0.02, roof_shape="hip")
+    curves = dict(CURVE_SET["curves"])
+    curves[("fixture_class", "baseline", "gable")] = gable
+    curves[("fixture_class", "baseline", "hip")] = hip
+    curve_set = {**CURVE_SET, "curves": curves}
+
+    result = claims.compute_losses(
+        [
+            claims.Property("GABLE_HOME", REPLACEMENT_COST, "fixture_class", "gable"),
+            claims.Property("HIP_HOME", REPLACEMENT_COST, "fixture_class", "hip"),
+        ],
+        [
+            claims.Policy("GABLE_HOME", DEDUCTIBLE, COVERAGE_LIMIT),
+            claims.Policy("HIP_HOME", DEDUCTIBLE, COVERAGE_LIMIT),
+        ],
+        [
+            claims.WindExposure("S001", "GABLE_HOME", 100.0, METRIC),
+            claims.WindExposure("S001", "HIP_HOME", 100.0, METRIC),
+        ],
+        ["S001"],
+        run_id="test-roof-shape",
+        catalog_id="test-catalog",
+        sampling_description="synthetic",
+        curve_set=curve_set,
+    )
+
+    by_property = {r["property_id"]: r for r in result["rows"]}
+    assert by_property["GABLE_HOME"]["baseline_damage_usd"] == pytest.approx(0.20 * REPLACEMENT_COST)
+    assert by_property["HIP_HOME"]["baseline_damage_usd"] == pytest.approx(0.02 * REPLACEMENT_COST)
 
 
 # --------------------------------------------------------------------------- #
@@ -360,7 +442,7 @@ def test_percent_outside_zero_to_one_is_rejected():
 def test_negative_avoided_payout_is_preserved_and_warned():
     """An upgrade curve worse than baseline is a data problem worth surfacing."""
     curves = dict(CURVE_SET["curves"])
-    curves[("fixture_class", "shutters")] = curve("shutters", 0.20)
+    curves[("fixture_class", "shutters", "blended")] = curve("shutters", 0.20)
     result = claims.compute_losses(
         [claims.Property("P001", REPLACEMENT_COST, "fixture_class")],
         [claims.Policy("P001", DEDUCTIBLE, COVERAGE_LIMIT)],

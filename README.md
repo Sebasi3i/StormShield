@@ -113,10 +113,14 @@ gusts those stations recorded (`scripts/calibrate_wind_field.py`), with
 `scripts/validate_wind_field.py` recording how the whole step compares with the
 observations. The station data lives in `data/calibration/`. The damage curves are
 FEMA Hazus hurricane building loss functions for one-story masonry homes, mapped to
-the platform's classes and upgrades by `scripts/build_damage_curves.py` (the mapping,
-including an assumed equal mix of gable and hip roofs, is in the fixture's provenance
-and `docs/calibration.md`), so responses now carry `evidence_status: sourced`. Sourced
-means documented and reproducible, not validated against this portfolio's claims.
+the platform's classes and upgrades by `scripts/build_damage_curves.py` (the mapping is
+in the fixture's provenance and `docs/calibration.md`), so responses now carry
+`evidence_status: sourced`. Sourced means documented and reproducible, not validated
+against this portfolio's claims. Each curve is published separately for gable roofs,
+hip roofs, and their blend; a property's `roof_shape` picks the matching one, and an
+unlabeled property falls back to the blend, an assumed equal mix with no source for
+Florida's actual gable/hip split (`scripts/assign_demo_roof_shapes.py` gives the demo
+portfolio an illustrative, seeded-random mix of both so this has something to exercise).
 `app/claims.py` is unaffected by the curves and the wind model alike, because it
 consumes wind exposures rather than tracks.
 

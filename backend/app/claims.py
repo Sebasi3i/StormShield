@@ -32,6 +32,11 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 BASELINE = "baseline"
 
+# Roof shapes a curve can be published for, and the fallback used when a property's
+# roof shape is missing, unrecognised, or simply not "gable"/"hip".
+KNOWN_ROOF_SHAPES = ("gable", "hip")
+BLENDED_ROOF_SHAPE = "blended"
+
 # Results are labeled with this so no consumer can mistake them for a net figure.
 RESULT_BASIS = "illustrative gross insurer payouts before reinsurance"
 
@@ -92,6 +97,10 @@ class Curve(NamedTuple):
     points: tuple[tuple[float, float], ...]
     evidence_status: str
     source_note: str
+    # "gable", "hip", or "blended" (the equal-weight mean, used when a property's own
+    # roof shape is unknown). Defaults to "blended" so a curve built without this field
+    # - every test fixture written before roof shape existed - behaves exactly as before.
+    roof_shape: str = BLENDED_ROOF_SHAPE
 
     @property
     def max_supported_wind(self) -> float:
@@ -102,6 +111,9 @@ class Property(NamedTuple):
     property_id: str
     replacement_cost_usd: float
     vulnerability_class: str
+    # "gable", "hip", or "unknown" (the default). Anything else falls back to the
+    # curve set's blended (equal gable/hip mix) curve, same as "unknown".
+    roof_shape: str = "unknown"
 
 
 class Policy(NamedTuple):
@@ -189,7 +201,7 @@ def load_curve_set(path: str | None = None) -> dict:
     curve_path = Path(path) if path else FIXTURES / "damage_curves.json"
     raw = json.loads(curve_path.read_text(encoding="utf-8"))
 
-    curves: dict[tuple[str, str], Curve] = {}
+    curves: dict[tuple[str, str, str], Curve] = {}
     for entry in raw["curves"]:
         curve = Curve(
             curve_id=entry["curve_id"],
@@ -199,12 +211,13 @@ def load_curve_set(path: str | None = None) -> dict:
             points=tuple((float(w), float(d)) for w, d in entry["points"]),
             evidence_status=entry["evidence_status"],
             source_note=entry["source_note"],
+            roof_shape=entry.get("roof_shape", BLENDED_ROOF_SHAPE),
         )
         validate_curve(curve)
-        key = (curve.vulnerability_class, curve.upgrade_id)
+        key = (curve.vulnerability_class, curve.upgrade_id, curve.roof_shape)
         if key in curves:
             raise CurveError(
-                f"two curves for class {key[0]} upgrade {key[1]}: "
+                f"two curves for class {key[0]} upgrade {key[1]} roof shape {key[2]}: "
                 f"{curves[key].curve_id} and {curve.curve_id}"
             )
         curves[key] = curve
@@ -227,10 +240,11 @@ def _curve_assumption(curve_set: dict, evidence_statuses: set[str]) -> str:
         )
     return (
         f"Damage curves ({curve_set['curve_set_id']}) are published FEMA Hazus building "
-        "loss functions mapped to the platform's classes; the mapping, including an "
-        "assumed equal mix of gable and hip roofs, is in metadata.curve_provenance. Not "
-        "checked against this portfolio's own claims, and the Finance workbook's upgrade "
-        "damage-effect request is still unanswered."
+        "loss functions mapped to the platform's classes. A property's declared "
+        "roof_shape ('gable' or 'hip') selects the matching curve; without one, the "
+        "blended (equal gable/hip mix) curve is used, an assumption recorded in "
+        "metadata.curve_provenance. Not checked against this portfolio's own claims, and "
+        "the Finance workbook's upgrade damage-effect request is still unanswered."
     )
 
 
@@ -239,10 +253,31 @@ def reset_caches() -> None:
     load_policy_template.cache_clear()
 
 
-def find_curve(curves: dict[tuple[str, str], Curve], vulnerability_class: str, upgrade_id: str) -> Curve:
-    curve = curves.get((vulnerability_class, upgrade_id))
+def _resolve_roof_shape(roof_shape: str | None) -> str:
+    """A property's declared roof shape, or the blended fallback.
+
+    Anything other than exactly "gable" or "hip" - missing, "unknown", a typo - gets
+    the blended curve, the same curve every property used before roof_shape existed.
+    """
+    shape = (roof_shape or "").strip().lower()
+    return shape if shape in KNOWN_ROOF_SHAPES else BLENDED_ROOF_SHAPE
+
+
+def find_curve(
+    curves: dict[tuple[str, str, str], Curve],
+    vulnerability_class: str,
+    upgrade_id: str,
+    roof_shape: str = BLENDED_ROOF_SHAPE,
+) -> Curve:
+    shape = _resolve_roof_shape(roof_shape)
+    curve = curves.get((vulnerability_class, upgrade_id, shape))
+    if curve is None and shape != BLENDED_ROOF_SHAPE:
+        # This class/upgrade has no curve split out for the declared shape (a supplied
+        # curve set may only carry "blended"): fall back to the same curve an
+        # unspecified roof shape would use, rather than treating it as missing data.
+        curve = curves.get((vulnerability_class, upgrade_id, BLENDED_ROOF_SHAPE))
     if curve is None:
-        available = sorted(u for c, u in curves if c == vulnerability_class)
+        available = sorted({u for c, u, _ in curves if c == vulnerability_class})
         raise MissingDataError(
             f"no {upgrade_id} curve for vulnerability class {vulnerability_class}. "
             f"Available upgrades for that class: {', '.join(available) or 'none'}"
@@ -250,14 +285,14 @@ def find_curve(curves: dict[tuple[str, str], Curve], vulnerability_class: str, u
     return curve
 
 
-def eligible_upgrades(curves: dict[tuple[str, str], Curve], vulnerability_class: str) -> list[str]:
+def eligible_upgrades(curves: dict[tuple[str, str, str], Curve], vulnerability_class: str) -> list[str]:
     """Upgrades that have a curve for this class, so cannot be offered without one.
 
     post_fbc_2002 has no roof_straps curve because roof-to-wall connections are
     already code-required there, which is a modeling decision recorded in the fixture,
     not an omission to paper over.
     """
-    return sorted(u for c, u in curves if c == vulnerability_class and u != BASELINE)
+    return sorted({u for c, u, _ in curves if c == vulnerability_class and u != BASELINE})
 
 
 # --------------------------------------------------------------------------- #
@@ -468,7 +503,7 @@ def compute_losses(
                 )
 
             policy = policies_by_id[prop.property_id]
-            baseline_curve = find_curve(curves, prop.vulnerability_class, BASELINE)
+            baseline_curve = find_curve(curves, prop.vulnerability_class, BASELINE, prop.roof_shape)
 
             # Computed once per storm/property so it is identical across upgrade rows.
             baseline_fraction = damage_fraction(
@@ -484,7 +519,7 @@ def compute_losses(
             )
 
             for upgrade_id in options:
-                upgrade_curve = find_curve(curves, prop.vulnerability_class, upgrade_id)
+                upgrade_curve = find_curve(curves, prop.vulnerability_class, upgrade_id, prop.roof_shape)
                 upgraded_fraction = damage_fraction(
                     upgrade_curve, exposure.peak_gust_mph, exposure.wind_metric
                 )

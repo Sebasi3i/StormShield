@@ -623,6 +623,7 @@ def _storm_losses(
                 property_id=prop.property_id,
                 replacement_cost_usd=prop.replacement_cost_usd,
                 vulnerability_class=prop.vulnerability_class,
+                roof_shape=prop.roof_shape,
             )
         )
         # Coverage A defaults to replacement cost, and is also the base the percentage
@@ -858,6 +859,7 @@ def damage_curves() -> dict:
                 "curve_id": curve.curve_id,
                 "vulnerability_class": curve.vulnerability_class,
                 "upgrade_id": curve.upgrade_id,
+                "roof_shape": curve.roof_shape,
                 "wind_metric": curve.wind_metric,
                 "evidence_status": curve.evidence_status,
                 "source_note": curve.source_note,
@@ -893,6 +895,7 @@ def storm_losses_example(storm_id: str = "SYN0155") -> dict:
             property_id=entry["property_id"],
             replacement_cost_usd=entry["replacement_cost_usd"],
             vulnerability_class=entry["vulnerability_class"],
+            roof_shape=entry.get("roof_shape", "unknown"),
             latitude=entry["latitude"],
             longitude=entry["longitude"],
         )

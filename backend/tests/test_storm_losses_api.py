@@ -188,8 +188,34 @@ def test_curves_endpoint_publishes_evidence_status_per_curve():
         assert curve["evidence_status"] == "sourced"
         assert curve["source_note"]
         assert curve["wind_metric"] == curves["wind_metric"]
+        assert curve["roof_shape"] in ("gable", "hip", "blended")
+    assert {c["roof_shape"] for c in curves["curves"]} == {"gable", "hip", "blended"}
     assert "roof_straps" not in curves["eligible_upgrades_by_class"]["post_fbc_2002"]
     assert curves["policy_template"]["deductible"]["percent"] == 0.05
+
+
+def test_demo_roof_shapes_are_reproducible_from_the_seed():
+    """example_portfolio.json's roof_shape values are exactly what
+    scripts/assign_demo_roof_shapes.py's fixed seed derives, and every value is a
+    real roof shape - never invented data quietly upgraded past "not measured"."""
+    import importlib.util
+
+    backend = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "assign_demo_roof_shapes", backend / "scripts" / "assign_demo_roof_shapes.py"
+    )
+    script = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(script)
+
+    portfolio_path = backend / "app" / "fixtures" / "example_portfolio.json"
+    portfolio = json.loads(portfolio_path.read_text(encoding="utf-8"))
+    expected = script.assign_roof_shapes(portfolio["properties"])
+
+    assert portfolio["properties"], "no demo properties to check"
+    for prop in portfolio["properties"]:
+        assert prop["roof_shape"] == expected[prop["property_id"]]
+        assert prop["roof_shape"] in ("gable", "hip")
+    assert "roof_shape" in portfolio["missing_input"], "the placeholder must say it is not measured"
 
 
 # --------------------------------------------------------------------------- #
@@ -241,8 +267,9 @@ def test_post_accepts_supplied_wind_exposures():
 
     assert response.status_code == 200, response.text
     body = response.json()
-    # 140 mph is a declared point on the shipped curve: its fraction x 500,000.
-    curve = claims.load_curve_set()["curves"][("pre_fbc_2002", "baseline")]
+    # 140 mph is a declared point on the shipped curve: its fraction x 500,000. No
+    # roof_shape was declared, so this property falls back to the blended curve.
+    curve = claims.load_curve_set()["curves"][("pre_fbc_2002", "baseline", "blended")]
     fraction = dict(curve.points)[140.0]
     assert body["rows"][0]["baseline_damage_usd"] == pytest.approx(fraction * 500_000, abs=1)
     assert body["metadata"]["wind_model"]["evidence_status"] == "caller-declared"

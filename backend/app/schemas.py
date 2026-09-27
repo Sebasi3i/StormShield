@@ -399,6 +399,11 @@ class StormLossPropertyInput(BaseModel):
         default="pre_fbc_2002",
         description="Must have a baseline curve in the curve set, or the row is rejected.",
     )
+    roof_shape: str = Field(
+        default="unknown",
+        description="'gable' or 'hip' selects the matching Hazus curve. Anything else, "
+        "including the default 'unknown', gets the blended (equal gable/hip mix) curve.",
+    )
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     coverage_a_usd: float | None = Field(

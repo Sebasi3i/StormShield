@@ -328,11 +328,12 @@ roof (Hazus M.SF.1):
 | post-2002 baseline | straps, 8d deck nails, secondary water resistance, no shutters |
 | post-2002 + shutters | the same, with shutters |
 
-Each curve is the mean of the Hazus gable-roof and hip-roof curves. A hip roof loses
-about half as much at 140 mph; no source for Florida's mix was available, so the equal
-weighting is an assumption and the largest one left in the curves. Wood-frame curves
-differ from masonry by at most 2 points of replacement cost for four of the five, and by
-up to 9 for post-2002 with shutters; masonry reinforcing moves them by under one.
+Each of the five is published three ways: the Hazus gable-roof curve, the Hazus hip-roof
+curve, and their mean ("blended"), 15 curves in total. A hip roof loses about half as
+much at 140 mph. A property that declares its own `roof_shape` gets the matching curve;
+one that does not gets blended - see "Roof shape" below. Wood-frame curves differ from
+masonry by at most 2 points of replacement cost for four of the five, and by up to 9 for
+post-2002 with shutters; masonry reinforcing moves them by under one.
 
 | Peak gust | Pre-2002, before → now | + shutters, before → now | Post-2002, before → now |
 | --- | ---: | ---: | ---: |
@@ -356,15 +357,56 @@ baseline payouts summed, 5% deductible):
 | SYN0973 | 116 mph | $0 → $0 | $0 → $0 |
 
 **Adjustments to the source.** The engine refuses a curve whose damage falls as wind
-rises, and an upgrade that adds damage would show as a negative avoided payout. Each
-averaged curve is made nondecreasing (the largest change is 0.5% of replacement cost),
-and each upgrade is capped at its baseline, the post-2002 baseline at the pre-2002 one
-(largest change 0.01%, simulation noise below 105 mph). Both are recorded in the fixture.
+rises, and an upgrade that adds damage would show as a negative avoided payout. Every
+curve - gable, hip and blended alike, each on its own - is made nondecreasing (the
+largest change is 2.5% of replacement cost: isolating gable and hip needs a bigger
+correction than fixing the blend, because averaging two curves together had been
+smoothing out some of each one's own noise). Within each roof shape, every upgrade is
+capped at its baseline, the post-2002 baseline at the pre-2002 one (largest change 0.03%,
+simulation noise below 105 mph). Both are recorded in the fixture.
+
+### Roof shape: gable and hip curves, added 27 September 2026
+
+The equal gable/hip mix was the single largest assumption in the curves themselves.
+`scripts/build_damage_curves.py` now publishes the gable curve, the hip curve and their
+blend for every class and upgrade, `app/claims.py` accepts a `roof_shape` ("gable" or
+"hip") on each property, and `find_curve` picks the matching curve - falling back to
+blended for "unknown" or any curve set that never split gable from hip, so declaring a
+shape can never make a property worse off than not declaring one. The
+`/api/v1/damage-curves` response and `metadata.curve_provenance` carry the split too.
+
+This moves the assumption, it does not remove it. Two things are still unsourced:
+
+- **Which shape an unlabeled home has.** No source for Florida's actual gable/hip mix
+  exists, so "unknown" still falls back to the 50/50 blend - now a documented default
+  rather than the only option, but still a guess.
+- **Real per-home data.** The ten-property demo portfolio's `roof_shape` values (see
+  `app/fixtures/example_portfolio.json`, `scripts/assign_demo_roof_shapes.py`) are a
+  seeded random draw - 8 gable, 2 hip - not a classification of anything. They exist so
+  this code path has a mix of both to run against. The demo portfolio's own coordinates
+  are downtown/commercial buildings, not single-family homes, which is one reason a real
+  classifier was not run against it; sourcing real roof shape for a real portfolio
+  (aerial imagery and a shape classifier, or Florida's OIR-B1-1802 wind-mitigation
+  inspection form) is separate work, not yet started.
+
+**Effect of declaring a shape, one demo property.** P001 (Miami, $850,000 replacement
+cost, pre-2002 baseline, no upgrade), SYN0155, 152.2 mph gust:
+
+| roof_shape | Damage fraction | Baseline payout (5% deductible) |
+| --- | ---: | ---: |
+| Unlabeled (blended, what every property got before this change) | 66.3% | $521,386 |
+| "gable" (P001's actual assignment) | 75.6% | $599,749 |
+| "hip" (shown for contrast; not P001's assignment) | 57.1% | $443,012 |
+
+The two demo properties assigned "hip" (P003 Tampa, P009 Naples) are not stressed hard
+enough by any storm in the shipped catalog for the shape to change a nonzero payout -
+their best-case peak gusts across the whole catalog are 83.5 mph and 98.0 mph, where
+gable and hip fractions are both under 1.5% and well inside the deductible. The P001
+comparison above, from the curves directly, is what a harder-hit hip-roofed home would
+see.
 
 **What is still open.**
 
-- **Roof shape.** The single largest assumption. With each home's roof type on record,
-  it could use its own Hazus curve instead of the mix.
 - **Building detail per home.** Story count, wall type, deck nailing and secondary
   water resistance vary by home and year built; the platform has only the two classes.
   Hazus has curves for each, so more property attributes would feed straight in.
