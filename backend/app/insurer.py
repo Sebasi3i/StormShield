@@ -34,7 +34,7 @@ import itertools
 import json
 from typing import Iterable
 
-from . import claims, mitigation_states as ms, premium, wind
+from . import claims, climatology, mitigation_states as ms, premium, wind
 
 SCHEMA_VERSION = "insurer-demo-v1"
 
@@ -45,6 +45,7 @@ ARMS = (CURRENT_BOOK, HOMEOWNER_FUNDED, INSURER_COFUNDED)
 
 EVENT_ONLY = "event_only"
 ONE_EVENT_OR_NONE = "one_event_or_none"
+SIMULATED_CLIMATE = "simulated_climate"
 
 # The optimizer enumerates every subset of the available proposals. Ten policies is
 # 1,024 subsets; this bound keeps a bigger book from turning a demo request into a
@@ -81,8 +82,26 @@ def validate_annual_model(model: dict, storm_ids: list[str]) -> dict:
     kind = model.get("kind")
     if kind == EVENT_ONLY:
         return {"kind": EVENT_ONLY}
+    if kind == SIMULATED_CLIMATE:
+        try:
+            data = climatology.load_climatology()
+            rate = climatology.storms_per_year(data, model.get("storms_per_year"))
+        except climatology.ClimatologyError as error:
+            raise InsurerError(str(error)) from error
+        wanted = model.get("climatology_id")
+        if wanted is not None and wanted != data["climatology_id"]:
+            raise InsurerError(f"climatology {wanted!r} is not the one on disk ({data['climatology_id']!r})")
+        return {
+            "kind": SIMULATED_CLIMATE,
+            "storms_per_year": rate,
+            "climatology_id": data["climatology_id"],
+            "sample_storms": len(data["storms"]),
+            "evidence_status": data["evidence_status"],
+        }
     if kind != ONE_EVENT_OR_NONE:
-        raise InsurerError(f"annual_model.kind must be {EVENT_ONLY!r} or {ONE_EVENT_OR_NONE!r}, got {kind!r}")
+        raise InsurerError(
+            f"annual_model.kind must be {EVENT_ONLY!r}, {ONE_EVENT_OR_NONE!r} or {SIMULATED_CLIMATE!r}, got {kind!r}"
+        )
     probability = model.get("annual_event_probability")
     if not isinstance(probability, (int, float)) or isinstance(probability, bool) or not 0.0 <= probability <= 1.0 or probability != probability:
         raise InsurerError(f"annual_model.annual_event_probability must be a number in [0, 1], got {probability!r}")
@@ -347,13 +366,29 @@ def compare(
             else:
                 event["first_year_insurer_benefit_if_this_storm_usd"][arm] = None
 
-    # Annual economics, only under the explicit model.
+    # Annual economics, only under an explicit model: the invented one-event-or-none
+    # probability over the run's storms, or the simulated climate sample.
+    climate = None
     if annual["kind"] == ONE_EVENT_OR_NONE:
         probabilities = annual["storm_probabilities"]
         expected_current = sum(probabilities[s] * events[s]["current_book"]["payout_usd"] for s in run_storm_ids)
         expected_result = sum(probabilities[s] * events[s]["program"]["payout_usd"] for s in run_storm_ids)
         expected_uninsured_current = sum(probabilities[s] * events[s]["current_book"]["uninsured_damage_usd"] for s in run_storm_ids)
         expected_uninsured_result = sum(probabilities[s] * events[s]["program"]["uninsured_damage_usd"] for s in run_storm_ids)
+    elif annual["kind"] == SIMULATED_CLIMATE:
+        try:
+            climate = climatology.expected_annual(
+                states, engine_policies, climatology.load_climatology(), storms_per_year_override=annual["storms_per_year"]
+            )
+        except (climatology.ClimatologyError, claims.EngineError) as error:
+            raise InsurerError(str(error)) from error
+        exact = climate.pop("_exact")
+        expected_current, expected_result = exact["current_payout"], exact["result_payout"]
+        expected_uninsured_current, expected_uninsured_result = exact["current_uninsured"], exact["result_uninsured"]
+        mean_avoided_per_storm = exact["mean_avoided_payout_per_storm"]
+        for row in climate["per_property"].values():
+            row.pop("_exact_avoided_payout", None)
+    if annual["kind"] != EVENT_ONLY:
         for arm in ARMS:
             entry = programs[arm]
             if arm == CURRENT_BOOK:
@@ -371,17 +406,32 @@ def compare(
                 insurer_upfront_usd=upfront, horizon_years=program["horizon_years"], discount_rate=program["discount_rate"],
             )
             exact = econ.pop("_exact")
-            mean_conditional_avoided = (expected_current - expected_result) / annual["annual_event_probability"] if annual["annual_event_probability"] > 0 else None
+            mean_conditional_avoided = (
+                (expected_current - expected_result) / annual["annual_event_probability"]
+                if annual["kind"] == ONE_EVENT_OR_NONE and annual["annual_event_probability"] > 0
+                else None
+            )
             econ["expected_annual_payout_current_usd"] = _money(expected_current if arm != CURRENT_BOOK else expected_current)
             econ["expected_annual_payout_program_usd"] = _money(expected_result if arm != CURRENT_BOOK else expected_current)
             # The probability at which this program breaks even, holding the storm
             # weights fixed: the one number that turns the invented event probability
             # into a question the reader can judge.
-            econ["break_even_annual_event_probability"] = (
-                round(exact["break_even"] / mean_conditional_avoided, 4)
-                if (arm != CURRENT_BOOK and mean_conditional_avoided and mean_conditional_avoided > 0)
-                else None
-            )
+            if annual["kind"] == ONE_EVENT_OR_NONE:
+                econ["break_even_annual_event_probability"] = (
+                    round(exact["break_even"] / mean_conditional_avoided, 4)
+                    if (arm != CURRENT_BOOK and mean_conditional_avoided and mean_conditional_avoided > 0)
+                    else None
+                )
+                econ["break_even_storms_per_year"] = None
+            else:
+                econ["break_even_annual_event_probability"] = None
+                # The storm rate at which this program breaks even, holding the sample
+                # fixed: the same question as the probability above, in the climate's units.
+                econ["break_even_storms_per_year"] = (
+                    round(exact["break_even"] / mean_avoided_per_storm, 2)
+                    if (arm != CURRENT_BOOK and mean_avoided_per_storm > 0)
+                    else None
+                )
             econ["homeowner"] = {
                 "expected_annual_avoided_uninsured_damage_usd": _money((expected_uninsured_current - expected_uninsured_result) if arm != CURRENT_BOOK else 0.0),
                 "premium_only_npv_usd": _money(
@@ -393,13 +443,24 @@ def compare(
                 ) if arm != CURRENT_BOOK else 0.0,
                 "note": "Insured claim payments are the insurer's; only uninsured damage avoided is the homeowner's physical loss avoided.",
             }
-            econ["assumption"] = {
-                "annual_event_probability": annual["annual_event_probability"],
-                "storm_probabilities": {s: round(p, 6) for s, p in probabilities.items()},
-                "no_event_probability": annual["no_event_probability"],
-                "evidence_status": annual["evidence_status"],
-                "note": "At most one event per year; upfront costs at time zero, recurring flows at year end; unchanged renewals, full repair between years, immediate and undiminishing mitigation.",
-            }
+            if annual["kind"] == ONE_EVENT_OR_NONE:
+                econ["assumption"] = {
+                    "kind": ONE_EVENT_OR_NONE,
+                    "annual_event_probability": annual["annual_event_probability"],
+                    "storm_probabilities": {s: round(p, 6) for s, p in probabilities.items()},
+                    "no_event_probability": annual["no_event_probability"],
+                    "evidence_status": annual["evidence_status"],
+                    "note": "At most one event per year; upfront costs at time zero, recurring flows at year end; unchanged renewals, full repair between years, immediate and undiminishing mitigation.",
+                }
+            else:
+                econ["assumption"] = {
+                    "kind": SIMULATED_CLIMATE,
+                    "climatology_id": annual["climatology_id"],
+                    "sample_storms": annual["sample_storms"],
+                    "storms_per_year": annual["storms_per_year"],
+                    "evidence_status": annual["evidence_status"],
+                    "note": "Expected values over an unselected simulated sample times a storms-per-year rate; storms arrive independently, any number per year. Upfront costs at time zero, recurring flows at year end; unchanged renewals, full repair between storms, immediate and undiminishing mitigation.",
+                }
             entry["annual_economics"] = econ
             entry["annual_economics_unavailable_reason"] = None
 
@@ -414,6 +475,11 @@ def compare(
         "annual_model": {k: v for k, v in annual.items() if k not in ("storm_probabilities", "no_event_probability")},
         "deductible_fraction": deductible_fraction,
     }
+    if climate is not None:
+        # Attribute per-property figures to policies for the client.
+        climate["per_policy"] = {
+            policy_of_property[pid]: row for pid, row in climate["per_property"].items()
+        }
     provenance = {
         "credit_plan_id": plan["plan_id"],
         "curve_set_id": transitions["curve_set_id"],
@@ -436,6 +502,7 @@ def compare(
         "loss_rows": loss_rows,
         "events": events,
         "programs": programs,
+        "climate": climate,
         "deductible_sensitivity_note": (
             f"Every policy repriced at {deductible_fraction:.0%} of Coverage A with the premium held fixed: a "
             "simplifying assumption, not a priced alternative deductible."
@@ -519,17 +586,21 @@ def optimize(**kwargs) -> dict:
     """`compare` under an explicit annual model, then the budget selection over the
     proposals whose cost is known, and the comparison re-run on the chosen subset."""
     annual_model = kwargs.get("annual_model") or {"kind": EVENT_ONLY}
-    if annual_model.get("kind") != ONE_EVENT_OR_NONE:
-        raise InsurerError("optimization needs the one_event_or_none annual model; event-only mode has no expected value to optimize")
+    if annual_model.get("kind") not in (ONE_EVENT_OR_NONE, SIMULATED_CLIMATE):
+        raise InsurerError("optimization needs an annual model (one_event_or_none or simulated_climate); event-only mode has no expected value to optimize")
     full = compare(**{**kwargs, "selected_proposal_ids": None})
-    probabilities = validate_annual_model(annual_model, full["storm_ids"])["storm_probabilities"]
     program = full["program"]
 
     # Per-policy expected avoided payout from the all-projects run: losses are
     # independent across policies, so each policy's contribution is its own.
     avoided_by_policy: dict[str, float] = {}
-    for row in full["loss_rows"]:
-        avoided_by_policy[row["policy_id"]] = avoided_by_policy.get(row["policy_id"], 0.0) + probabilities[row["storm_id"]] * row["avoided_payout_usd"]
+    if annual_model.get("kind") == SIMULATED_CLIMATE:
+        for policy_id, row in full["climate"]["per_policy"].items():
+            avoided_by_policy[policy_id] = row["expected_annual_avoided_payout_usd"]
+    else:
+        probabilities = validate_annual_model(annual_model, full["storm_ids"])["storm_probabilities"]
+        for row in full["loss_rows"]:
+            avoided_by_policy[row["policy_id"]] = avoided_by_policy.get(row["policy_id"], 0.0) + probabilities[row["storm_id"]] * row["avoided_payout_usd"]
     candidates, excluded = [], []
     for row in full["policies"]:
         if not row["selected"] or not row["is_project"]:

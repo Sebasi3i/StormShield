@@ -17,6 +17,7 @@ export function featureLabel(features: string[]): string {
   return [...features]
     .sort((a, b) => (a === 'shutters' ? -1 : b === 'shutters' ? 1 : 0))
     .map((feature) => FEATURE_LABELS[feature] ?? feature.replace(/_/g, ' '))
+    .map((label, index) => (index === 0 ? label : label.charAt(0).toLowerCase() + label.slice(1)))
     .join(' + ')
 }
 

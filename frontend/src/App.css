@@ -2371,3 +2371,9 @@
     columns: 1;
   }
 }
+
+.lab-radios {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}

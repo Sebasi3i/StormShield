@@ -93,3 +93,33 @@ def test_schema_level_rejections_are_422_too():
 def test_optimize_without_the_annual_model_is_422():
     response = client.post("/api/v1/insurer/optimize", json={"storm_ids": CATALOG})
     assert response.status_code == 422 and "annual model" in response.json()["detail"]["message"]
+
+
+def test_demo_bundle_offers_the_simulated_climate():
+    demo = client.get("/api/v1/insurer/demo").json()
+    assert demo["climatology"]["sample_storms"] >= 5000
+    assert demo["climatology"]["storms_per_year"]["default"] == "recent"
+
+
+def test_compare_under_the_simulated_climate_over_the_api():
+    out = client.post("/api/v1/insurer/compare", json={"storm_ids": CATALOG, "annual_model": {"kind": "simulated_climate"}}).json()
+    assert out["annual_model"]["kind"] == "simulated_climate" and out["climate"]["sample_storms"] >= 5000
+    econ = out["programs"]["insurer_cofunded"]["annual_economics"]
+    assert econ["assumption"]["kind"] == "simulated_climate" and econ["break_even_storms_per_year"] is not None
+    assert set(out["climate"]["per_policy"]) == {f"DEMO-P{n:03d}" for n in range(1, 11)}
+    bad = client.post("/api/v1/insurer/compare", json={"annual_model": {"kind": "simulated_climate", "storms_per_year": 0}})
+    assert bad.status_code == 422
+
+
+def test_average_year_accepts_the_map_shape_and_rejects_unknown_properties():
+    out = client.post("/api/v1/storm-losses/average-year", json={"properties": [
+        {"id": 1, "value": 850000, "latitude": 25.7617, "longitude": -80.1918, "vulnerability_class": "pre_fbc_2002", "roof_shape": "gable"},
+        {"id": 2, "value": 1200000, "latitude": 25.7907, "longitude": -80.13, "vulnerability_class": "post_fbc_2002", "roof_shape": "gable"},
+    ]}).json()
+    rows = {r["property_id"]: r for r in out["properties"]}
+    assert rows["1"]["climatology_property_id"] == "P001" and rows["2"]["installed_features"] == ["roof_straps"]
+    assert set(rows["1"]["upgrades"]) == {"roof_straps", "shutters", "shutters_roof_straps"} and set(rows["2"]["upgrades"]) == {"shutters"}
+    assert rows["1"]["expected_annual_repair_cost_usd"] > 0 and 0 < rows["1"]["probability_of_damage_in_a_year"] < 1
+    assert out["totals"]["expected_annual_repair_cost_usd"] == pytest.approx(sum(r["expected_annual_repair_cost_usd"] for r in out["properties"]), abs=0.02)
+    unknown = client.post("/api/v1/storm-losses/average-year", json={"properties": [{"id": 99, "value": 1, "latitude": 25, "longitude": -80}]})
+    assert unknown.status_code == 422 and "no gusts for" in unknown.json()["detail"]["message"]

@@ -25,13 +25,16 @@ const ARM_LABELS: Record<string, string> = {
   insurer_cofunded: 'Insurer co-funded',
 }
 
+type AnnualMode = 'off' | 'invented' | 'climate'
+
 interface StoredConfig {
   program: InsurerProgram
   stormIds: string[]
   selectedProposalIds: string[] | null
-  annualEnabled: boolean
+  annualMode: AnnualMode
   probability: number
   weights: Record<string, number>
+  stormsPerYear: number | null
   deductibleFraction: number | null
 }
 
@@ -146,8 +149,13 @@ function describeSettings(result: InsurerCompareResponse, demo: InsurerDemo, pro
     const equal = weights.every(([, w]) => w === weights[0][1])
 
     parts.push(
-      `Annual assumptions: on, ${pct(result.annual_model.annual_event_probability)} chance per year of one storm` +
+      `Annual assumptions: invented, ${pct(result.annual_model.annual_event_probability)} chance per year of one storm` +
         (equal ? ', equal weights' : `, weights ${weights.map(([s, w]) => `${s} ${w}`).join(' / ')}`),
+    )
+  } else if (result.annual_model.kind === 'simulated_climate') {
+    parts.push(
+      `Annual assumptions: simulated climate, ${result.annual_model.sample_storms ?? '?'} random storms at ` +
+        `${result.annual_model.storms_per_year ?? '?'} storms per year`,
     )
   } else {
     parts.push('Annual assumptions: off (each storm on its own, no yearly figures)')
@@ -176,6 +184,10 @@ function sameSettings(result: InsurerCompareResponse, request: InsurerCompareReq
     if (result.annual_model.annual_event_probability !== request.annual_model.annual_event_probability) return false
     if (JSON.stringify(result.annual_model.conditional_storm_weights) !== JSON.stringify(request.annual_model.conditional_storm_weights)) return false
   }
+  if (result.annual_model.kind === 'simulated_climate' && request.annual_model.kind === 'simulated_climate') {
+    // A null request rate means the fixture's default, which is what the result used.
+    if (request.annual_model.storms_per_year != null && request.annual_model.storms_per_year !== result.annual_model.storms_per_year) return false
+  }
 
   return true
 }
@@ -191,9 +203,10 @@ function InsurerLab({ onClose }: InsurerLabProps) {
   const [program, setProgram] = useState<InsurerProgram | null>(null)
   const [stormIds, setStormIds] = useState<string[]>([])
   const [selectedProposalIds, setSelectedProposalIds] = useState<string[] | null>(null)
-  const [annualEnabled, setAnnualEnabled] = useState(false)
+  const [annualMode, setAnnualMode] = useState<AnnualMode>('off')
   const [probability, setProbability] = useState(0.1)
   const [weights, setWeights] = useState<Record<string, number>>({})
+  const [stormsPerYear, setStormsPerYear] = useState<number | null>(null)
   const [deductibleFraction, setDeductibleFraction] = useState<number | null>(null)
   const [assumptionsOpen, setAssumptionsOpen] = useState(false)
   const [focusedStormId, setFocusedStormId] = useState<string | null>(null)
@@ -222,11 +235,12 @@ function InsurerLab({ onClose }: InsurerLabProps) {
             : loaded.available_storm_ids,
         )
         setSelectedProposalIds(stored?.selectedProposalIds ?? null)
-        setAnnualEnabled(stored?.annualEnabled ?? false)
+        setAnnualMode(stored?.annualMode === 'climate' && !loaded.climatology ? 'off' : stored?.annualMode ?? 'off')
         setProbability(
           stored?.probability ?? loaded.optional_annual_preset.annual_event_probability,
         )
         setWeights(stored?.weights ?? loaded.optional_annual_preset.conditional_storm_weights)
+        setStormsPerYear(stored?.stormsPerYear ?? null)
         setDeductibleFraction(stored?.deductibleFraction ?? null)
       })
       .catch((error: unknown) => {
@@ -248,15 +262,19 @@ function InsurerLab({ onClose }: InsurerLabProps) {
       program,
       stormIds,
       selectedProposalIds,
-      annualEnabled,
+      annualMode,
       probability,
       weights,
+      stormsPerYear,
       deductibleFraction,
     })
-  }, [program, stormIds, selectedProposalIds, annualEnabled, probability, weights, deductibleFraction])
+  }, [program, stormIds, selectedProposalIds, annualMode, probability, weights, stormsPerYear, deductibleFraction])
 
   const annualModel: AnnualModel = useMemo(() => {
-    if (!annualEnabled) return { kind: 'event_only' }
+    if (annualMode === 'off') return { kind: 'event_only' }
+    if (annualMode === 'climate') {
+      return { kind: 'simulated_climate', storms_per_year: stormsPerYear }
+    }
 
     const conditional: Record<string, number> = {}
     stormIds.forEach((id) => {
@@ -268,7 +286,7 @@ function InsurerLab({ onClose }: InsurerLabProps) {
       annual_event_probability: probability,
       conditional_storm_weights: conditional,
     }
-  }, [annualEnabled, probability, weights, stormIds])
+  }, [annualMode, probability, weights, stormIds, stormsPerYear])
 
   const request = (): InsurerCompareRequest | null => {
     if (!program || stormIds.length === 0) return null
@@ -313,9 +331,10 @@ function InsurerLab({ onClose }: InsurerLabProps) {
     setProgram(demo.program_defaults)
     setStormIds(demo.available_storm_ids)
     setSelectedProposalIds(null)
-    setAnnualEnabled(false)
+    setAnnualMode('off')
     setProbability(demo.optional_annual_preset.annual_event_probability)
     setWeights(demo.optional_annual_preset.conditional_storm_weights)
+    setStormsPerYear(null)
     setDeductibleFraction(null)
     setResult(null)
   }
@@ -368,6 +387,11 @@ function InsurerLab({ onClose }: InsurerLabProps) {
   const selectedSet = new Set(selectedProposalIds ?? allProposalIds)
   const focusedEvent = result && focusedStormId ? result.events[focusedStormId] : null
   const cofunded = result?.programs.insurer_cofunded ?? null
+  const annualOn = annualMode !== 'off'
+  const resultAnnualKind = result?.annual_model.kind ?? 'event_only'
+  const climate = result?.climate ?? null
+  const climatology = demo.climatology
+  const defaultStormsPerYear = climatology?.storms_per_year.recent.storms_per_year ?? null
   const currentRequest = request()
   const settingsLines = result ? describeSettings(result, demo, allProposalIds.length) : []
   const resultIsStale = result !== null && currentRequest !== null && !sameSettings(result, currentRequest, allProposalIds)
@@ -497,22 +521,59 @@ function InsurerLab({ onClose }: InsurerLabProps) {
         </div>
 
         <div>
-          <h4>Illustrative annual assumptions</h4>
-          <label className="lab-toggle">
-            <input type="checkbox" checked={annualEnabled} onChange={(e) => setAnnualEnabled(e.target.checked)} />
-            Enable (invented: at most one catalog event per year)
-          </label>
-          {annualEnabled && (
+          <h4>Yearly figures</h4>
+          <div className="lab-radios">
+            <label className="lab-toggle">
+              <input type="radio" name="annual-mode" checked={annualMode === 'off'} onChange={() => setAnnualMode('off')} />
+              Off: each storm on its own
+            </label>
+            <label className="lab-toggle">
+              <input type="radio" name="annual-mode" checked={annualMode === 'invented'} onChange={() => setAnnualMode('invented')} />
+              Invented probability of one catalog storm per year
+            </label>
+            <label className="lab-toggle" title={climatology ? '' : 'The storm climatology has not been built'}>
+              <input
+                type="radio"
+                name="annual-mode"
+                disabled={!climatology}
+                checked={annualMode === 'climate'}
+                onChange={() => setAnnualMode('climate')}
+              />
+              Simulated climate{climatology ? `: ${climatology.sample_storms.toLocaleString()} random storms` : ' (unavailable)'}
+            </label>
+          </div>
+          {annualMode === 'climate' && climatology && (
             <div className="lab-annual">
               <label className="lab-field">
-                <span>Annual event probability</span>
+                <span>Storms per year</span>
                 <input
                   type="number"
-                  step={0.01}
+                  step={0.1}
+                  min={0.1}
+                  max={100}
+                  value={stormsPerYear ?? defaultStormsPerYear ?? ''}
+                  onChange={(e) => setStormsPerYear(e.target.value === '' ? null : Number(e.target.value))}
+                />
+              </label>
+              <p className="lab-note">
+                Storms in the simulator's source record per year: {climatology.storms_per_year.recent.storms_per_year} over{' '}
+                {climatology.storms_per_year.recent.from_year}–{climatology.storms_per_year.recent.to_year} (default),{' '}
+                {climatology.storms_per_year.whole_record.storms_per_year} over the whole record, which under-counts early storms.
+                The sample is not selected to hit anything; most of its storms never reach Florida.
+              </p>
+            </div>
+          )}
+          {annualMode === 'invented' && (
+            <div className="lab-annual">
+              <label className="lab-field">
+                <span>Chance of one storm per year (%)</span>
+                <input
+                  type="number"
+                  step={1}
                   min={0}
-                  max={1}
-                  value={probability}
-                  onChange={(e) => setProbability(Number(e.target.value))}
+                  max={100}
+                  value={Math.round(probability * 1000) / 10}
+                  onChange={(e) => setProbability(Math.min(100, Math.max(0, Number(e.target.value))) / 100)}
                 />
               </label>
               {stormIds.map((id) => (
@@ -543,8 +604,8 @@ function InsurerLab({ onClose }: InsurerLabProps) {
           <button
             type="button"
             className="lab-secondary"
-            disabled={running !== null || !annualEnabled || stormIds.length === 0}
-            title={annualEnabled ? '' : 'Needs the annual assumptions'}
+            disabled={running !== null || !annualOn || stormIds.length === 0}
+            title={annualOn ? '' : 'Needs yearly figures: pick an annual assumption'}
             onClick={() => run('optimize')}
           >
             {running === 'optimize' ? 'Optimizing…' : 'Optimize within budget'}
@@ -802,10 +863,10 @@ function InsurerLab({ onClose }: InsurerLabProps) {
                     <th>Insurer grants</th>
                     <th>Insurer upfront</th>
                     <th>Homeowner upfront</th>
-                    {annualEnabled && <th>Expected avoided payout / yr</th>}
-                    {annualEnabled && <th>Insurer NPV</th>}
-                    {annualEnabled && <th>Break-even avoided / yr</th>}
-                    {annualEnabled && <th>Break-even event probability</th>}
+                    {annualOn && <th>Expected avoided payout / yr</th>}
+                    {annualOn && <th>Insurer NPV</th>}
+                    {annualOn && <th>Break-even avoided / yr</th>}
+                    {annualOn && <th>{resultAnnualKind === 'simulated_climate' ? 'Break-even storms / yr' : 'Break-even event probability'}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -820,15 +881,19 @@ function InsurerLab({ onClose }: InsurerLabProps) {
                         <td>{usd(arm.costs.insurer_grants_usd)}</td>
                         <td>{usd(arm.costs.insurer_upfront_usd)}</td>
                         <td>{usd(arm.costs.homeowner_upfront_usd)}</td>
-                        {annualEnabled && <td>{usd(econ?.expected_annual_avoided_payout_usd)}</td>}
-                        {annualEnabled && (
+                        {annualOn && <td>{usd(econ?.expected_annual_avoided_payout_usd)}</td>}
+                        {annualOn && (
                           <td className={(econ?.insurer_npv_usd ?? 0) < 0 ? 'lab-negative' : 'analysis-savings'}>
                             {econ ? usd(econ.insurer_npv_usd) : arm.annual_economics_unavailable_reason}
                           </td>
                         )}
-                        {annualEnabled && <td>{usd(econ?.break_even_annual_avoided_payout_usd)}</td>}
-                        {annualEnabled && (
-                          <td>{econ?.break_even_annual_event_probability != null ? pct(econ.break_even_annual_event_probability, 1) : '—'}</td>
+                        {annualOn && <td>{usd(econ?.break_even_annual_avoided_payout_usd)}</td>}
+                        {annualOn && (
+                          <td>
+                            {resultAnnualKind === 'simulated_climate'
+                              ? econ?.break_even_storms_per_year != null ? `${econ.break_even_storms_per_year} / yr` : '—'
+                              : econ?.break_even_annual_event_probability != null ? pct(econ.break_even_annual_event_probability, 1) : '—'}
+                          </td>
                         )}
                       </tr>
                     )
@@ -837,7 +902,25 @@ function InsurerLab({ onClose }: InsurerLabProps) {
               </table>
             </div>
 
-            {annualEnabled && cofunded?.annual_economics ? (
+            {annualOn && cofunded?.annual_economics && cofunded.annual_economics.assumption.kind === 'simulated_climate' && climate ? (
+              <div className="analysis-callout">
+                <strong>
+                  Active assumption: {climate.sample_storms.toLocaleString()} simulated storms, {climate.storms_per_year} storms per year
+                </strong>
+                <p>
+                  In an average year this book costs the insurer {usd(climate.expected_annual.current_payout_usd)} in claims, and
+                  the projects would cut that to {usd(climate.expected_annual.after_payout_usd)}, saving{' '}
+                  {usd(climate.expected_annual.avoided_payout_usd)} a year against {usd(cofunded.premium.annual_premium_foregone_usd)} of
+                  premium given up. Only {pct(climate.share_of_storms.with_any_payout_current, 1)} of random storms produce any claim;
+                  the chance of a year with one is {pct(climate.probability_of_a_year_with_any_payout.current)}. The co-funded program
+                  breaks even at{' '}
+                  {cofunded.annual_economics.break_even_storms_per_year != null
+                    ? `${cofunded.annual_economics.break_even_storms_per_year} storms per year`
+                    : 'no storm rate'}
+                  . Homeowners' expected avoided uninsured damage: {usd(climate.expected_annual.avoided_uninsured_damage_usd)} a year.
+                </p>
+              </div>
+            ) : annualOn && cofunded?.annual_economics && cofunded.annual_economics.assumption.kind === 'one_event_or_none' ? (
               <div className="analysis-callout">
                 <strong>
                   Active assumption: {pct(cofunded.annual_economics.assumption.annual_event_probability)} chance of one
@@ -858,9 +941,55 @@ function InsurerLab({ onClose }: InsurerLabProps) {
               </div>
             ) : (
               <p className="lab-note">
-                No annual NPV in event-only mode: the catalog is not a frequency sample. Enable the illustrative
-                annual assumptions above to see one.
+                No yearly figures in event-only mode: the catalog is not a frequency sample. Pick an annual assumption
+                above to see them; the simulated climate is the defensible one.
               </p>
+            )}
+
+            {climate && (
+              <>
+                <p className="lab-note">
+                  Average year, policy by policy, over the simulated sample. Return period of the book's claims: once per 10 years{' '}
+                  {usd(climate.return_periods_current_payout.once_per_10_years_usd)}, once per 50 years{' '}
+                  {usd(climate.return_periods_current_payout.once_per_50_years_usd)}, once per 100 years{' '}
+                  {usd(climate.return_periods_current_payout.once_per_100_years_usd)}.
+                </p>
+                <div className="analysis-table-wrapper">
+                  <table className="analysis-table lab-table">
+                    <thead>
+                      <tr>
+                        <th>Policy</th>
+                        <th>Chance of damage in a year</th>
+                        <th>Repair cost / yr</th>
+                        <th>Insurer claims / yr, now → after</th>
+                        <th>Claims avoided / yr</th>
+                        <th>Owner's own loss avoided / yr</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(climate.per_policy).map(([policyId, row]) => (
+                        <tr key={policyId}>
+                          <td><strong>{policyId}</strong></td>
+                          <td>{pct(1 - Math.exp(-climate.storms_per_year * row.share_of_storms_with_damage))}</td>
+                          <td>{usd(row.expected_annual_repair_cost_usd)}</td>
+                          <td>{usd(row.expected_annual_payout_usd)} → {usd(row.expected_annual_payout_after_usd)}</td>
+                          <td className="analysis-savings">{usd(row.expected_annual_avoided_payout_usd)}</td>
+                          <td>{usd(row.expected_annual_avoided_uninsured_damage_usd)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {climate.largest_simulated_storms.length > 0 && (
+                  <p className="lab-note">
+                    Largest simulated storms for this book:{' '}
+                    {climate.largest_simulated_storms
+                      .map((s) => `${s.storm_id} (${Math.round(s.peak_wind_kt)} kt, ${s.max_gust_at_a_property_mph} mph at a property, ${usd(s.current_payout_usd)} in claims)`)
+                      .join('; ')}
+                    .
+                  </p>
+                )}
+              </>
             )}
 
             {result.deductible_sensitivity_note && <p className="lab-note">{result.deductible_sensitivity_note}</p>}

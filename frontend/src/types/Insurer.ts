@@ -23,6 +23,68 @@ export type AnnualModel =
       annual_event_probability: number
       conditional_storm_weights: Record<string, number>
     }
+  | {
+      kind: 'simulated_climate'
+      storms_per_year?: number | null
+      climatology_id?: string | null
+      // Echoed back by the server.
+      sample_storms?: number
+      evidence_status?: string
+    }
+
+export interface ClimatologySummary {
+  climatology_id: string
+  evidence_status: string
+  sample_storms: number
+  summary: string
+  storms_per_year: {
+    default: string
+    note: string
+    recent: { from_year: number; to_year: number; storms: number; years: number; storms_per_year: number }
+    whole_record: { from_year: number; to_year: number; storms: number; years: number; storms_per_year: number }
+  }
+  simulator: { version: string; seed: number; num_storms: number }
+  pruning: { storms_through_wind_field: number; storms_pruned: number }
+  generated_at: string
+}
+
+export interface ClimatePolicyRow {
+  property_id: string
+  current_features: string[]
+  resulting_features: string[]
+  share_of_storms_with_damage: number
+  share_of_storms_with_payout: number
+  expected_annual_repair_cost_usd: number
+  expected_annual_repair_cost_after_usd: number
+  expected_annual_payout_usd: number
+  expected_annual_payout_after_usd: number
+  expected_annual_avoided_payout_usd: number
+  expected_annual_avoided_repair_cost_usd: number
+  expected_annual_avoided_uninsured_damage_usd: number
+}
+
+export interface ClimateResult {
+  climatology_id: string
+  sample_storms: number
+  storms_per_year: number
+  share_of_storms: { with_any_repair_cost: number; with_any_payout_current: number; with_any_payout_after: number }
+  probability_of_a_year_with_any_payout: { current: number; after: number }
+  expected_annual: {
+    current_repair_cost_usd: number
+    after_repair_cost_usd: number
+    current_payout_usd: number
+    after_payout_usd: number
+    current_uninsured_damage_usd: number
+    after_uninsured_damage_usd: number
+    avoided_repair_cost_usd: number
+    avoided_payout_usd: number
+    avoided_uninsured_damage_usd: number
+  }
+  return_periods_current_payout: Record<string, number | null>
+  largest_simulated_storms: { storm_id: string; peak_wind_kt: number; max_gust_at_a_property_mph: number; current_payout_usd: number; after_payout_usd: number }[]
+  per_policy: Record<string, ClimatePolicyRow>
+  notes: string[]
+}
 
 export interface PolicyState {
   installed_features: Feature[]
@@ -78,6 +140,7 @@ export interface InsurerDemo {
     conditional_storm_weights: Record<string, number>
   }
   deductible_sensitivity_fractions: number[]
+  climatology: ClimatologySummary | null
   policies: PolicyRecord[]
   policies_note: string
   available_storm_ids: string[]
@@ -166,12 +229,15 @@ export interface AnnualEconomics {
   insurer_roi: number | null
   break_even_annual_avoided_payout_usd: number
   break_even_annual_event_probability: number | null
+  break_even_storms_per_year: number | null
   homeowner: {
     expected_annual_avoided_uninsured_damage_usd: number
     premium_only_npv_usd: number
     expanded_npv_including_avoided_uninsured_damage_usd: number
   }
-  assumption: { annual_event_probability: number; no_event_probability: number }
+  assumption:
+    | { kind: 'one_event_or_none'; annual_event_probability: number; no_event_probability: number }
+    | { kind: 'simulated_climate'; climatology_id: string; sample_storms: number; storms_per_year: number }
 }
 
 export interface ProgramResult {
@@ -211,6 +277,7 @@ export interface InsurerCompareResponse {
   loss_rows: LossRow[]
   events: Record<string, EventResult>
   programs: Record<string, ProgramResult>
+  climate: ClimateResult | null
   deductible_sensitivity_note: string | null
   warnings: string[]
   notes: string[]
