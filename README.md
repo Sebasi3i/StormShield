@@ -130,31 +130,6 @@ wheel in `backend/vendor/`, update its pin, and reinstall. After a `wind-field`
 upgrade, also regenerate `app/fixtures/sample_storm_losses_response.json` with the
 command in `tests/test_storm_losses_api.py`.
 
-### Sample insurer — premium credits for mitigation
-
-The groundwork for the Insurer Lab: a fictional insurer covering the ten demo
-properties, with the workbook's premium-credit tiers and project quotes, so avoided
-payouts can later be set against the premium an insurer gives up to encourage upgrades.
-No endpoint yet; this step is the fixtures and the pure premium engine.
-
-- `app/premium.py` — feature union -> credit -> wind premium, effective project cost,
-  grants and the homeowner's premium-only payback. Credits are looked up for the union
-  of credited features (both features earn 25%, not 8% + 12%); a quote covers new
-  features only, and an unknown cost is null with a reason, never zero.
-- `app/fixtures/insurer_policies.json`, `premium_credit_plan.json`, `insurer_demo.json`
-  — ten policies joined to the demo portfolio, the credit plan, and two presets:
-  `workbook_reference` (the workbook as written, premium-only) and the default
-  `app_consistent_demo` (post-2002 homes have their class-inherent roof straps installed
-  and credited at baseline, a demo assumption applied to both arms).
-- `scripts/import_insurer_workbook.py` — rebuilds those fixtures from
-  `data/insurer_demo/workbook_extract.json`, checks the join to the portfolio field by
-  field, and refuses to write unless the engine reproduces the workbook's totals to the
-  cent ($105,895.00 -> $88,526.60 current-to-result wind premium for the reference
-  preset; $104,436.40 -> $87,476.85 for the normalized one). `--workbook` verifies a
-  local copy of the spreadsheet against the recorded hash.
-
-Every rate, credit, zone, quote and policy term is an illustrative workbook input.
-
 ### Generating storms
 
 `POST /api/v1/storms/generate` runs the hurricane simulator from a starting point you
@@ -239,17 +214,15 @@ backend/            FastAPI service, risk engine, ETL scripts
     schemas.py      Request and response contracts
     risk.py         County risk model and mitigation economics
     claims.py       Damage and insurer payout engine (pure, no HTTP)
-    premium.py      Sample insurer: mitigation credits -> wind premium, quotes, grants (pure)
     wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?
-    fixtures/       Curves, policy template, storm catalog, sample response, insurer demo
+    fixtures/       Curves, policy template, storm catalog, sample response
   scripts/          Adapters that import outside data, and the calibration fits
   tests/            pytest suite
   vendor/           wind_field and hurricane_simulator wheels (not on PyPI)
   requirements.txt  Pinned dependencies
 data/calibration/   Station observations the wind constants are fitted to
-data/insurer_demo/  Workbook extract the sample-insurer fixtures are built from
 data/raw/           Downloaded source datasets (gitignored)
 data/processed/     Build artifacts (gitignored except published profiles)
 docs/               Calibration notes: what each constant rests on
