@@ -860,6 +860,7 @@ def damage_curves() -> dict:
                 "vulnerability_class": curve.vulnerability_class,
                 "upgrade_id": curve.upgrade_id,
                 "roof_shape": curve.roof_shape,
+                "features": list(curve.features) if curve.features is not None else None,
                 "wind_metric": curve.wind_metric,
                 "evidence_status": curve.evidence_status,
                 "source_note": curve.source_note,

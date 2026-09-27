@@ -333,7 +333,7 @@ def main() -> None:
         },
         "computed_totals": {preset_id: result["totals"] for preset_id, result in results.items()},
         "loss_results": None,
-        "loss_results_note": "Physical loss comparison is not part of this step: the combined shutters/straps curve and the state-transition service come next.",
+        "loss_results_note": "Computed on request by app/mitigation_states.py (one current/resulting pair per policy and event, on the curve set's physical states) rather than stored here; the insurer endpoints that call it come next.",
         "provenance": provenance,
     })
     print(f"wrote premium_credit_plan.json, insurer_policies.json ({len(policies)} policies), insurer_demo.json")

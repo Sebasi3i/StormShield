@@ -113,9 +113,9 @@
     }
   },
   "loss_results": null,
-  "loss_results_note": "Physical loss comparison is not part of this step: the combined shutters/straps curve and the state-transition service come next.",
+  "loss_results_note": "Computed on request by app/mitigation_states.py (one current/resulting pair per policy and event, on the curve set's physical states) rather than stored here; the insurer endpoints that call it come next.",
   "provenance": {
-    "generated_at": "2026-09-27T08:52:40Z",
+    "generated_at": "2026-09-27T09:21:00Z",
     "script": "backend/scripts/import_insurer_workbook.py",
     "extract": "data/insurer_demo/workbook_extract.json",
     "workbook": {

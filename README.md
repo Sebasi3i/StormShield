@@ -146,6 +146,14 @@ No endpoint yet; this step is the fixtures and the pure premium engine.
   `workbook_reference` (the workbook as written, premium-only) and the default
   `app_consistent_demo` (post-2002 homes have their class-inherent roof straps installed
   and credited at baseline, a demo assumption applied to both arms).
+- `app/mitigation_states.py` — prices a policy's home as it is and as its project
+  leaves it, on the same wind: one current/resulting pair per policy and event, no-op
+  pairs included, with payout and uninsured damage split out so a deductible change
+  shows as a transfer. A home that already has straps and adds shutters is compared
+  straps-curve to package-curve, never baseline to a sum of two reductions. For that
+  the curve set gained the pre-2002 shutters-plus-straps package (15 -> 18 curves), and
+  every curve now records the features its building has; the package is also offered
+  by `POST /api/v1/storm-losses` as the upgrade `shutters_roof_straps`.
 - `scripts/import_insurer_workbook.py` — rebuilds those fixtures from
   `data/insurer_demo/workbook_extract.json`, checks the join to the portfolio field by
   field, and refuses to write unless the engine reproduces the workbook's totals to the
@@ -240,6 +248,7 @@ backend/            FastAPI service, risk engine, ETL scripts
     risk.py         County risk model and mitigation economics
     claims.py       Damage and insurer payout engine (pure, no HTTP)
     premium.py      Sample insurer: mitigation credits -> wind premium, quotes, grants (pure)
+    mitigation_states.py  Sample insurer: current vs upgraded physical state on the same wind (pure)
     wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?

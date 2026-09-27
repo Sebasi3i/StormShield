@@ -25,6 +25,9 @@ What maps to what (every choice is recorded in the fixture):
   - Post-2002 code: roof-to-wall straps, 8d roof-deck nails, secondary water
     resistance, no shutters.
   - Upgrades change one feature of their class: shutters on, or toe-nails to straps.
+    The pre-2002 class also gets the two together (shutters on AND straps), the state a
+    home is in after both projects, so a current-versus-upgraded comparison never has
+    to add two single-feature reductions.
   - Roof shape: Hazus separates gable and hip roofs, and a hip roof loses about half as
     much as a gable roof at 140 mph. Rather than picking one mix, this script publishes
     all three: the gable curve, the hip curve, and their mean ("blended"). A property
@@ -36,8 +39,13 @@ A few Hazus curves dip by a fraction of a percent as wind rises; the engine refu
 decreasing curve, so every curve (gable, hip and blended alike) is made nondecreasing
 with a running maximum. Below about 105 mph some also cross by a hundredth of a percent,
 which would show as an upgrade adding damage, so within each roof shape every upgrade is
-capped at its own baseline and the post-2002 baseline at the pre-2002 one. The largest of
+capped at its own baseline, the post-2002 baseline at the pre-2002 one, and the
+shutters-plus-straps package at each of its two single-feature curves. The largest of
 each adjustment is recorded.
+
+Every curve records the mitigation features its Hazus configuration has installed
+(`features`: roof_straps and/or shutters), derived from the configuration itself, so a
+physical state maps to a curve by lookup rather than by a table kept elsewhere.
 
     python scripts/build_damage_curves.py
 """
@@ -71,6 +79,7 @@ CONFIGS: dict[tuple[str, str], dict] = {
     ("pre_fbc_2002", "baseline"): dict(rwc="tnail", deck="6d", shutters="0", swr="0"),
     ("pre_fbc_2002", "shutters"): dict(rwc="tnail", deck="6d", shutters="1", swr="0"),
     ("pre_fbc_2002", "roof_straps"): dict(rwc="strap", deck="6d", shutters="0", swr="0"),
+    ("pre_fbc_2002", "shutters_roof_straps"): dict(rwc="strap", deck="6d", shutters="1", swr="0"),
     ("post_fbc_2002", "baseline"): dict(rwc="strap", deck="8d", shutters="0", swr="1"),
     ("post_fbc_2002", "shutters"): dict(rwc="strap", deck="8d", shutters="1", swr="1"),
 }
@@ -83,7 +92,24 @@ UPGRADE_TEXT = {
     "baseline": "as built",
     "shutters": "with shutters added",
     "roof_straps": "with roof-to-wall straps replacing toe-nails",
+    "shutters_roof_straps": "with shutters added and roof-to-wall straps replacing toe-nails",
 }
+
+# A package is capped at each single-feature curve it combines, on top of the class
+# baseline cap every upgrade gets, so the pair never does worse than either alone.
+PACKAGE_COMPONENTS: dict[tuple[str, str], list[tuple[str, str]]] = {
+    ("pre_fbc_2002", "shutters_roof_straps"): [("pre_fbc_2002", "shutters"), ("pre_fbc_2002", "roof_straps")],
+}
+
+
+def config_features(cfg: dict) -> list[str]:
+    """The platform's mitigation features present in a Hazus configuration, sorted."""
+    features = []
+    if cfg["rwc"] == "strap":
+        features.append("roof_straps")
+    if cfg["shutters"] == "1":
+        features.append("shutters")
+    return sorted(features)
 
 
 def hazus_id(roof: str, cfg: dict) -> str:
@@ -153,9 +179,13 @@ def build_curve_set(path: Path = SOURCE) -> dict:
     # minimum of two nondecreasing curves is nondecreasing, so the curves stay valid.
     # Recorded per curve for the same reason as the monotone fix above.
     ordering_adjustments: list[dict] = []
+    # Baseline caps first, then each package at its components, which by then are
+    # themselves capped: CONFIGS lists every package after the singles it combines.
     order = [(("post_fbc_2002", "baseline"), ("pre_fbc_2002", "baseline"))] + [
         (key, (key[0], "baseline")) for key in CONFIGS if key[1] != "baseline"
     ]
+    for key, components in PACKAGE_COMPONENTS.items():
+        order.extend((key, component) for component in components)
     for shape in OUTPUT_ROOF_SHAPES:
         for key, ceiling in order:
             capped = np.minimum(values[(key, shape)], values[(ceiling, shape)])
@@ -201,6 +231,7 @@ def build_curve_set(path: Path = SOURCE) -> dict:
                     "vulnerability_class": vclass,
                     "upgrade_id": upgrade,
                     "roof_shape": shape,
+                    "features": config_features(CONFIGS[(vclass, upgrade)]),
                     "wind_metric": WIND_METRIC,
                     "evidence_status": "sourced",
                     "source_note": source_note(vclass, upgrade, shape),
@@ -209,7 +240,7 @@ def build_curve_set(path: Path = SOURCE) -> dict:
             )
 
     return {
-        "curve_set_id": "hazus-msf1-suburban-v2",
+        "curve_set_id": "hazus-msf1-suburban-v3",
         "wind_metric": WIND_METRIC,
         "evidence_status": "sourced",
         "upper_supported_wind_mph": int(winds_ref.max()),
@@ -223,6 +254,9 @@ def build_curve_set(path: Path = SOURCE) -> dict:
             ),
             "roof_shape_variants": list(OUTPUT_ROOF_SHAPES),
             "version_note": (
+                "v3 (27 September 2026): the pre-2002 shutters-plus-straps package added "
+                "(15 -> 18 curves), with 'features' recorded on every curve so a physical "
+                "state maps to a curve by lookup; the existing 15 curves are unchanged. "
                 "v2 (27 September 2026): every curve split into gable, hip and blended "
                 "variants (5 -> 15 curves) and roof_shape added as a field; v1 published "
                 "only the single blended-equivalent curve per class/upgrade. See "
@@ -248,6 +282,8 @@ def build_curve_set(path: Path = SOURCE) -> dict:
                 "post_fbc_2002": "roof-to-wall straps, 8d roof-deck nails, secondary water resistance, no shutters",
                 "shutters": "same class with Hazus shutters on",
                 "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them",
+                "shutters_roof_straps": "pre_fbc_2002 with both: Hazus shutters on and straps in place of toe-nails. The state after both single projects, published as its own curve rather than as the sum of two reductions. Not offered for post_fbc_2002, whose 'shutters' curve already is that state",
+                "features": "Every curve lists the platform features its Hazus configuration has installed (roof_straps for a strap roof-to-wall connection, shutters for shutters on), so post_fbc_2002.baseline carries roof_straps and post_fbc_2002.shutters carries both",
             },
             "roof_shape": (
                 "Published separately: the Hazus gable curve, the Hazus hip curve, and "
@@ -270,9 +306,10 @@ def build_curve_set(path: Path = SOURCE) -> dict:
             ),
             "monotone_adjustment_detail": monotone_adjustments,
             "ordering_adjustment": (
-                "Within each roof shape, every upgrade capped at its class baseline, and "
-                "the post-2002 baseline at the pre-2002 one, so an upgrade never adds "
-                f"damage; the largest cap was {largest_order_fix:.4f} of replacement cost, "
+                "Within each roof shape, every upgrade capped at its class baseline, "
+                "the post-2002 baseline at the pre-2002 one, and the shutters-plus-straps "
+                "package at each of its two single-feature curves, so an upgrade never adds "
+                f"damage and the pair never does worse than either alone; the largest cap was {largest_order_fix:.4f} of replacement cost, "
                 "where the source curves cross by simulation noise below 105 mph, on curve "
                 f"{ordering_adjustments[0]['vulnerability_class']}.{ordering_adjustments[0]['upgrade_id']}."
                 f"{ordering_adjustments[0]['roof_shape']} at {ordering_adjustments[0]['wind_mph']:g} mph "

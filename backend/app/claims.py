@@ -101,6 +101,12 @@ class Curve(NamedTuple):
     # roof shape is unknown). Defaults to "blended" so a curve built without this field
     # - every test fixture written before roof shape existed - behaves exactly as before.
     roof_shape: str = BLENDED_ROOF_SHAPE
+    # The mitigation features this curve's building has installed ("roof_straps",
+    # "shutters"), sorted, as the curve builder derives them from the Hazus
+    # configuration. None for a curve set built without the field: such a set still
+    # prices upgrades by upgrade_id, but cannot answer "which curve is this physical
+    # state" (see mitigation_states.py).
+    features: tuple[str, ...] | None = None
 
     @property
     def max_supported_wind(self) -> float:
@@ -212,6 +218,7 @@ def load_curve_set(path: str | None = None) -> dict:
             evidence_status=entry["evidence_status"],
             source_note=entry["source_note"],
             roof_shape=entry.get("roof_shape", BLENDED_ROOF_SHAPE),
+            features=tuple(sorted(entry["features"])) if entry.get("features") is not None else None,
         )
         validate_curve(curve)
         key = (curve.vulnerability_class, curve.upgrade_id, curve.roof_shape)
