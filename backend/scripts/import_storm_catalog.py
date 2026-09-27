@@ -10,7 +10,7 @@ Usage, from the backend directory:
 
     python scripts/import_storm_catalog.py <simulator_output_dir> --storms SYN0155,SYN0973
 
-Re-run it when Adryel ships a new simulation. Nothing else in the backend changes.
+Re-run it when the simulator team ships a new simulation. Nothing else in the backend changes.
 """
 
 from __future__ import annotations
@@ -164,7 +164,7 @@ def build(output_dir: Path, storm_ids: list[str] | None, limit: int) -> dict:
             "A SELECTED subset, not a probabilistic sample: these storms were chosen "
             "because they hit Florida hard. Do not compute annual expected loss, "
             "average annual loss or exceedance probabilities from it. That needs the "
-            "full catalog and the annual event rates Adryel owns."
+            "full catalog and the annual event rates the simulator team owns."
         ),
         "source_run": str(output_dir),
         "storm_ids": [s["storm_id"] for s in storms],

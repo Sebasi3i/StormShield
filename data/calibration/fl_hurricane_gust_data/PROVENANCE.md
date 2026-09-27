@@ -1,6 +1,6 @@
 # Provenance
 
-Received 27 September 2026 as `fl_hurricane_gust_data.zip` from Adryel, built on
+Received 27 September 2026 as `fl_hurricane_gust_data.zip` from the simulator team, built on
 26 September 2026 by the `build.py` in this folder from:
 
 - NCEI ASOS one-minute data for Florida stations, accessed through the Iowa

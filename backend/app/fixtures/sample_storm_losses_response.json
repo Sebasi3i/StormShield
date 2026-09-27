@@ -595,7 +595,7 @@
     "Each storm is priced independently: the deductible resets and the building is assumed fully repaired beforehand. No annual accumulation, and no annual event rate is applied here.",
     "Replacement cost is taken as the property's insured value; no square-footage rebuild cost was available.",
     "Contents, loss of use, flood and storm surge, premium changes, reinsurance and claim expenses are out of scope.",
-    "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns."
+    "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates the simulator team owns."
   ],
   "metadata": {
     "result_basis": "illustrative gross insurer payouts before reinsurance",
@@ -1079,7 +1079,7 @@
       "imported_at": "2026-09-26T18:42:14Z",
       "source_wind_metric": "max_wind_kt",
       "source_wind_metric_note": "One-minute sustained wind at the storm CENTRE in knots, HURDAT2 convention. This is not wind at a property and it is not a gust. Converting it to a property-level peak gust is app/wind.py's job, and that conversion is an assumption.",
-      "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns."
+      "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates the simulator team owns."
     },
     "wind_exposure_detail": [
       {

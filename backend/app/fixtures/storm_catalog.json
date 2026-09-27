@@ -4,7 +4,7 @@
   "wind_metric": "max_wind_kt",
   "wind_metric_note": "One-minute sustained wind at the storm CENTRE in knots, HURDAT2 convention. This is not wind at a property and it is not a gust. Converting it to a property-level peak gust is app/wind.py's job, and that conversion is an assumption.",
   "sampling_description": "hurricane_simulator V1 Monte Carlo run of 1000 synthetic Atlantic storms bootstrapped from HURDAT2 1851-2025 at a 6-hour time step. This catalog holds hand-picked storm ids SYN0155, SYN0697, SYN0973. Track points are clipped to lat 18.0 to 35.0, lon -92.0 to -72.0.",
-  "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns.",
+  "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates the simulator team owns.",
   "source_run": "C:\\Users\\Max\\Downloads\\hurricane_simulator\\hurricane_simulator\\hurricane_simulator\\output",
   "storm_ids": [
     "SYN0155",

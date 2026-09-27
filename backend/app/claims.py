@@ -5,7 +5,7 @@ residential building per property, direct wind damage to the building, one simpl
 coverage and deductible, mutually exclusive upgrades. Each row is an INDIVIDUAL storm,
 not a simulated year: losses are computed independently per storm, the deductible
 resets, and the building is assumed fully repaired before each event. Annual event
-rates are Adryel's input and Developer 2's to apply - nothing here attaches an annual
+rates are a separate input, applied downstream - nothing here attaches an annual
 probability to anything.
 
 Results are illustrative gross insurer payouts before reinsurance.
