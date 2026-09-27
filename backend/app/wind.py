@@ -398,6 +398,11 @@ def metadata() -> dict:
             "land_exposure_factor": calibration["land_exposure_factor"],
             "objective": calibration["objective"],
             "station_storm_pairs": calibration["data"]["station_storm_pairs"],
+            "in_sample_mean_absolute_error_kt": calibration["chosen"]["mean_absolute_error_kt"],
+            "out_of_sample_mean_absolute_error_kt": (
+                calibration["cross_validation"]["out_of_sample"]["mean_absolute_error_kt"]
+            ),
+            "out_of_sample_method": calibration["cross_validation"]["method"],
             "interpretation": calibration["interpretation"],
         },
         "validation": validation,

@@ -31,6 +31,14 @@ the damaging winds low. Every candidate's scores are written alongside the choic
 Selection of pairs: station within 250 km of the track, observed peak gust at least
 40 kt, record not broken off after strong wind (see validate_wind_field.py).
 
+Because the same pairs would otherwise both choose the constants and judge them, the
+script also runs a leave-one-storm-out check: for each of the 11 storms it repeats the
+selection on the other ten and scores the held-out storm with constants that never saw
+it. The pooled out-of-sample errors and the spread of the chosen constants across the
+folds are written with the result; if the out-of-sample error were much worse than the
+in-sample one, the calibration would be fitting those storms' quirks rather than
+something that carries over.
+
 Writes app/fixtures/wind_calibration.json. Usage, from the backend directory:
 
     python scripts/calibrate_wind_field.py
@@ -150,6 +158,83 @@ def _score(table: pd.DataFrame, factor: float) -> dict:
     }
 
 
+def _candidates(tables: dict, gust_factor: float, exclude_storm: str | None = None) -> list[dict]:
+    """Every (decay, land factor) pair scored on the pairs table, optionally without
+    one storm's pairs."""
+    candidates = []
+    for decay, table in tables.items():
+        if exclude_storm is not None:
+            table = table[table["storm_name"] != exclude_storm]
+        for land in LAND_CANDIDATES:
+            candidates.append(
+                {"outer_decay_exponent": decay, "land_exposure_factor": land, **_score(table, gust_factor * land)}
+            )
+    return candidates
+
+
+def _select(candidates: list[dict]) -> dict:
+    """The objective: lowest MAE among candidates unbiased overall and for strong gusts."""
+    def excess(c):
+        return (
+            max(0.0, abs(c["median_ratio"] - 1.0) - MAX_MEDIAN_RATIO_BIAS)
+            + max(0.0, abs(c["median_ratio_observed_64kt_or_more"] - 1.0) - MAX_STRONG_RATIO_BIAS)
+        )
+
+    eligible = [c for c in candidates if excess(c) == 0.0]
+    if eligible:
+        return min(eligible, key=lambda c: c["mean_absolute_error_kt"])
+    # No candidate meets both bounds (possible on a subset of storms): take the least
+    # violating ones and the lowest error among them, and say so.
+    least = min(excess(c) for c in candidates)
+    nearest = [c for c in candidates if excess(c) == least]
+    return {**min(nearest, key=lambda c: c["mean_absolute_error_kt"]), "bounds_relaxed_by": round(least, 3)}
+
+
+def _leave_one_storm_out(tables: dict, gust_factor: float, chosen: dict) -> dict:
+    """Refit without each storm in turn and score that storm with the result.
+
+    Out-of-sample rows are pooled across the folds and scored together, so the headline
+    numbers are directly comparable with the in-sample ones in `chosen`.
+    """
+    storm_names = sorted(next(iter(tables.values()))["storm_name"].unique())
+    folds = []
+    held_out_rows = []
+    for storm_name in storm_names:
+        fold_choice = _select(_candidates(tables, gust_factor, exclude_storm=storm_name))
+        table = tables[fold_choice["outer_decay_exponent"]]
+        held = table[table["storm_name"] == storm_name].copy()
+        held["sustained_kt"] = held["sustained_kt"] * fold_choice["land_exposure_factor"]
+        held_out_rows.append(held)
+        modeled = held["sustained_kt"] * gust_factor
+        ratio = modeled / held["observed_gust_kt"]
+        folds.append(
+            {
+                "held_out_storm": storm_name,
+                "pairs": int(len(held)),
+                "outer_decay_exponent": fold_choice["outer_decay_exponent"],
+                "land_exposure_factor": fold_choice["land_exposure_factor"],
+                "bounds_relaxed_by": fold_choice.get("bounds_relaxed_by", 0.0),
+                "held_out_median_ratio": round(float(ratio.median()), 3),
+                "held_out_mean_absolute_error_kt": round(float((modeled - held["observed_gust_kt"]).abs().mean()), 2),
+            }
+        )
+    pooled = pd.concat(held_out_rows, ignore_index=True)
+    # The land factor is already applied per fold, so score at factor 1 for it.
+    out_of_sample = _score(pooled, gust_factor)
+    decays = [fold["outer_decay_exponent"] for fold in folds]
+    lands = [fold["land_exposure_factor"] for fold in folds]
+    return {
+        "method": "leave one storm out: refit the selection on the other storms, score the held-out storm",
+        "folds": folds,
+        "out_of_sample": out_of_sample,
+        "in_sample": {key: chosen[key] for key in out_of_sample},
+        "chosen_constants_across_folds": {
+            "outer_decay_exponent": {"min": min(decays), "max": max(decays), "in_sample": chosen["outer_decay_exponent"]},
+            "land_exposure_factor": {"min": min(lands), "max": max(lands), "in_sample": chosen["land_exposure_factor"]},
+        },
+    }
+
+
 def calibrate() -> dict:
     gust_model = wind.load_gust_factor_model()
     gust_factor = gust_model["gust_factor"]
@@ -159,22 +244,11 @@ def calibrate() -> dict:
     coverage = pd.read_csv(DATASET / "coverage_by_storm_station.csv")
     coverage["storm_id"] = coverage["storm_key"].str.split("_").str[0]
 
-    candidates = []
-    pairs = None
-    for decay in DECAY_CANDIDATES:
-        table = _unit_gust_table(storms, stations, coverage, decay)
-        pairs = len(table)
-        for land in LAND_CANDIDATES:
-            candidates.append(
-                {"outer_decay_exponent": decay, "land_exposure_factor": land, **_score(table, gust_factor * land)}
-            )
-
-    eligible = [
-        c for c in candidates
-        if abs(c["median_ratio"] - 1.0) <= MAX_MEDIAN_RATIO_BIAS
-        and abs(c["median_ratio_observed_64kt_or_more"] - 1.0) <= MAX_STRONG_RATIO_BIAS
-    ]
-    chosen = min(eligible, key=lambda c: c["mean_absolute_error_kt"])
+    tables = {decay: _unit_gust_table(storms, stations, coverage, decay) for decay in DECAY_CANDIDATES}
+    pairs = len(next(iter(tables.values())))
+    candidates = _candidates(tables, gust_factor)
+    chosen = _select(candidates)
+    cross_validation = _leave_one_storm_out(tables, gust_factor, chosen)
     baseline = next(
         c for c in candidates
         if c["outer_decay_exponent"] == 0.5 and c["land_exposure_factor"] == 1.0
@@ -215,6 +289,7 @@ def calibrate() -> dict:
             "land_exposure_factor": LAND_CANDIDATES,
         },
         "candidates": candidates,
+        "cross_validation": cross_validation,
         "interpretation": (
             "The decay exponent is flatter than the radii-implied mean-wind value "
             "because observed peak gusts away from the centre include convective gusts "
@@ -241,6 +316,16 @@ def main(argv: list[str] | None = None) -> int:
           f">=64kt {chosen['median_ratio_observed_64kt_or_more']}, within 15%: {chosen['within_15_percent']}")
     print(f"reference (decay 0.5, no land factor): median ratio {ref['median_ratio']}, MAE {ref['mean_absolute_error_kt']} kt, "
           f"near {ref['median_ratio_within_75_km']}, far {ref['median_ratio_beyond_75_km']}")
+    cv = model["cross_validation"]
+    oos, ins = cv["out_of_sample"], cv["in_sample"]
+    print(f"leave-one-storm-out: MAE {oos['mean_absolute_error_kt']} kt out of sample vs {ins['mean_absolute_error_kt']} in sample; "
+          f"median ratio {oos['median_ratio']} vs {ins['median_ratio']}; >=64kt {oos['median_ratio_observed_64kt_or_more']} vs {ins['median_ratio_observed_64kt_or_more']}")
+    spread = cv["chosen_constants_across_folds"]
+    print(f"constants across folds: decay {spread['outer_decay_exponent']['min']}-{spread['outer_decay_exponent']['max']}, "
+          f"land {spread['land_exposure_factor']['min']}-{spread['land_exposure_factor']['max']}")
+    for fold in cv["folds"]:
+        print(f"  without {fold['held_out_storm']:8s}: decay {fold['outer_decay_exponent']}, land {fold['land_exposure_factor']} -> "
+              f"held-out ratio {fold['held_out_median_ratio']}, MAE {fold['held_out_mean_absolute_error_kt']} ({fold['pairs']} pairs)")
     print(f"wrote {args.fixture}")
     return 0
 

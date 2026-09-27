@@ -1,7 +1,7 @@
 {
   "wind_calibration_id": "fl-asos-hurricane-peaks-v1",
   "evidence_status": "sourced",
-  "calibrated_at": "2026-09-27T02:52:36Z",
+  "calibrated_at": "2026-09-27T03:05:56Z",
   "script": "backend/scripts/calibrate_wind_field.py",
   "gust_factor_model_id": "fl-asos-hurricane-gust-v1",
   "gust_factor": 1.333,
@@ -2083,5 +2083,145 @@
       ]
     }
   ],
+  "cross_validation": {
+    "method": "leave one storm out: refit the selection on the other storms, score the held-out storm",
+    "folds": [
+      {
+        "held_out_storm": "DEBBY",
+        "pairs": 17,
+        "outer_decay_exponent": 0.3,
+        "land_exposure_factor": 0.775,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 0.929,
+        "held_out_mean_absolute_error_kt": 7.4
+      },
+      {
+        "held_out_storm": "HELENE",
+        "pairs": 12,
+        "outer_decay_exponent": 0.35,
+        "land_exposure_factor": 0.825,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.097,
+        "held_out_mean_absolute_error_kt": 9.82
+      },
+      {
+        "held_out_storm": "HERMINE",
+        "pairs": 9,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.03,
+        "held_out_mean_absolute_error_kt": 4.19
+      },
+      {
+        "held_out_storm": "IAN",
+        "pairs": 27,
+        "outer_decay_exponent": 0.25,
+        "land_exposure_factor": 0.75,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.298,
+        "held_out_mean_absolute_error_kt": 21.08
+      },
+      {
+        "held_out_storm": "IDALIA",
+        "pairs": 1,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.498,
+        "held_out_mean_absolute_error_kt": 21.39
+      },
+      {
+        "held_out_storm": "IRMA",
+        "pairs": 31,
+        "outer_decay_exponent": 0.3,
+        "land_exposure_factor": 0.7,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 0.755,
+        "held_out_mean_absolute_error_kt": 20.01
+      },
+      {
+        "held_out_storm": "MATTHEW",
+        "pairs": 15,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.385,
+        "held_out_mean_absolute_error_kt": 20.21
+      },
+      {
+        "held_out_storm": "MICHAEL",
+        "pairs": 4,
+        "outer_decay_exponent": 0.325,
+        "land_exposure_factor": 0.825,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.659,
+        "held_out_mean_absolute_error_kt": 42.77
+      },
+      {
+        "held_out_storm": "MILTON",
+        "pairs": 20,
+        "outer_decay_exponent": 0.325,
+        "land_exposure_factor": 0.8,
+        "bounds_relaxed_by": 0.015,
+        "held_out_median_ratio": 0.918,
+        "held_out_mean_absolute_error_kt": 7.95
+      },
+      {
+        "held_out_storm": "NICOLE",
+        "pairs": 16,
+        "outer_decay_exponent": 0.3,
+        "land_exposure_factor": 0.775,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 0.822,
+        "held_out_mean_absolute_error_kt": 11.25
+      },
+      {
+        "held_out_storm": "SALLY",
+        "pairs": 4,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.311,
+        "held_out_mean_absolute_error_kt": 17.56
+      }
+    ],
+    "out_of_sample": {
+      "median_ratio": 1.001,
+      "mean_absolute_error_kt": 15.23,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.156,
+      "median_ratio_beyond_75_km": 0.966,
+      "median_ratio_observed_64kt_or_more": 0.884,
+      "per_storm_median_ratio_range": [
+        0.755,
+        1.659
+      ]
+    },
+    "in_sample": {
+      "median_ratio": 1.033,
+      "mean_absolute_error_kt": 14.11,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.132,
+      "median_ratio_beyond_75_km": 0.986,
+      "median_ratio_observed_64kt_or_more": 0.901,
+      "per_storm_median_ratio_range": [
+        0.814,
+        1.558
+      ]
+    },
+    "chosen_constants_across_folds": {
+      "outer_decay_exponent": {
+        "min": 0.25,
+        "max": 0.35,
+        "in_sample": 0.275
+      },
+      "land_exposure_factor": {
+        "min": 0.7,
+        "max": 0.825,
+        "in_sample": 0.75
+      }
+    }
+  },
   "interpretation": "The decay exponent is flatter than the radii-implied mean-wind value because observed peak gusts away from the centre include convective gusts the mean profile lacks; the land factor stands in for the surface roughness the marine profile ignores. Both are effective, calibrated values for reproducing station peak gusts, not physical measurements, and they were fitted jointly: only their combination is validated."
 }

@@ -338,6 +338,9 @@
         "land_exposure_factor": 0.75,
         "objective": "minimum mean absolute error among candidates with median modelled/observed ratio within 5% of 1 overall and within 10% of 1 where the observed gust was 64 kt or more",
         "station_storm_pairs": 156,
+        "in_sample_mean_absolute_error_kt": 14.11,
+        "out_of_sample_mean_absolute_error_kt": 15.23,
+        "out_of_sample_method": "leave one storm out: refit the selection on the other storms, score the held-out storm",
         "interpretation": "The decay exponent is flatter than the radii-implied mean-wind value because observed peak gusts away from the centre include convective gusts the mean profile lacks; the land factor stands in for the surface roughness the marine profile ignores. Both are effective, calibrated values for reproducing station peak gusts, not physical measurements, and they were fitted jointly: only their combination is validated."
       },
       "validation": {

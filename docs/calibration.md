@@ -15,7 +15,9 @@ branch.
 | Taper start / cutoff | 200 / 300 km | 259 / 444 km, record quantiles | HURDAT2 34 kt radii | sourced |
 | Damage curves | assumed fixtures | unchanged | none available | assumed |
 
-The wind step is now `sourced` end to end and validated against station observations.
+The wind step is now `sourced` end to end and validated against station observations,
+including a leave-one-storm-out check that the calibration carries over to storms it
+was not fitted on.
 The run as a whole stays `assumed` because the damage curves are. "Sourced" means each
 number has a documented origin and a reproducible fit; the validation section says how
 large the remaining errors are, and they are not small.
@@ -129,6 +131,27 @@ observations by pricing the damaging winds 16% low.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Reference (radii decay, no land factor) | 0.5 | 1.00 | 0.98 | 16.6 kt | 1.23 | 0.90 | 0.87 |
 | **Chosen** | **0.275** | **0.75** | 1.03 | 14.1 kt | 1.13 | 0.99 | 0.90 |
+
+### Does it hold up on storms it did not see?
+
+Fitting and judging on the same 156 pairs would let the constants absorb the quirks of
+these 11 storms, so the script also refits eleven times, each time without one storm,
+and scores that storm with constants that never saw it. Pooled over the held-out
+storms:
+
+| | In sample | Out of sample | Uncalibrated reference |
+| --- | ---: | ---: | ---: |
+| Mean absolute error | 14.1 kt | 15.2 kt | 16.6 kt |
+| Median ratio | 1.03 | 1.00 | 0.98 |
+| Observed 64 kt or more, median ratio | 0.90 | 0.88 | 0.87 |
+
+The constants chosen without each storm stay within decay 0.25-0.35 and land factor
+0.70-0.825, around the in-sample 0.275 and 0.75. So the calibration carries over: a
+storm the fit has not met is priced about 8% less accurately than one it has, and
+still better than with the original constants. The individual folds show where the
+remaining error lives: holding out Michael (4 stations) or Ian leaves them modelled
+30-65% high, holding out Irma leaves it 25% low. That is storm-to-storm variation in
+size and structure, which no constant can absorb.
 
 The decay exponent is much flatter than the radii-implied 0.49 because observed peak
 gusts away from the centre include rainband and convective gusts that a mean profile

@@ -181,3 +181,26 @@ def test_metadata_carries_the_validation_headline(validation):
     assert published["mean_absolute_error_kt"] == validation["all"]["mean_absolute_error_kt"]
     assert wind.metadata()["evidence_status"] == "sourced"
     assert wind.metadata()["land_exposure_factor"] == wind.load_wind_calibration()["land_exposure_factor"]
+
+
+def test_the_calibration_holds_up_on_storms_it_did_not_see(calibration):
+    """Leave-one-storm-out: constants fitted without a storm must still do better on
+    that storm than the uncalibrated reference, and must not swing between folds."""
+    cv = calibration["cross_validation"]
+    out, inside = cv["out_of_sample"], cv["in_sample"]
+    reference = calibration["uncalibrated_reference"]
+
+    assert len(cv["folds"]) == 11
+    assert out["mean_absolute_error_kt"] < reference["mean_absolute_error_kt"]
+    # Out-of-sample error may exceed in-sample, but not by more than a fifth.
+    assert out["mean_absolute_error_kt"] <= inside["mean_absolute_error_kt"] * 1.2
+    assert 0.9 <= out["median_ratio"] <= 1.1
+    spread = cv["chosen_constants_across_folds"]
+    assert spread["outer_decay_exponent"]["max"] - spread["outer_decay_exponent"]["min"] <= 0.15
+    assert spread["land_exposure_factor"]["max"] - spread["land_exposure_factor"]["min"] <= 0.15
+    assert spread["outer_decay_exponent"]["min"] <= calibration["outer_decay_exponent"] <= spread["outer_decay_exponent"]["max"]
+
+
+def test_metadata_carries_the_out_of_sample_error(calibration):
+    published = wind.metadata()["calibration"]
+    assert published["out_of_sample_mean_absolute_error_kt"] == calibration["cross_validation"]["out_of_sample"]["mean_absolute_error_kt"]
