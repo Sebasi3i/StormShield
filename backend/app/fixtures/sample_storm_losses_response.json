@@ -22,7 +22,8 @@
       "property_id": "P001",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     },
     {
@@ -35,14 +36,16 @@
       "property_id": "P003",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     },
     {
       "property_id": "P004",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     },
     {
@@ -55,14 +58,16 @@
       "property_id": "P006",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     },
     {
       "property_id": "P007",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     },
     {
@@ -75,14 +80,16 @@
       "property_id": "P009",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     },
     {
       "property_id": "P010",
       "upgrade_ids": [
         "roof_straps",
-        "shutters"
+        "shutters",
+        "shutters_roof_straps"
       ]
     }
   ],
@@ -94,7 +101,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1"
       },
       "fallback_reason": null
     },
@@ -115,7 +123,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.hip.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.hip.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.hip.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.hip.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.hip.hazus.v1"
       },
       "fallback_reason": null
     },
@@ -126,7 +135,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1"
       },
       "fallback_reason": null
     },
@@ -147,7 +157,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1"
       },
       "fallback_reason": null
     },
@@ -158,7 +169,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1"
       },
       "fallback_reason": null
     },
@@ -179,7 +191,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.hip.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.hip.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.hip.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.hip.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.hip.hazus.v1"
       },
       "fallback_reason": null
     },
@@ -190,7 +203,8 @@
       "baseline_curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
       "upgrade_curve_ids": {
         "roof_straps": "pre_fbc_2002.roof_straps.gable.hazus.v1",
-        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1"
+        "shutters": "pre_fbc_2002.shutters.gable.hazus.v1",
+        "shutters_roof_straps": "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1"
       },
       "fallback_reason": null
     }
@@ -201,6 +215,10 @@
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 149.4,
       "baseline_damage_usd": 596199.35,
       "upgraded_damage_usd": 399101.35,
@@ -212,6 +230,10 @@
       "storm_id": "SYN0155",
       "property_id": "P001",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 149.4,
       "baseline_damage_usd": 596199.35,
       "upgraded_damage_usd": 310545.8,
@@ -221,8 +243,30 @@
     },
     {
       "storm_id": "SYN0155",
+      "property_id": "P001",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
+      "peak_gust_mph": 149.4,
+      "baseline_damage_usd": 596199.35,
+      "upgraded_damage_usd": 272981.75,
+      "baseline_payout_usd": 553699.35,
+      "upgraded_payout_usd": 230481.75,
+      "avoided_payout_usd": 323217.6
+    },
+    {
+      "storm_id": "SYN0155",
       "property_id": "P002",
       "upgrade_id": "shutters",
+      "installed_features": [
+        "roof_straps"
+      ],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 149.7,
       "baseline_damage_usd": 287556.0,
       "upgraded_damage_usd": 88818.0,
@@ -234,6 +278,10 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 71.4,
       "baseline_damage_usd": 481.12,
       "upgraded_damage_usd": 481.12,
@@ -245,6 +293,26 @@
       "storm_id": "SYN0155",
       "property_id": "P003",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
+      "peak_gust_mph": 71.4,
+      "baseline_damage_usd": 481.12,
+      "upgraded_damage_usd": 481.12,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P003",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 71.4,
       "baseline_damage_usd": 481.12,
       "upgraded_damage_usd": 481.12,
@@ -256,6 +324,10 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 71.6,
       "baseline_damage_usd": 922.43,
       "upgraded_damage_usd": 922.43,
@@ -267,6 +339,26 @@
       "storm_id": "SYN0155",
       "property_id": "P004",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
+      "peak_gust_mph": 71.6,
+      "baseline_damage_usd": 922.43,
+      "upgraded_damage_usd": 922.43,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P004",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 71.6,
       "baseline_damage_usd": 922.43,
       "upgraded_damage_usd": 922.43,
@@ -278,6 +370,12 @@
       "storm_id": "SYN0155",
       "property_id": "P005",
       "upgrade_id": "shutters",
+      "installed_features": [
+        "roof_straps"
+      ],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 70.2,
       "baseline_damage_usd": 639.73,
       "upgraded_damage_usd": 638.02,
@@ -289,6 +387,10 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
@@ -300,6 +402,26 @@
       "storm_id": "SYN0155",
       "property_id": "P006",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
+      "peak_gust_mph": 41.0,
+      "baseline_damage_usd": 0.0,
+      "upgraded_damage_usd": 0.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P006",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 41.0,
       "baseline_damage_usd": 0.0,
       "upgraded_damage_usd": 0.0,
@@ -311,6 +433,10 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 103.4,
       "baseline_damage_usd": 13217.36,
       "upgraded_damage_usd": 13098.08,
@@ -322,6 +448,10 @@
       "storm_id": "SYN0155",
       "property_id": "P007",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 103.4,
       "baseline_damage_usd": 13217.36,
       "upgraded_damage_usd": 12044.44,
@@ -331,8 +461,30 @@
     },
     {
       "storm_id": "SYN0155",
+      "property_id": "P007",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
+      "peak_gust_mph": 103.4,
+      "baseline_damage_usd": 13217.36,
+      "upgraded_damage_usd": 11999.0,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
       "property_id": "P008",
       "upgrade_id": "shutters",
+      "installed_features": [
+        "roof_straps"
+      ],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 117.2,
       "baseline_damage_usd": 12412.27,
       "upgraded_damage_usd": 8830.16,
@@ -344,6 +496,10 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 98.3,
       "baseline_damage_usd": 14255.08,
       "upgraded_damage_usd": 14255.08,
@@ -355,6 +511,26 @@
       "storm_id": "SYN0155",
       "property_id": "P009",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
+      "peak_gust_mph": 98.3,
+      "baseline_damage_usd": 14255.08,
+      "upgraded_damage_usd": 13862.1,
+      "baseline_payout_usd": 0.0,
+      "upgraded_payout_usd": 0.0,
+      "avoided_payout_usd": 0.0
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P009",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
       "peak_gust_mph": 98.3,
       "baseline_damage_usd": 14255.08,
       "upgraded_damage_usd": 13862.1,
@@ -366,6 +542,10 @@
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps"
+      ],
       "peak_gust_mph": 149.5,
       "baseline_damage_usd": 473722.16,
       "upgraded_damage_usd": 317197.76,
@@ -377,12 +557,32 @@
       "storm_id": "SYN0155",
       "property_id": "P010",
       "upgrade_id": "shutters",
+      "installed_features": [],
+      "features_added": [
+        "shutters"
+      ],
       "peak_gust_mph": 149.5,
       "baseline_damage_usd": 473722.16,
       "upgraded_damage_usd": 246834.54,
       "baseline_payout_usd": 439972.16,
       "upgraded_payout_usd": 213084.54,
       "avoided_payout_usd": 226887.62
+    },
+    {
+      "storm_id": "SYN0155",
+      "property_id": "P010",
+      "upgrade_id": "shutters_roof_straps",
+      "installed_features": [],
+      "features_added": [
+        "roof_straps",
+        "shutters"
+      ],
+      "peak_gust_mph": 149.5,
+      "baseline_damage_usd": 473722.16,
+      "upgraded_damage_usd": 216967.27,
+      "baseline_payout_usd": 439972.16,
+      "upgraded_payout_usd": 183217.27,
+      "avoided_payout_usd": 256754.88
     }
   ],
   "warnings": [
@@ -390,16 +590,16 @@
   ],
   "assumptions": [
     "Illustrative gross insurer payouts before reinsurance. Not calibrated and not validated against loss experience.",
-    "Damage curves (hazus-msf1-suburban-v2) are published FEMA Hazus building loss functions mapped to the platform's classes. A property's declared roof_shape ('gable' or 'hip') selects the matching curve; without one, or with an unrecognised value (see warnings), the blended (equal gable/hip mix) curve is used, an assumption recorded in metadata.curve_provenance. Exactly which curve each property used is in roof_shape_selection, not just this note. Not checked against this portfolio's own claims, and the Finance workbook's upgrade damage-effect request is still unanswered.",
+    "Damage curves (hazus-msf1-suburban-v3) are published FEMA Hazus building loss functions mapped to the platform's classes. A property's declared roof_shape ('gable' or 'hip') selects the matching curve; without one, or with an unrecognised value (see warnings), the blended (equal gable/hip mix) curve is used, an assumption recorded in metadata.curve_provenance. Exactly which curve each property used is in roof_shape_selection, not just this note. Not checked against this portfolio's own claims, and the Finance workbook's upgrade damage-effect request is still unanswered.",
     "payout = min(coverage_limit, max(0, damage - deductible)). The prototype's agreed contract, pending Finance approval of its scope.",
     "Each storm is priced independently: the deductible resets and the building is assumed fully repaired beforehand. No annual accumulation, and no annual event rate is applied here.",
     "Replacement cost is taken as the property's insured value; no square-footage rebuild cost was available.",
     "Contents, loss of use, flood and storm surge, premium changes, reinsurance and claim expenses are out of scope.",
-    "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns."
+    "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates the simulator team owns."
   ],
   "metadata": {
     "result_basis": "illustrative gross insurer payouts before reinsurance",
-    "curve_set_id": "hazus-msf1-suburban-v2",
+    "curve_set_id": "hazus-msf1-suburban-v3",
     "curve_ids": [
       "post_fbc_2002.baseline.blended.hazus.v1",
       "post_fbc_2002.baseline.gable.hazus.v1",
@@ -415,7 +615,10 @@
       "pre_fbc_2002.roof_straps.hip.hazus.v1",
       "pre_fbc_2002.shutters.blended.hazus.v1",
       "pre_fbc_2002.shutters.gable.hazus.v1",
-      "pre_fbc_2002.shutters.hip.hazus.v1"
+      "pre_fbc_2002.shutters.hip.hazus.v1",
+      "pre_fbc_2002.shutters_roof_straps.blended.hazus.v1",
+      "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1",
+      "pre_fbc_2002.shutters_roof_straps.hip.hazus.v1"
     ],
     "curve_wind_metric": "peak_3s_gust_10m_open_terrain_mph",
     "curve_provenance": {
@@ -425,7 +628,7 @@
         "hip",
         "blended"
       ],
-      "version_note": "v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
+      "version_note": "v3 (27 September 2026): the pre-2002 shutters-plus-straps package added (15 -> 18 curves), with 'features' recorded on every curve so a physical state maps to a curve by lookup; the existing 15 curves are unchanged. v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
       "source": "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), machine-readable copy from the NHERI SimCenter Damage and Loss Model Library (BSD 3-Clause), commit 662999759cc59bf9cfc099d4ff5a5814a7bf01c8. Method and validation against insurance losses: Vickery et al. 2006, Natural Hazards Review 7(2). Extract and provenance: data/calibration/hazus_hurricane_loss.",
       "wind_basis": "Hazus loss functions take the open-terrain peak gust at 10 m, the metric the wind step produces; no conversion is applied. The home's surroundings enter through the Hazus terrain field, set to suburban (z0 = 0.35 m) for every home.",
       "class_mapping": {
@@ -433,7 +636,9 @@
         "pre_fbc_2002": "roof-to-wall toe-nails, 6d roof-deck nails, no secondary water resistance, no shutters",
         "post_fbc_2002": "roof-to-wall straps, 8d roof-deck nails, secondary water resistance, no shutters",
         "shutters": "same class with Hazus shutters on",
-        "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them"
+        "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them",
+        "shutters_roof_straps": "pre_fbc_2002 with both: Hazus shutters on and straps in place of toe-nails. The state after both single projects, published as its own curve rather than as the sum of two reductions. Not offered for post_fbc_2002, whose 'shutters' curve already is that state",
+        "features": "Every curve lists the platform features its Hazus configuration has installed (roof_straps for a strap roof-to-wall connection, shutters for shutters on), so post_fbc_2002.baseline carries roof_straps and post_fbc_2002.shutters carries both"
       },
       "roof_shape": "Published separately: the Hazus gable curve, the Hazus hip curve, and their mean ('blended') at each speed. A hip roof loses about half as much as a gable roof at 140 mph. A property that declares its own roof_shape ('gable' or 'hip') gets the matching curve; without one it gets 'blended', an equal-weight assumption with no source for Florida's actual gable/hip mix. That fallback, not the split itself, is the largest remaining assumption in these curves - which roof shape an unlabeled Florida home actually has is a separate, larger open question.",
       "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost, on curve post_fbc_2002.shutters.gable at 205 mph. Every curve's own adjustment, and where on its wind axis it happens, is in monotone_adjustment_detail below, largest first.",
@@ -523,6 +728,27 @@
           "adjustment": 0.0
         },
         {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "gable",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "hip",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "blended",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
           "vulnerability_class": "post_fbc_2002",
           "upgrade_id": "baseline",
           "roof_shape": "hip",
@@ -544,8 +770,16 @@
           "adjustment": 0.0
         }
       ],
-      "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.roof_straps.hip at 100 mph (capped to pre_fbc_2002.baseline). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
+      "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, the post-2002 baseline at the pre-2002 one, and the shutters-plus-straps package at each of its two single-feature curves, so an upgrade never adds damage and the pair never does worse than either alone; the largest cap was 0.0012 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.shutters_roof_straps.hip at 115 mph (capped to pre_fbc_2002.shutters). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
       "ordering_adjustment_detail": [
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "hip",
+          "capped_to": "pre_fbc_2002.shutters",
+          "wind_mph": 115.0,
+          "adjustment": 0.0012
+        },
         {
           "vulnerability_class": "pre_fbc_2002",
           "upgrade_id": "roof_straps",
@@ -556,10 +790,26 @@
         },
         {
           "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "blended",
+          "capped_to": "pre_fbc_2002.shutters",
+          "wind_mph": 115.0,
+          "adjustment": 0.0002
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
           "upgrade_id": "roof_straps",
           "roof_shape": "gable",
           "capped_to": "pre_fbc_2002.baseline",
           "wind_mph": 80.0,
+          "adjustment": 0.0001
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "gable",
+          "capped_to": "pre_fbc_2002.shutters",
+          "wind_mph": 110.0,
           "adjustment": 0.0001
         },
         {
@@ -603,6 +853,14 @@
           "adjustment": 0.0
         },
         {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "gable",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
           "vulnerability_class": "post_fbc_2002",
           "upgrade_id": "shutters",
           "roof_shape": "gable",
@@ -611,11 +869,35 @@
           "adjustment": 0.0
         },
         {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "gable",
+          "capped_to": "pre_fbc_2002.roof_straps",
+          "wind_mph": 50.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "hip",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
           "vulnerability_class": "post_fbc_2002",
           "upgrade_id": "shutters",
           "roof_shape": "hip",
           "capped_to": "post_fbc_2002.baseline",
           "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "hip",
+          "capped_to": "pre_fbc_2002.roof_straps",
+          "wind_mph": 50.0,
           "adjustment": 0.0
         },
         {
@@ -635,11 +917,27 @@
           "adjustment": 0.0
         },
         {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "blended",
+          "capped_to": "pre_fbc_2002.baseline",
+          "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
           "vulnerability_class": "post_fbc_2002",
           "upgrade_id": "shutters",
           "roof_shape": "blended",
           "capped_to": "post_fbc_2002.baseline",
           "wind_mph": 80.0,
+          "adjustment": 0.0
+        },
+        {
+          "vulnerability_class": "pre_fbc_2002",
+          "upgrade_id": "shutters_roof_straps",
+          "roof_shape": "blended",
+          "capped_to": "pre_fbc_2002.roof_straps",
+          "wind_mph": 50.0,
           "adjustment": 0.0
         }
       ],
@@ -657,6 +955,9 @@
       "pre_fbc_2002.roof_straps.gable.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails, gable roof: Hazus M.SF.1.gab.strap.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
       "pre_fbc_2002.roof_straps.hip.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails, hip roof: Hazus M.SF.1.hip.strap.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
       "pre_fbc_2002.roof_straps.blended.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails: mean of Hazus M.SF.1.gab.strap.trs.6d.0.0.no.0.null.35 and M.SF.1.hip.strap.trs.6d.0.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added and roof-to-wall straps replacing toe-nails, gable roof: Hazus M.SF.1.gab.strap.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "pre_fbc_2002.shutters_roof_straps.hip.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added and roof-to-wall straps replacing toe-nails, hip roof: Hazus M.SF.1.hip.strap.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "pre_fbc_2002.shutters_roof_straps.blended.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added and roof-to-wall straps replacing toe-nails: mean of Hazus M.SF.1.gab.strap.trs.6d.1.0.no.0.null.35 and M.SF.1.hip.strap.trs.6d.1.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
       "post_fbc_2002.baseline.gable.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built, gable roof: Hazus M.SF.1.gab.strap.trs.8d.0.1.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
       "post_fbc_2002.baseline.hip.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built, hip roof: Hazus M.SF.1.hip.strap.trs.8d.0.1.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
       "post_fbc_2002.baseline.blended.hazus.v1": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built: mean of Hazus M.SF.1.gab.strap.trs.8d.0.1.no.0.null.35 and M.SF.1.hip.strap.trs.8d.0.1.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -778,7 +1079,7 @@
       "imported_at": "2026-09-26T18:42:14Z",
       "source_wind_metric": "max_wind_kt",
       "source_wind_metric_note": "One-minute sustained wind at the storm CENTRE in knots, HURDAT2 convention. This is not wind at a property and it is not a gust. Converting it to a property-level peak gust is app/wind.py's job, and that conversion is an assumption.",
-      "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates Adryel owns."
+      "completeness_warning": "A SELECTED subset, not a probabilistic sample: these storms were chosen because they hit Florida hard. Do not compute annual expected loss, average annual loss or exceedance probabilities from it. That needs the full catalog and the annual event rates the simulator team owns."
     },
     "wind_exposure_detail": [
       {

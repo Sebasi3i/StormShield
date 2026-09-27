@@ -444,15 +444,22 @@ roof (Hazus M.SF.1):
 | pre-2002 baseline | roof-to-wall toe-nails, 6d deck nails, no secondary water resistance, no shutters |
 | pre-2002 + shutters | the same, with shutters |
 | pre-2002 + roof straps | straps instead of toe-nails |
+| pre-2002 + shutters and roof straps | straps instead of toe-nails, with shutters |
 | post-2002 baseline | straps, 8d deck nails, secondary water resistance, no shutters |
 | post-2002 + shutters | the same, with shutters |
 
-Each of the five is published three ways: the Hazus gable-roof curve, the Hazus hip-roof
-curve, and their mean ("blended"), 15 curves in total. A hip roof loses about half as
-much at 140 mph. A property that declares its own `roof_shape` gets the matching curve;
+Each of the six is published three ways: the Hazus gable-roof curve, the Hazus hip-roof
+curve, and their mean ("blended"), 18 curves in total. The shutters-and-straps package
+(curve set v3, 27 September 2026) is the state an older home is in after both projects,
+published as its own Hazus curve for the sample insurer's current-versus-upgraded
+comparison rather than as the sum of two single-feature reductions; it is capped at each
+single-feature curve so the pair never does worse than either alone (largest cap 0.12% of
+replacement cost, hip roof, 115 mph). Every curve now records the features its building
+has installed, so a physical state maps to a curve by lookup. A hip roof loses about half
+as much at 140 mph. A property that declares its own `roof_shape` gets the matching curve;
 one that does not gets blended - see "Roof shape" below. Wood-frame curves differ from
-masonry by at most 2 points of replacement cost for four of the five, and by up to 9 for
-post-2002 with shutters; masonry reinforcing moves them by under one.
+masonry by at most 2 points of replacement cost for four of the original five, and by up
+to 9 for post-2002 with shutters; masonry reinforcing moves them by under one.
 
 | Peak gust | Pre-2002, before → now | + shutters, before → now | Post-2002, before → now |
 | --- | ---: | ---: | ---: |

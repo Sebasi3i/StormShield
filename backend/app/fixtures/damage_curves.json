@@ -1,5 +1,5 @@
 {
-  "curve_set_id": "hazus-msf1-suburban-v2",
+  "curve_set_id": "hazus-msf1-suburban-v3",
   "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
   "evidence_status": "sourced",
   "upper_supported_wind_mph": 250,
@@ -10,7 +10,7 @@
       "hip",
       "blended"
     ],
-    "version_note": "v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
+    "version_note": "v3 (27 September 2026): the pre-2002 shutters-plus-straps package added (15 -> 18 curves), with 'features' recorded on every curve so a physical state maps to a curve by lookup; the existing 15 curves are unchanged. v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
     "source": "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), machine-readable copy from the NHERI SimCenter Damage and Loss Model Library (BSD 3-Clause), commit 662999759cc59bf9cfc099d4ff5a5814a7bf01c8. Method and validation against insurance losses: Vickery et al. 2006, Natural Hazards Review 7(2). Extract and provenance: data/calibration/hazus_hurricane_loss.",
     "wind_basis": "Hazus loss functions take the open-terrain peak gust at 10 m, the metric the wind step produces; no conversion is applied. The home's surroundings enter through the Hazus terrain field, set to suburban (z0 = 0.35 m) for every home.",
     "class_mapping": {
@@ -18,7 +18,9 @@
       "pre_fbc_2002": "roof-to-wall toe-nails, 6d roof-deck nails, no secondary water resistance, no shutters",
       "post_fbc_2002": "roof-to-wall straps, 8d roof-deck nails, secondary water resistance, no shutters",
       "shutters": "same class with Hazus shutters on",
-      "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them"
+      "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them",
+      "shutters_roof_straps": "pre_fbc_2002 with both: Hazus shutters on and straps in place of toe-nails. The state after both single projects, published as its own curve rather than as the sum of two reductions. Not offered for post_fbc_2002, whose 'shutters' curve already is that state",
+      "features": "Every curve lists the platform features its Hazus configuration has installed (roof_straps for a strap roof-to-wall connection, shutters for shutters on), so post_fbc_2002.baseline carries roof_straps and post_fbc_2002.shutters carries both"
     },
     "roof_shape": "Published separately: the Hazus gable curve, the Hazus hip curve, and their mean ('blended') at each speed. A hip roof loses about half as much as a gable roof at 140 mph. A property that declares its own roof_shape ('gable' or 'hip') gets the matching curve; without one it gets 'blended', an equal-weight assumption with no source for Florida's actual gable/hip mix. That fallback, not the split itself, is the largest remaining assumption in these curves - which roof shape an unlabeled Florida home actually has is a separate, larger open question.",
     "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost, on curve post_fbc_2002.shutters.gable at 205 mph. Every curve's own adjustment, and where on its wind axis it happens, is in monotone_adjustment_detail below, largest first.",
@@ -108,6 +110,27 @@
         "adjustment": 0.0
       },
       {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "gable",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "hip",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "blended",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
         "vulnerability_class": "post_fbc_2002",
         "upgrade_id": "baseline",
         "roof_shape": "hip",
@@ -129,8 +152,16 @@
         "adjustment": 0.0
       }
     ],
-    "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.roof_straps.hip at 100 mph (capped to pre_fbc_2002.baseline). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
+    "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, the post-2002 baseline at the pre-2002 one, and the shutters-plus-straps package at each of its two single-feature curves, so an upgrade never adds damage and the pair never does worse than either alone; the largest cap was 0.0012 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.shutters_roof_straps.hip at 115 mph (capped to pre_fbc_2002.shutters). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
     "ordering_adjustment_detail": [
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.shutters",
+        "wind_mph": 115.0,
+        "adjustment": 0.0012
+      },
       {
         "vulnerability_class": "pre_fbc_2002",
         "upgrade_id": "roof_straps",
@@ -141,10 +172,26 @@
       },
       {
         "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.shutters",
+        "wind_mph": 115.0,
+        "adjustment": 0.0002
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
         "upgrade_id": "roof_straps",
         "roof_shape": "gable",
         "capped_to": "pre_fbc_2002.baseline",
         "wind_mph": 80.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.shutters",
+        "wind_mph": 110.0,
         "adjustment": 0.0001
       },
       {
@@ -188,6 +235,14 @@
         "adjustment": 0.0
       },
       {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
         "vulnerability_class": "post_fbc_2002",
         "upgrade_id": "shutters",
         "roof_shape": "gable",
@@ -196,11 +251,35 @@
         "adjustment": 0.0
       },
       {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.roof_straps",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
         "vulnerability_class": "post_fbc_2002",
         "upgrade_id": "shutters",
         "roof_shape": "hip",
         "capped_to": "post_fbc_2002.baseline",
         "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.roof_straps",
+        "wind_mph": 50.0,
         "adjustment": 0.0
       },
       {
@@ -220,11 +299,27 @@
         "adjustment": 0.0
       },
       {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
         "vulnerability_class": "post_fbc_2002",
         "upgrade_id": "shutters",
         "roof_shape": "blended",
         "capped_to": "post_fbc_2002.baseline",
         "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters_roof_straps",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.roof_straps",
+        "wind_mph": 50.0,
         "adjustment": 0.0
       }
     ],
@@ -238,6 +333,7 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "baseline",
       "roof_shape": "gable",
+      "features": [],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, as built, gable roof: Hazus M.SF.1.gab.tnail.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -413,6 +509,7 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "baseline",
       "roof_shape": "hip",
+      "features": [],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, as built, hip roof: Hazus M.SF.1.hip.tnail.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -584,6 +681,7 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "baseline",
       "roof_shape": "blended",
+      "features": [],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, as built: mean of Hazus M.SF.1.gab.tnail.trs.6d.0.0.no.0.null.35 and M.SF.1.hip.tnail.trs.6d.0.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -759,6 +857,9 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "shutters",
       "roof_shape": "gable",
+      "features": [
+        "shutters"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added, gable roof: Hazus M.SF.1.gab.tnail.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -934,6 +1035,9 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "shutters",
       "roof_shape": "hip",
+      "features": [
+        "shutters"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added, hip roof: Hazus M.SF.1.hip.tnail.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -1105,6 +1209,9 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "shutters",
       "roof_shape": "blended",
+      "features": [
+        "shutters"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added: mean of Hazus M.SF.1.gab.tnail.trs.6d.1.0.no.0.null.35 and M.SF.1.hip.tnail.trs.6d.1.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -1280,6 +1387,9 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "roof_straps",
       "roof_shape": "gable",
+      "features": [
+        "roof_straps"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails, gable roof: Hazus M.SF.1.gab.strap.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -1455,6 +1565,9 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "roof_straps",
       "roof_shape": "hip",
+      "features": [
+        "roof_straps"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails, hip roof: Hazus M.SF.1.hip.strap.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -1626,6 +1739,9 @@
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "roof_straps",
       "roof_shape": "blended",
+      "features": [
+        "roof_straps"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails: mean of Hazus M.SF.1.gab.strap.trs.6d.0.0.no.0.null.35 and M.SF.1.hip.strap.trs.6d.0.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -1797,10 +1913,546 @@
       ]
     },
     {
+      "curve_id": "pre_fbc_2002.shutters_roof_straps.gable.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "shutters_roof_straps",
+      "roof_shape": "gable",
+      "features": [
+        "roof_straps",
+        "shutters"
+      ],
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added and roof-to-wall straps replacing toe-nails, gable roof: Hazus M.SF.1.gab.strap.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0002
+        ],
+        [
+          65,
+          0.0005
+        ],
+        [
+          70,
+          0.0013
+        ],
+        [
+          75,
+          0.0026
+        ],
+        [
+          80,
+          0.0042
+        ],
+        [
+          85,
+          0.0062
+        ],
+        [
+          90,
+          0.0082
+        ],
+        [
+          95,
+          0.0106
+        ],
+        [
+          100,
+          0.0135
+        ],
+        [
+          105,
+          0.0185
+        ],
+        [
+          110,
+          0.0255
+        ],
+        [
+          115,
+          0.0367
+        ],
+        [
+          120,
+          0.0518
+        ],
+        [
+          125,
+          0.0754
+        ],
+        [
+          130,
+          0.1103
+        ],
+        [
+          135,
+          0.1519
+        ],
+        [
+          140,
+          0.2016
+        ],
+        [
+          145,
+          0.2593
+        ],
+        [
+          150,
+          0.3288
+        ],
+        [
+          155,
+          0.4149
+        ],
+        [
+          160,
+          0.5086
+        ],
+        [
+          165,
+          0.6013
+        ],
+        [
+          170,
+          0.6822
+        ],
+        [
+          175,
+          0.7569
+        ],
+        [
+          180,
+          0.8124
+        ],
+        [
+          185,
+          0.8581
+        ],
+        [
+          190,
+          0.8974
+        ],
+        [
+          195,
+          0.9248
+        ],
+        [
+          200,
+          0.9514
+        ],
+        [
+          205,
+          0.9621
+        ],
+        [
+          210,
+          0.9771
+        ],
+        [
+          215,
+          0.9817
+        ],
+        [
+          220,
+          0.9873
+        ],
+        [
+          225,
+          0.9899
+        ],
+        [
+          230,
+          0.9926
+        ],
+        [
+          235,
+          0.9948
+        ],
+        [
+          240,
+          0.9969
+        ],
+        [
+          245,
+          0.9978
+        ],
+        [
+          250,
+          0.9978
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.shutters_roof_straps.hip.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "shutters_roof_straps",
+      "roof_shape": "hip",
+      "features": [
+        "roof_straps",
+        "shutters"
+      ],
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added and roof-to-wall straps replacing toe-nails, hip roof: Hazus M.SF.1.hip.strap.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          60,
+          0.0
+        ],
+        [
+          65,
+          0.0001
+        ],
+        [
+          70,
+          0.0005
+        ],
+        [
+          75,
+          0.0015
+        ],
+        [
+          80,
+          0.0032
+        ],
+        [
+          85,
+          0.0056
+        ],
+        [
+          90,
+          0.0086
+        ],
+        [
+          95,
+          0.0118
+        ],
+        [
+          100,
+          0.0153
+        ],
+        [
+          105,
+          0.0194
+        ],
+        [
+          110,
+          0.0243
+        ],
+        [
+          115,
+          0.0307
+        ],
+        [
+          120,
+          0.041
+        ],
+        [
+          125,
+          0.0559
+        ],
+        [
+          130,
+          0.0738
+        ],
+        [
+          135,
+          0.1022
+        ],
+        [
+          140,
+          0.1402
+        ],
+        [
+          145,
+          0.1834
+        ],
+        [
+          150,
+          0.235
+        ],
+        [
+          155,
+          0.31
+        ],
+        [
+          160,
+          0.3898
+        ],
+        [
+          165,
+          0.4738
+        ],
+        [
+          170,
+          0.5586
+        ],
+        [
+          175,
+          0.6444
+        ],
+        [
+          180,
+          0.7289
+        ],
+        [
+          185,
+          0.7886
+        ],
+        [
+          190,
+          0.8397
+        ],
+        [
+          195,
+          0.8819
+        ],
+        [
+          200,
+          0.9173
+        ],
+        [
+          205,
+          0.9353
+        ],
+        [
+          210,
+          0.9648
+        ],
+        [
+          215,
+          0.9741
+        ],
+        [
+          220,
+          0.9804
+        ],
+        [
+          225,
+          0.9827
+        ],
+        [
+          230,
+          0.985
+        ],
+        [
+          235,
+          0.9869
+        ],
+        [
+          240,
+          0.9875
+        ],
+        [
+          245,
+          0.9877
+        ],
+        [
+          250,
+          0.9877
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.shutters_roof_straps.blended.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "shutters_roof_straps",
+      "roof_shape": "blended",
+      "features": [
+        "roof_straps",
+        "shutters"
+      ],
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added and roof-to-wall straps replacing toe-nails: mean of Hazus M.SF.1.gab.strap.trs.6d.1.0.no.0.null.35 and M.SF.1.hip.strap.trs.6d.1.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0001
+        ],
+        [
+          65,
+          0.0003
+        ],
+        [
+          70,
+          0.0009
+        ],
+        [
+          75,
+          0.002
+        ],
+        [
+          80,
+          0.0037
+        ],
+        [
+          85,
+          0.0059
+        ],
+        [
+          90,
+          0.0084
+        ],
+        [
+          95,
+          0.0112
+        ],
+        [
+          100,
+          0.0144
+        ],
+        [
+          105,
+          0.0189
+        ],
+        [
+          110,
+          0.0249
+        ],
+        [
+          115,
+          0.0342
+        ],
+        [
+          120,
+          0.0464
+        ],
+        [
+          125,
+          0.0658
+        ],
+        [
+          130,
+          0.0921
+        ],
+        [
+          135,
+          0.127
+        ],
+        [
+          140,
+          0.1709
+        ],
+        [
+          145,
+          0.2214
+        ],
+        [
+          150,
+          0.2819
+        ],
+        [
+          155,
+          0.3624
+        ],
+        [
+          160,
+          0.4492
+        ],
+        [
+          165,
+          0.5376
+        ],
+        [
+          170,
+          0.6204
+        ],
+        [
+          175,
+          0.7007
+        ],
+        [
+          180,
+          0.7706
+        ],
+        [
+          185,
+          0.8233
+        ],
+        [
+          190,
+          0.8686
+        ],
+        [
+          195,
+          0.9033
+        ],
+        [
+          200,
+          0.9343
+        ],
+        [
+          205,
+          0.9487
+        ],
+        [
+          210,
+          0.9709
+        ],
+        [
+          215,
+          0.9779
+        ],
+        [
+          220,
+          0.9838
+        ],
+        [
+          225,
+          0.9863
+        ],
+        [
+          230,
+          0.9888
+        ],
+        [
+          235,
+          0.9908
+        ],
+        [
+          240,
+          0.9922
+        ],
+        [
+          245,
+          0.9928
+        ],
+        [
+          250,
+          0.9928
+        ]
+      ]
+    },
+    {
       "curve_id": "post_fbc_2002.baseline.gable.hazus.v1",
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "baseline",
       "roof_shape": "gable",
+      "features": [
+        "roof_straps"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built, gable roof: Hazus M.SF.1.gab.strap.trs.8d.0.1.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -1976,6 +2628,9 @@
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "baseline",
       "roof_shape": "hip",
+      "features": [
+        "roof_straps"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built, hip roof: Hazus M.SF.1.hip.strap.trs.8d.0.1.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -2147,6 +2802,9 @@
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "baseline",
       "roof_shape": "blended",
+      "features": [
+        "roof_straps"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built: mean of Hazus M.SF.1.gab.strap.trs.8d.0.1.no.0.null.35 and M.SF.1.hip.strap.trs.8d.0.1.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -2322,6 +2980,10 @@
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "shutters",
       "roof_shape": "gable",
+      "features": [
+        "roof_straps",
+        "shutters"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, with shutters added, gable roof: Hazus M.SF.1.gab.strap.trs.8d.1.1.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. Has Shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -2497,6 +3159,10 @@
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "shutters",
       "roof_shape": "hip",
+      "features": [
+        "roof_straps",
+        "shutters"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, with shutters added, hip roof: Hazus M.SF.1.hip.strap.trs.8d.1.1.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. Has Shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
@@ -2668,6 +3334,10 @@
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "shutters",
       "roof_shape": "blended",
+      "features": [
+        "roof_straps",
+        "shutters"
+      ],
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
       "evidence_status": "sourced",
       "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, with shutters added: mean of Hazus M.SF.1.gab.strap.trs.8d.1.1.no.0.null.35 and M.SF.1.hip.strap.trs.8d.1.1.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. Has Shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",

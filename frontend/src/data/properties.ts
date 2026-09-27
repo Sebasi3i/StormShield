@@ -1,5 +1,11 @@
 import type { Property } from '../types/Property'
 
+/*
+ * Mirrors backend/app/fixtures/example_portfolio.json; keep the two in step. The build
+ * class and roof shape are the fixture's assigned placeholders, not measured data, and
+ * are sent with every pricing request so each property is priced as itself.
+ */
+
 export const properties: Property[] = [
   {
     id: 1,
@@ -9,6 +15,8 @@ export const properties: Property[] = [
     latitude: 25.7617,
     longitude: -80.1918,
     value: 850000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 2,
@@ -18,6 +26,8 @@ export const properties: Property[] = [
     latitude: 25.7907,
     longitude: -80.1300,
     value: 1200000,
+    vulnerability_class: 'post_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 3,
@@ -27,6 +37,8 @@ export const properties: Property[] = [
     latitude: 27.9506,
     longitude: -82.4572,
     value: 620000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'hip',
   },
   {
     id: 4,
@@ -36,6 +48,8 @@ export const properties: Property[] = [
     latitude: 27.7676,
     longitude: -82.6403,
     value: 540000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 5,
@@ -45,6 +59,8 @@ export const properties: Property[] = [
     latitude: 28.5383,
     longitude: -81.3792,
     value: 475000,
+    vulnerability_class: 'post_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 6,
@@ -54,6 +70,8 @@ export const properties: Property[] = [
     latitude: 30.3322,
     longitude: -81.6557,
     value: 390000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 7,
@@ -63,6 +81,8 @@ export const properties: Property[] = [
     latitude: 26.7153,
     longitude: -80.0534,
     value: 710000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 8,
@@ -72,6 +92,8 @@ export const properties: Property[] = [
     latitude: 26.6406,
     longitude: -81.8723,
     value: 460000,
+    vulnerability_class: 'post_fbc_2002',
+    roof_shape: 'gable',
   },
   {
     id: 9,
@@ -81,6 +103,8 @@ export const properties: Property[] = [
     latitude: 26.1423,
     longitude: -81.7948,
     value: 980000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'hip',
   },
   {
     id: 10,
@@ -90,5 +114,7 @@ export const properties: Property[] = [
     latitude: 26.1224,
     longitude: -80.1373,
     value: 675000,
+    vulnerability_class: 'pre_fbc_2002',
+    roof_shape: 'gable',
   },
 ]

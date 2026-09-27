@@ -16,6 +16,7 @@ import StormImpact from './components/StormImpact'
 import StormBatch from './components/StormBatch'
 import FullAnalysis from './components/FullAnalysis'
 import BatchSettings from './components/BatchSettings'
+import InsurerLab from './components/InsurerLab'
 import './App.css'
 
 // The Storm Scenario value that means "the whole generated batch".
@@ -65,6 +66,8 @@ function getLastVisibleStep(storm: Storm) {
 }
 
 function App() {
+  // Which screen: the property map, or the sample insurer's lab.
+  const [view, setView] = useState<'map' | 'insurer'>('map')
   const [selectedProperties, setSelectedProperties] = useState<Property[]>([])
 
   // The three catalog tracks, loaded from the API.
@@ -353,12 +356,36 @@ function App() {
           </div>
         </div>
 
+        <div className="view-switch">
+          <button
+            type="button"
+            className={view === 'map' ? 'active' : undefined}
+            onClick={() => setView('map')}
+          >
+            Map
+          </button>
+          <button
+            type="button"
+            className={view === 'insurer' ? 'active' : undefined}
+            onClick={() => setView('insurer')}
+          >
+            Insurer Lab
+          </button>
+        </div>
+
         <div className="property-count">
           {selectedProperties.length} selected
         </div>
       </header>
 
-      <section className="workspace">
+      {view === 'insurer' && (
+        <InsurerLab
+          mapSelectedPropertyIds={selectedProperties.map((property) => property.id)}
+          onClose={() => setView('map')}
+        />
+      )}
+
+      <section className="workspace" style={view === 'insurer' ? { display: 'none' } : undefined}>
         <div className="map-container">
         <div className="storm-controls">
           <div className="storm-controls-row">

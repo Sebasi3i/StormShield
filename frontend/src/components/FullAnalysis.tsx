@@ -11,10 +11,15 @@ import {
 } from 'recharts'
 
 import type { Property } from '../types/Property'
-import type {
-  StormLossResponse,
-  StormLossRow,
-} from '../types/StormLoss'
+import type { StormLossResponse, StormLossRow } from '../types/StormLoss'
+import { buildLabel, featureLabel, upgradeLabel } from '../utils/propertyLabels'
+
+/*
+ * The report behind "Analyze Portfolio Risk". Everything is computed on the server;
+ * this screen adds the rows up per storm and per property and puts them in plain words:
+ * "repair cost" is the modeled cost to repair the building, and "covered by insurance"
+ * is the part of that cost above each home's deductible, up to its coverage limit.
+ */
 
 interface FullAnalysisProps {
   properties: Property[]
@@ -22,12 +27,7 @@ interface FullAnalysisProps {
   onClose: () => void
 }
 
-type AnalysisTab =
-  | 'overview'
-  | 'storms'
-  | 'properties'
-  | 'mitigation'
-  | 'model'
+type AnalysisTab = 'overview' | 'storms' | 'properties' | 'upgrades' | 'details'
 
 interface StormSummary {
   stormId: string
@@ -38,20 +38,29 @@ interface StormSummary {
 }
 
 interface PropertySummary {
-  propertyId: string
-  address: string
-  city: string
+  property: Property
   peakGust: number
   worstStormId: string
   worstDamage: number
   worstPayout: number
 }
 
-interface MitigationSummary {
-  propertyId: string
-  address: string
-  city: string
+interface UpgradeCandidate {
   upgradeId: string
+  label: string
+  featuresAdded: number
+  baselinePayout: number
+  upgradedPayout: number
+  avoidedPayout: number
+}
+
+interface UpgradeSummary {
+  property: Property
+  installed: string[]
+  best: UpgradeCandidate | null
+  candidates: UpgradeCandidate[]
+  // Recharts reads these two off the row.
+  address: string
   baselinePayout: number
   upgradedPayout: number
   avoidedPayout: number
@@ -74,621 +83,243 @@ function formatCompactCurrency(value: number) {
   }).format(value)
 }
 
-function formatUpgradeName(upgradeId: string) {
-  return upgradeId
-    .split('_')
-    .map(
-      (word) =>
-        word.charAt(0).toUpperCase() +
-        word.slice(1),
-    )
-    .join(' ')
-}
-
-function getBaselineRows(
-  rows: StormLossRow[],
-): StormLossRow[] {
+/*
+ * Every upgrade row repeats the same baseline for its storm and property, so one row
+ * per storm/property is enough for anything about the home as it is.
+ */
+function getBaselineRows(rows: StormLossRow[]): StormLossRow[] {
   return Array.from(
-    new Map(
-      rows.map((row) => [
-        `${row.storm_id}:${row.property_id}`,
-        row,
-      ]),
-    ).values(),
+    new Map(rows.map((row) => [`${row.storm_id}:${row.property_id}`, row])).values(),
   )
 }
 
-function FullAnalysis({
-  properties,
-  losses,
-  onClose,
-}: FullAnalysisProps) {
-  const [activeTab, setActiveTab] =
-    useState<AnalysisTab>('overview')
+function FullAnalysis({ properties, losses, onClose }: FullAnalysisProps) {
+  const [activeTab, setActiveTab] = useState<AnalysisTab>('overview')
 
-  const baselineRows = useMemo(
-    () => getBaselineRows(losses.rows),
-    [losses.rows],
-  )
+  const baselineRows = useMemo(() => getBaselineRows(losses.rows), [losses.rows])
 
-  const portfolioValue = properties.reduce(
-    (total, property) =>
-      total + property.value,
-    0,
-  )
+  const portfolioValue = properties.reduce((total, property) => total + property.value, 0)
 
-  /*
-   * STORM DATA
-   *
-   * Used only by Overview and Storm Comparison.
-   */
-  const stormSummaries = useMemo(() => {
-    return losses.storm_ids
-      .map((stormId): StormSummary => {
-        const rows = baselineRows.filter(
-          (row) => row.storm_id === stormId,
-        )
-
-        return {
-          stormId,
-
-          damage: rows.reduce(
-            (total, row) =>
-              total +
-              row.baseline_damage_usd,
-            0,
-          ),
-
-          payout: rows.reduce(
-            (total, row) =>
-              total +
-              row.baseline_payout_usd,
-            0,
-          ),
-
-          peakGust:
-            rows.length > 0
-              ? Math.max(
-                  ...rows.map(
-                    (row) =>
-                      row.peak_gust_mph,
-                  ),
-                )
-              : 0,
-
-          affectedProperties: rows.filter(
-            (row) =>
-              row.baseline_damage_usd > 0,
-          ).length,
-        }
-      })
-      .sort(
-        (a, b) =>
-          b.damage - a.damage,
-      )
-  }, [baselineRows, losses.storm_ids])
-
-  const damagingStorms =
-    stormSummaries.filter(
-      (storm) => storm.damage > 0,
-    )
-
-  const largestDamageStorm =
-    stormSummaries[0] ?? null
-
-  const largestPayoutStorm =
-    stormSummaries.reduce<
-      StormSummary | null
-    >((largest, storm) => {
-      if (
-        !largest ||
-        storm.payout > largest.payout
-      ) {
-        return storm
-      }
-
-      return largest
-    }, null)
-
-  const peakGust =
-    baselineRows.length > 0
-      ? Math.max(
-          ...baselineRows.map(
-            (row) => row.peak_gust_mph,
-          ),
-        )
-      : 0
-
-  const affectedPropertyIds = new Set(
-    baselineRows
-      .filter(
-        (row) =>
-          row.baseline_damage_usd > 0,
-      )
-      .map((row) => row.property_id),
-  )
-
-  /*
-   * PROPERTY DATA
-   *
-   * One row per property based on that
-   * property's worst modeled event.
-   */
-  const propertySummaries = useMemo(() => {
-    return properties
-      .map(
-        (property): PropertySummary => {
-          const rows =
-            baselineRows.filter(
-              (row) =>
-                row.property_id ===
-                String(property.id),
-            )
-
-          const worstRow =
-            rows.reduce<
-              StormLossRow | null
-            >((worst, row) => {
-              if (
-                !worst ||
-                row.baseline_damage_usd >
-                  worst.baseline_damage_usd
-              ) {
-                return row
-              }
-
-              return worst
-            }, null)
+  // Per storm: repair cost and insured cost across the selected properties.
+  const stormSummaries = useMemo(
+    () =>
+      losses.storm_ids
+        .map((stormId): StormSummary => {
+          const rows = baselineRows.filter((row) => row.storm_id === stormId)
 
           return {
-            propertyId: String(
-              property.id,
-            ),
-            address: property.address,
-            city: property.city,
-
-            peakGust:
-              rows.length > 0
-                ? Math.max(
-                    ...rows.map(
-                      (row) =>
-                        row.peak_gust_mph,
-                    ),
-                  )
-                : 0,
-
-            worstStormId:
-              worstRow?.storm_id ?? '—',
-
-            worstDamage:
-              worstRow?.baseline_damage_usd ??
-              0,
-
-            worstPayout:
-              worstRow?.baseline_payout_usd ??
-              0,
+            stormId,
+            damage: rows.reduce((total, row) => total + row.baseline_damage_usd, 0),
+            payout: rows.reduce((total, row) => total + row.baseline_payout_usd, 0),
+            peakGust: rows.length > 0 ? Math.max(...rows.map((row) => row.peak_gust_mph)) : 0,
+            affectedProperties: rows.filter((row) => row.baseline_damage_usd > 0).length,
           }
-        },
-      )
-      .sort(
-        (a, b) =>
-          b.worstDamage -
-          a.worstDamage,
-      )
-  }, [baselineRows, properties])
+        })
+        .sort((a, b) => b.damage - a.damage),
+    [baselineRows, losses.storm_ids],
+  )
+
+  const damagingStorms = stormSummaries.filter((storm) => storm.damage > 0)
+  const worstStormByDamage = damagingStorms[0] ?? null
+  const worstStormByPayout = stormSummaries.reduce<StormSummary | null>(
+    (largest, storm) => (!largest || storm.payout > largest.payout ? storm : largest),
+    null,
+  )
+
+  const peakGust = baselineRows.length > 0 ? Math.max(...baselineRows.map((row) => row.peak_gust_mph)) : 0
+
+  const damagedPropertyIds = new Set(
+    baselineRows.filter((row) => row.baseline_damage_usd > 0).map((row) => row.property_id),
+  )
+
+  // Per property: the storm that hurt it most.
+  const propertySummaries = useMemo(
+    () =>
+      properties
+        .map((property): PropertySummary => {
+          const rows = baselineRows.filter((row) => row.property_id === String(property.id))
+          const worst = rows.reduce<StormLossRow | null>(
+            (current, row) => (!current || row.baseline_damage_usd > current.baseline_damage_usd ? row : current),
+            null,
+          )
+
+          return {
+            property,
+            peakGust: rows.length > 0 ? Math.max(...rows.map((row) => row.peak_gust_mph)) : 0,
+            worstStormId: worst?.storm_id ?? '—',
+            worstDamage: worst?.baseline_damage_usd ?? 0,
+            worstPayout: worst?.baseline_payout_usd ?? 0,
+          }
+        })
+        .sort((a, b) => b.worstDamage - a.worstDamage),
+    [baselineRows, properties],
+  )
 
   /*
-   * MITIGATION DATA
-   *
-   * Choose ONE upgrade per property.
-   *
-   * For each available upgrade, sum its
-   * baseline and upgraded payout across
-   * the displayed scenario set.
-   *
-   * Then choose the upgrade producing
-   * the greatest modeled avoided payout.
+   * Per property: every upgrade the home could get, with the insured cost it would
+   * avoid across all the storms shown, and the best of them. Ties go to the smaller
+   * change; when no upgrade changes anything there is no best.
    */
-  const mitigationSummaries =
-    useMemo(() => {
-      return properties
-        .map(
-          (
+  const upgradeSummaries = useMemo(
+    () =>
+      properties
+        .map((property): UpgradeSummary => {
+          const propertyRows = losses.rows.filter((row) => row.property_id === String(property.id))
+          const installed = propertyRows[0]?.installed_features ?? []
+          const upgradeIds = Array.from(new Set(propertyRows.map((row) => row.upgrade_id)))
+
+          const candidates = upgradeIds
+            .map((upgradeId): UpgradeCandidate => {
+              const rows = propertyRows.filter((row) => row.upgrade_id === upgradeId)
+              const baselinePayout = rows.reduce((total, row) => total + row.baseline_payout_usd, 0)
+              const upgradedPayout = rows.reduce((total, row) => total + row.upgraded_payout_usd, 0)
+
+              return {
+                upgradeId,
+                label: upgradeLabel(rows[0]),
+                featuresAdded: rows[0].features_added?.length ?? 1,
+                baselinePayout,
+                upgradedPayout,
+                avoidedPayout: baselinePayout - upgradedPayout,
+              }
+            })
+            .sort((a, b) => b.avoidedPayout - a.avoidedPayout || a.featuresAdded - b.featuresAdded)
+
+          const best = candidates.length > 0 && candidates[0].avoidedPayout > 0 ? candidates[0] : null
+          const baselinePayout = candidates[0]?.baselinePayout ?? 0
+
+          return {
             property,
-          ): MitigationSummary => {
-            const propertyRows =
-              losses.rows.filter(
-                (row) =>
-                  row.property_id ===
-                  String(property.id),
-              )
+            installed,
+            best,
+            candidates,
+            address: property.address,
+            baselinePayout,
+            upgradedPayout: best ? best.upgradedPayout : baselinePayout,
+            avoidedPayout: best ? best.avoidedPayout : 0,
+          }
+        })
+        .sort((a, b) => b.avoidedPayout - a.avoidedPayout),
+    [losses.rows, properties],
+  )
 
-            const upgradeIds = Array.from(
-              new Set(
-                propertyRows.map(
-                  (row) =>
-                    row.upgrade_id,
-                ),
-              ),
-            )
+  const totalAvoidedPayout = upgradeSummaries.reduce((total, item) => total + item.avoidedPayout, 0)
+  const propertiesThatBenefit = upgradeSummaries.filter((item) => item.best !== null).length
+  const upgradesConsidered = new Set(losses.rows.map((row) => upgradeLabel(row))).size
 
-            const candidates =
-              upgradeIds.map(
-                (upgradeId) => {
-                  const rows =
-                    propertyRows.filter(
-                      (row) =>
-                        row.upgrade_id ===
-                        upgradeId,
-                    )
+  const tabs: [AnalysisTab, string][] = [
+    ['overview', 'Overview'],
+    ['storms', 'Storms'],
+    ['properties', 'Properties'],
+    ['upgrades', 'Upgrades'],
+    ['details', 'Details'],
+  ]
 
-                  const baselinePayout =
-                    rows.reduce(
-                      (total, row) =>
-                        total +
-                        row.baseline_payout_usd,
-                      0,
-                    )
-
-                  const upgradedPayout =
-                    rows.reduce(
-                      (total, row) =>
-                        total +
-                        row.upgraded_payout_usd,
-                      0,
-                    )
-
-                  return {
-                    upgradeId,
-                    baselinePayout,
-                    upgradedPayout,
-                    avoidedPayout:
-                      baselinePayout -
-                      upgradedPayout,
-                  }
-                },
-              )
-
-            const best =
-              candidates.reduce<
-                | (typeof candidates)[number]
-                | null
-              >((currentBest, candidate) => {
-                if (
-                  !currentBest ||
-                  candidate.avoidedPayout >
-                    currentBest.avoidedPayout
-                ) {
-                  return candidate
-                }
-
-                return currentBest
-              }, null)
-
-            return {
-              propertyId: String(
-                property.id,
-              ),
-              address: property.address,
-              city: property.city,
-              upgradeId:
-                best?.upgradeId ?? '',
-              baselinePayout:
-                best?.baselinePayout ?? 0,
-              upgradedPayout:
-                best?.upgradedPayout ?? 0,
-              avoidedPayout:
-                best?.avoidedPayout ?? 0,
-            }
-          },
-        )
-        .sort(
-          (a, b) =>
-            b.avoidedPayout -
-            a.avoidedPayout,
-        )
-    }, [losses.rows, properties])
-
-  const totalAvoidedPayout =
-    mitigationSummaries.reduce(
-      (total, property) =>
-        total +
-        property.avoidedPayout,
-      0,
-    )
-
-  const mitigationOpportunities =
-    mitigationSummaries.filter(
-      (property) =>
-        property.avoidedPayout > 0,
-    ).length
-
-  const damagingStormCount =
-    damagingStorms.length
+  const stormCount = losses.storm_ids.length
+  const propertyCount = properties.length
 
   return (
     <div className="analysis-backdrop">
       <div className="analysis-panel analysis-panel-large">
         <div className="analysis-header">
           <div>
-            <span className="analysis-eyebrow">
-              STORMSHIELD PORTFOLIO RISK
-            </span>
-
-            <h2>
-              Portfolio Risk Analysis
-            </h2>
-
+            <span className="analysis-eyebrow">STORMSHIELD STORM RISK</span>
+            <h2>Portfolio Risk Analysis</h2>
             <p>
-              {losses.storm_ids.length}{' '}
-              {losses.storm_ids.length === 1
-                ? 'storm'
-                : 'storms'}{' '}
-              · {properties.length}{' '}
-              {properties.length === 1
-                ? 'property'
-                : 'properties'}{' '}
-              ·{' '}
-              {formatCurrency(
-                portfolioValue,
-              )}{' '}
-              portfolio value
+              {stormCount} {stormCount === 1 ? 'storm' : 'storms'} · {propertyCount}{' '}
+              {propertyCount === 1 ? 'property' : 'properties'} · {formatCurrency(portfolioValue)} of property
             </p>
           </div>
 
-          <button
-            className="analysis-close"
-            type="button"
-            onClick={onClose}
-            aria-label="Close analysis"
-          >
+          <button className="analysis-close" type="button" onClick={onClose} aria-label="Close analysis">
             ×
           </button>
         </div>
 
         <div className="analysis-notice">
-          <strong>
-            Illustrative estimate — includes
-            assumptions
-          </strong>
-
+          <strong>Estimates for the storms you simulated</strong>
           <span>
-            Results compare modeled synthetic
-            storm scenarios. They are not an
-            annual loss forecast.
+            They show what these particular storms would do to these properties. They are not a
+            prediction of what a year will bring.
           </span>
         </div>
 
         <div className="analysis-tabs">
-          <button
-            type="button"
-            className={
-              activeTab === 'overview'
-                ? 'analysis-tab active'
-                : 'analysis-tab'
-            }
-            onClick={() =>
-              setActiveTab('overview')
-            }
-          >
-            Overview
-          </button>
-
-          <button
-            type="button"
-            className={
-              activeTab === 'storms'
-                ? 'analysis-tab active'
-                : 'analysis-tab'
-            }
-            onClick={() =>
-              setActiveTab('storms')
-            }
-          >
-            Storm Comparison
-          </button>
-
-          <button
-            type="button"
-            className={
-              activeTab === 'properties'
-                ? 'analysis-tab active'
-                : 'analysis-tab'
-            }
-            onClick={() =>
-              setActiveTab('properties')
-            }
-          >
-            Property Impact
-          </button>
-
-          <button
-            type="button"
-            className={
-              activeTab === 'mitigation'
-                ? 'analysis-tab active'
-                : 'analysis-tab'
-            }
-            onClick={() =>
-              setActiveTab('mitigation')
-            }
-          >
-            Mitigation
-          </button>
-
-          <button
-            type="button"
-            className={
-              activeTab === 'model'
-                ? 'analysis-tab active'
-                : 'analysis-tab'
-            }
-            onClick={() =>
-              setActiveTab('model')
-            }
-          >
-            Model Details
-          </button>
+          {tabs.map(([tab, label]) => (
+            <button
+              key={tab}
+              type="button"
+              className={activeTab === tab ? 'analysis-tab active' : 'analysis-tab'}
+              onClick={() => setActiveTab(tab)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <div className="analysis-content">
-          {/* =========================
-              OVERVIEW
-              ========================= */}
-
+          {/* ---------------- Overview ---------------- */}
           {activeTab === 'overview' && (
             <>
               <div className="analysis-metrics">
                 <div className="analysis-metric">
-                  <span>
-                    Storms simulated
-                  </span>
+                  <span>Storms simulated</span>
+                  <strong>{stormCount}</strong>
+                </div>
+
+                <div className="analysis-metric">
+                  <span>Storms that caused damage</span>
+                  <strong>{damagingStorms.length}</strong>
+                </div>
+
+                <div className="analysis-metric">
+                  <span>Properties damaged</span>
                   <strong>
-                    {losses.storm_ids.length}
+                    {damagedPropertyIds.size} / {propertyCount}
                   </strong>
                 </div>
 
                 <div className="analysis-metric">
-                  <span>
-                    Damaging scenarios
-                  </span>
-                  <strong>
-                    {damagingStormCount}
-                  </strong>
+                  <span>Strongest wind at a property</span>
+                  <strong>{peakGust.toFixed(1)} mph</strong>
                 </div>
 
                 <div className="analysis-metric">
-                  <span>
-                    Properties affected
-                  </span>
-                  <strong>
-                    {
-                      affectedPropertyIds.size
-                    }{' '}
-                    / {properties.length}
-                  </strong>
+                  <span>Worst storm: repair cost</span>
+                  <strong>{formatCurrency(worstStormByDamage?.damage ?? 0)}</strong>
+                  <small>{worstStormByDamage?.stormId ?? 'no damage'}</small>
                 </div>
 
                 <div className="analysis-metric">
-                  <span>
-                    Highest property gust
-                  </span>
-                  <strong>
-                    {peakGust.toFixed(1)} mph
-                  </strong>
-                </div>
-
-                <div className="analysis-metric">
-                  <span>
-                    Largest event damage
-                  </span>
-                  <strong>
-                    {formatCurrency(
-                      largestDamageStorm?.damage ??
-                        0,
-                    )}
-                  </strong>
-                  <small>
-                    {largestDamageStorm?.stormId ??
-                      '—'}
-                  </small>
-                </div>
-
-                <div className="analysis-metric">
-                  <span>
-                    Largest event payout
-                  </span>
-                  <strong>
-                    {formatCurrency(
-                      largestPayoutStorm?.payout ??
-                        0,
-                    )}
-                  </strong>
-                  <small>
-                    {largestPayoutStorm?.stormId ??
-                      '—'}
-                  </small>
+                  <span>Worst storm: covered by insurance</span>
+                  <strong>{formatCurrency(worstStormByPayout?.payout ?? 0)}</strong>
+                  <small>{worstStormByPayout?.stormId ?? '—'}</small>
                 </div>
               </div>
 
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      PORTFOLIO EXPOSURE
-                    </span>
-
-                    <h3>
-                      Damage-Producing
-                      Scenarios
-                    </h3>
+                    <span>REPAIR COST BY STORM</span>
+                    <h3>Which storms do the damage</h3>
                   </div>
-
-                  <p>
-                    Modeled building damage by
-                    storm
-                  </p>
+                  <p>Only storms that damaged at least one property</p>
                 </div>
 
                 <div className="analysis-chart-card">
-                  {damagingStorms.length >
-                  0 ? (
-                    <ResponsiveContainer
-                      width="100%"
-                      height={320}
-                    >
-                      <BarChart
-                        data={damagingStorms}
-                        margin={{
-                          top: 15,
-                          right: 25,
-                          left: 15,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                        />
-
-                        <XAxis
-                          dataKey="stormId"
-                          tickLine={false}
-                        />
-
-                        <YAxis
-                          tickFormatter={
-                            formatCompactCurrency
-                          }
-                          tickLine={false}
-                          axisLine={false}
-                        />
-
-                        <Tooltip
-                          formatter={(
-                            value,
-                          ) =>
-                            formatCurrency(
-                              Number(value),
-                            )
-                          }
-                        />
-
-                        <Bar
-                          dataKey="damage"
-                          name="Building Damage"
-                          fill="#2f80ed"
-                          radius={[
-                            6, 6, 0, 0,
-                          ]}
-                        />
+                  {damagingStorms.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={320}>
+                      <BarChart data={damagingStorms} margin={{ top: 15, right: 25, left: 15, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="stormId" tickLine={false} />
+                        <YAxis tickFormatter={formatCompactCurrency} tickLine={false} axisLine={false} />
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Bar dataKey="damage" name="Repair cost" fill="#2f80ed" radius={[6, 6, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="analysis-empty-state">
-                      No modeled building damage
-                      occurred in the selected
-                      scenarios.
+                      None of the simulated storms damaged the selected properties.
                     </div>
                   )}
                 </div>
@@ -696,91 +327,28 @@ function FullAnalysis({
             </>
           )}
 
-          {/* =========================
-              STORM COMPARISON
-              ========================= */}
-
+          {/* ---------------- Storms ---------------- */}
           {activeTab === 'storms' && (
             <>
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      SCENARIO COMPARISON
-                    </span>
-
-                    <h3>
-                      Damage vs Insurer Payout
-                    </h3>
+                    <span>STORM BY STORM</span>
+                    <h3>Repair cost and insurance cover</h3>
                   </div>
-
-                  <p>
-                    Independent-event modeled
-                    outcomes
-                  </p>
+                  <p>Each storm on its own</p>
                 </div>
 
                 <div className="analysis-chart-card">
-                  <ResponsiveContainer
-                    width="100%"
-                    height={340}
-                  >
-                    <BarChart
-                      data={stormSummaries}
-                      margin={{
-                        top: 15,
-                        right: 25,
-                        left: 15,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                      />
-
-                      <XAxis
-                        dataKey="stormId"
-                        tickLine={false}
-                      />
-
-                      <YAxis
-                        tickFormatter={
-                          formatCompactCurrency
-                        }
-                        tickLine={false}
-                        axisLine={false}
-                      />
-
-                      <Tooltip
-                        formatter={(
-                          value,
-                        ) =>
-                          formatCurrency(
-                            Number(value),
-                          )
-                        }
-                      />
-
+                  <ResponsiveContainer width="100%" height={340}>
+                    <BarChart data={stormSummaries} margin={{ top: 15, right: 25, left: 15, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="stormId" tickLine={false} />
+                      <YAxis tickFormatter={formatCompactCurrency} tickLine={false} axisLine={false} />
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Legend />
-
-                      <Bar
-                        dataKey="damage"
-                        name="Building Damage"
-                        fill="#2f80ed"
-                        radius={[
-                          5, 5, 0, 0,
-                        ]}
-                      />
-
-                      <Bar
-                        dataKey="payout"
-                        name="Insurer Payout"
-                        fill="#0b2748"
-                        radius={[
-                          5, 5, 0, 0,
-                        ]}
-                      />
+                      <Bar dataKey="damage" name="Repair cost" fill="#2f80ed" radius={[5, 5, 0, 0]} />
+                      <Bar dataKey="payout" name="Covered by insurance" fill="#0b2748" radius={[5, 5, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -789,13 +357,8 @@ function FullAnalysis({
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      EXACT RESULTS
-                    </span>
-
-                    <h3>
-                      Scenario Detail
-                    </h3>
+                    <span>THE NUMBERS</span>
+                    <h3>Storm detail</h3>
                   </div>
                 </div>
 
@@ -804,68 +367,26 @@ function FullAnalysis({
                     <thead>
                       <tr>
                         <th>Storm</th>
-                        <th>
-                          Peak Property Gust
-                        </th>
-                        <th>
-                          Properties Affected
-                        </th>
-                        <th>
-                          Building Damage
-                        </th>
-                        <th>
-                          Insurer Payout
-                        </th>
+                        <th>Strongest wind</th>
+                        <th>Properties damaged</th>
+                        <th>Repair cost</th>
+                        <th>Covered by insurance</th>
                       </tr>
                     </thead>
-
                     <tbody>
-                      {stormSummaries.map(
-                        (storm) => (
-                          <tr
-                            key={
-                              storm.stormId
-                            }
-                          >
-                            <td>
-                              <strong>
-                                {
-                                  storm.stormId
-                                }
-                              </strong>
-                            </td>
-
-                            <td>
-                              {storm.peakGust.toFixed(
-                                1,
-                              )}{' '}
-                              mph
-                            </td>
-
-                            <td>
-                              {
-                                storm.affectedProperties
-                              }{' '}
-                              /{' '}
-                              {
-                                properties.length
-                              }
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                storm.damage,
-                              )}
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                storm.payout,
-                              )}
-                            </td>
-                          </tr>
-                        ),
-                      )}
+                      {stormSummaries.map((storm) => (
+                        <tr key={storm.stormId}>
+                          <td>
+                            <strong>{storm.stormId}</strong>
+                          </td>
+                          <td>{storm.peakGust.toFixed(1)} mph</td>
+                          <td>
+                            {storm.affectedProperties} / {propertyCount}
+                          </td>
+                          <td>{formatCurrency(storm.damage)}</td>
+                          <td>{formatCurrency(storm.payout)}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -873,90 +394,30 @@ function FullAnalysis({
             </>
           )}
 
-          {/* =========================
-              PROPERTY IMPACT
-              ========================= */}
-
+          {/* ---------------- Properties ---------------- */}
           {activeTab === 'properties' && (
             <>
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      RISK CONCENTRATION
-                    </span>
-
-                    <h3>
-                      Worst-Event Damage by
-                      Property
-                    </h3>
+                    <span>WHERE THE RISK SITS</span>
+                    <h3>Worst storm for each property</h3>
                   </div>
-
-                  <p>
-                    Which insured homes drive
-                    modeled losses?
-                  </p>
+                  <p>Which properties take the biggest hit</p>
                 </div>
 
                 <div className="analysis-chart-card">
-                  <ResponsiveContainer
-                    width="100%"
-                    height={Math.max(
-                      260,
-                      properties.length * 70,
-                    )}
-                  >
+                  <ResponsiveContainer width="100%" height={Math.max(260, propertyCount * 70)}>
                     <BarChart
-                      data={
-                        propertySummaries
-                      }
+                      data={propertySummaries.map((item) => ({ ...item, address: item.property.address }))}
                       layout="vertical"
-                      margin={{
-                        top: 10,
-                        right: 35,
-                        left: 25,
-                        bottom: 5,
-                      }}
+                      margin={{ top: 10, right: 35, left: 25, bottom: 5 }}
                     >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        horizontal={false}
-                      />
-
-                      <XAxis
-                        type="number"
-                        tickFormatter={
-                          formatCompactCurrency
-                        }
-                        tickLine={false}
-                        axisLine={false}
-                      />
-
-                      <YAxis
-                        type="category"
-                        dataKey="address"
-                        width={145}
-                        tickLine={false}
-                      />
-
-                      <Tooltip
-                        formatter={(
-                          value,
-                        ) =>
-                          formatCurrency(
-                            Number(value),
-                          )
-                        }
-                      />
-
-                      <Bar
-                        dataKey="worstDamage"
-                        name="Worst-Event Damage"
-                        fill="#2f80ed"
-                        radius={[
-                          0, 6, 6, 0,
-                        ]}
-                      />
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                      <XAxis type="number" tickFormatter={formatCompactCurrency} tickLine={false} axisLine={false} />
+                      <YAxis type="category" dataKey="address" width={145} tickLine={false} />
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                      <Bar dataKey="worstDamage" name="Repair cost, worst storm" fill="#2f80ed" radius={[0, 6, 6, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -965,13 +426,8 @@ function FullAnalysis({
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      PROPERTY DETAIL
-                    </span>
-
-                    <h3>
-                      Worst Modeled Event
-                    </h3>
+                    <span>PROPERTY DETAIL</span>
+                    <h3>Worst storm, property by property</h3>
                   </div>
                 </div>
 
@@ -980,65 +436,25 @@ function FullAnalysis({
                     <thead>
                       <tr>
                         <th>Property</th>
-                        <th>Worst Storm</th>
-                        <th>Peak Gust</th>
-                        <th>
-                          Worst-Event Damage
-                        </th>
-                        <th>
-                          Insurer Payout
-                        </th>
+                        <th>Worst storm</th>
+                        <th>Strongest wind</th>
+                        <th>Repair cost</th>
+                        <th>Covered by insurance</th>
                       </tr>
                     </thead>
-
                     <tbody>
-                      {propertySummaries.map(
-                        (property) => (
-                          <tr
-                            key={
-                              property.propertyId
-                            }
-                          >
-                            <td>
-                              <strong>
-                                {
-                                  property.address
-                                }
-                              </strong>
-
-                              <span>
-                                {property.city},
-                                FL
-                              </span>
-                            </td>
-
-                            <td>
-                              {
-                                property.worstStormId
-                              }
-                            </td>
-
-                            <td>
-                              {property.peakGust.toFixed(
-                                1,
-                              )}{' '}
-                              mph
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                property.worstDamage,
-                              )}
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                property.worstPayout,
-                              )}
-                            </td>
-                          </tr>
-                        ),
-                      )}
+                      {propertySummaries.map(({ property, ...item }) => (
+                        <tr key={property.id}>
+                          <td>
+                            <strong>{property.address}</strong>
+                            <span>{property.city}, FL · {buildLabel(property)}</span>
+                          </td>
+                          <td>{item.worstStormId}</td>
+                          <td>{item.peakGust.toFixed(1)} mph</td>
+                          <td>{formatCurrency(item.worstDamage)}</td>
+                          <td>{formatCurrency(item.worstPayout)}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -1046,146 +462,47 @@ function FullAnalysis({
             </>
           )}
 
-          {/* =========================
-              MITIGATION
-              ========================= */}
-
-          {activeTab === 'mitigation' && (
+          {/* ---------------- Upgrades ---------------- */}
+          {activeTab === 'upgrades' && (
             <>
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      MITIGATION EFFECT
-                    </span>
-
-                    <h3>
-                      Baseline vs Upgraded
-                      Insurer Payout
-                    </h3>
+                    <span>UPGRADES</span>
+                    <h3>What an upgrade would save</h3>
                   </div>
-
-                  <p>
-                    One modeled upgrade selected
-                    per property
-                  </p>
+                  <p>Insurance claims avoided across these storms, best upgrade per property</p>
                 </div>
 
                 <div className="analysis-metrics">
                   <div className="analysis-metric analysis-metric-accent">
-                    <span>
-                      Scenario-set avoided
-                      payout
-                    </span>
+                    <span>Claims avoided with upgrades</span>
+                    <strong>{formatCurrency(totalAvoidedPayout)}</strong>
+                  </div>
 
+                  <div className="analysis-metric">
+                    <span>Properties that would benefit</span>
                     <strong>
-                      {formatCurrency(
-                        totalAvoidedPayout,
-                      )}
+                      {propertiesThatBenefit} / {propertyCount}
                     </strong>
                   </div>
 
                   <div className="analysis-metric">
-                    <span>
-                      Mitigation opportunities
-                    </span>
-
-                    <strong>
-                      {
-                        mitigationOpportunities
-                      }{' '}
-                      / {properties.length}
-                    </strong>
-                  </div>
-
-                  <div className="analysis-metric">
-                    <span>
-                      Upgrade options modeled
-                    </span>
-
-                    <strong>
-                      {
-                        new Set(
-                          losses.rows.map(
-                            (row) =>
-                              row.upgrade_id,
-                          ),
-                        ).size
-                      }
-                    </strong>
+                    <span>Upgrades considered</span>
+                    <strong>{upgradesConsidered}</strong>
                   </div>
                 </div>
 
                 <div className="analysis-chart-card">
-                  <ResponsiveContainer
-                    width="100%"
-                    height={Math.max(
-                      280,
-                      properties.length * 80,
-                    )}
-                  >
-                    <BarChart
-                      data={
-                        mitigationSummaries
-                      }
-                      layout="vertical"
-                      margin={{
-                        top: 15,
-                        right: 35,
-                        left: 25,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        horizontal={false}
-                      />
-
-                      <XAxis
-                        type="number"
-                        tickFormatter={
-                          formatCompactCurrency
-                        }
-                        tickLine={false}
-                        axisLine={false}
-                      />
-
-                      <YAxis
-                        type="category"
-                        dataKey="address"
-                        width={145}
-                        tickLine={false}
-                      />
-
-                      <Tooltip
-                        formatter={(
-                          value,
-                        ) =>
-                          formatCurrency(
-                            Number(value),
-                          )
-                        }
-                      />
-
+                  <ResponsiveContainer width="100%" height={Math.max(280, propertyCount * 80)}>
+                    <BarChart data={upgradeSummaries} layout="vertical" margin={{ top: 15, right: 35, left: 25, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                      <XAxis type="number" tickFormatter={formatCompactCurrency} tickLine={false} axisLine={false} />
+                      <YAxis type="category" dataKey="address" width={145} tickLine={false} />
+                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                       <Legend />
-
-                      <Bar
-                        dataKey="baselinePayout"
-                        name="Baseline Payout"
-                        fill="#0b2748"
-                        radius={[
-                          0, 5, 5, 0,
-                        ]}
-                      />
-
-                      <Bar
-                        dataKey="upgradedPayout"
-                        name="Upgraded Payout"
-                        fill="#2f80ed"
-                        radius={[
-                          0, 5, 5, 0,
-                        ]}
-                      />
+                      <Bar dataKey="baselinePayout" name="Covered by insurance, as is" fill="#0b2748" radius={[0, 5, 5, 0]} />
+                      <Bar dataKey="upgradedPayout" name="With the best upgrade" fill="#2f80ed" radius={[0, 5, 5, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1194,15 +511,10 @@ function FullAnalysis({
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      UPGRADE EFFECTIVENESS
-                    </span>
-
-                    <h3>
-                      Property Mitigation
-                      Detail
-                    </h3>
+                    <span>UPGRADE DETAIL</span>
+                    <h3>Property by property</h3>
                   </div>
+                  <p>Every upgrade the home could get, with what it would save</p>
                 </div>
 
                 <div className="analysis-table-wrapper">
@@ -1210,141 +522,94 @@ function FullAnalysis({
                     <thead>
                       <tr>
                         <th>Property</th>
-                        <th>
-                          Selected Upgrade
-                        </th>
-                        <th>
-                          Baseline Payout
-                        </th>
-                        <th>
-                          Upgraded Payout
-                        </th>
-                        <th>
-                          Avoided Payout
-                        </th>
+                        <th>Best upgrade</th>
+                        <th>Claims as is</th>
+                        <th>With upgrade</th>
+                        <th>Saved</th>
                       </tr>
                     </thead>
-
                     <tbody>
-                      {mitigationSummaries.map(
-                        (item) => (
-                          <tr
-                            key={
-                              item.propertyId
-                            }
-                          >
-                            <td>
-                              <strong>
-                                {item.address}
-                              </strong>
-
-                              <span>
-                                {item.city}, FL
+                      {upgradeSummaries.map(({ property, installed, best, candidates, ...item }) => (
+                        <tr key={property.id}>
+                          <td>
+                            <strong>{property.address}</strong>
+                            <span>
+                              {buildLabel(property)}
+                              {installed.length > 0 && ` · already has ${featureLabel(installed).toLowerCase()}`}
+                            </span>
+                          </td>
+                          <td>
+                            {best ? best.label : <span className="analysis-muted">No upgrade changes the outcome</span>}
+                            {candidates.length > 1 && best && (
+                              <span className="analysis-breakdown">
+                                {candidates.map((c) => `${c.label} ${formatCurrency(c.avoidedPayout)}`).join(' · ')}
                               </span>
-                            </td>
-
-                            <td>
-                              {item.upgradeId
-                                ? formatUpgradeName(
-                                    item.upgradeId,
-                                  )
-                                : '—'}
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                item.baselinePayout,
-                              )}
-                            </td>
-
-                            <td>
-                              {formatCurrency(
-                                item.upgradedPayout,
-                              )}
-                            </td>
-
-                            <td className="analysis-savings">
-                              {formatCurrency(
-                                item.avoidedPayout,
-                              )}
-                            </td>
-                          </tr>
-                        ),
-                      )}
+                            )}
+                          </td>
+                          <td>{formatCurrency(item.baselinePayout)}</td>
+                          <td>{formatCurrency(item.upgradedPayout)}</td>
+                          <td className="analysis-savings">{best ? formatCurrency(item.avoidedPayout) : '—'}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
 
                 <div className="analysis-callout">
-                  <strong>
-                    Investment analysis pending
-                  </strong>
-
+                  <strong>What this does not include yet</strong>
                   <p>
-                    Annual event rates, upgrade
-                    costs, insurer contributions
-                    and finance assumptions are
-                    needed before calculating
-                    expected annual claim
-                    savings, payback or NPV.
+                    Upgrade prices, how often storms like these happen, and financing. Those decide whether an
+                    upgrade pays for itself. The Insurer Lab explores that side with a sample insurer.
                   </p>
                 </div>
               </section>
             </>
           )}
 
-          {/* =========================
-              MODEL DETAILS
-              ========================= */}
-
-          {activeTab === 'model' && (
+          {/* ---------------- Details ---------------- */}
+          {activeTab === 'details' && (
             <>
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      MODEL INFORMATION
-                    </span>
-
-                    <h3>
-                      Run & Evidence Details
-                    </h3>
+                    <span>HOW THESE NUMBERS ARE MADE</span>
+                    <h3>In short</h3>
                   </div>
                 </div>
 
+                <ul className="analysis-detail-list">
+                  <li>
+                    Each storm's track gives a peak wind at every property. Published damage curves (FEMA
+                    Hazus) turn that wind into a share of the building's value that would need repair,
+                    depending on whether the home was built before or after Florida's 2002 building code,
+                    its roof shape, and which storm protections it has.
+                  </li>
+                  <li>
+                    "Covered by insurance" is the repair cost above a 5% deductible, up to the home's value.
+                    The rest is paid by the owner.
+                  </li>
+                  <li>
+                    Each storm is counted on its own, as if the home were fully repaired before the next
+                    one. Nothing here says how likely any of these storms is.
+                  </li>
+                </ul>
+
                 <div className="model-detail-grid">
                   <div>
-                    <span>
-                      Schema version
-                    </span>
-                    <strong>
-                      {losses.schema_version}
-                    </strong>
+                    <span>Run</span>
+                    <strong>{losses.run_id}</strong>
                   </div>
-
                   <div>
-                    <span>Run ID</span>
-                    <strong>
-                      {losses.run_id}
-                    </strong>
+                    <span>Storm set</span>
+                    <strong>{losses.catalog_id}</strong>
                   </div>
-
                   <div>
-                    <span>Catalog ID</span>
-                    <strong>
-                      {losses.catalog_id}
-                    </strong>
+                    <span>Damage data</span>
+                    <strong>{losses.evidence_status === 'sourced' ? 'Published (FEMA Hazus)' : 'Placeholder assumptions'}</strong>
                   </div>
-
                   <div>
-                    <span>
-                      Evidence status
-                    </span>
-                    <strong>
-                      {
-                        losses.evidence_status
-                      }
-                    </strong>
+                    <span>Format</span>
+                    <strong>v{losses.schema_version}</strong>
                   </div>
                 </div>
               </section>
@@ -1352,65 +617,38 @@ function FullAnalysis({
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>
-                      ASSUMPTIONS
-                    </span>
-
-                    <h3>
-                      Modeling Assumptions
-                    </h3>
+                    <span>FINE PRINT</span>
+                    <h3>Assumptions</h3>
                   </div>
                 </div>
 
-                {losses.assumptions.length >
-                0 ? (
+                {losses.assumptions.length > 0 ? (
                   <ul className="analysis-detail-list">
-                    {losses.assumptions.map(
-                      (
-                        assumption,
-                        index,
-                      ) => (
-                        <li key={index}>
-                          {assumption}
-                        </li>
-                      ),
-                    )}
+                    {losses.assumptions.map((assumption, index) => (
+                      <li key={index}>{assumption}</li>
+                    ))}
                   </ul>
                 ) : (
-                  <p>
-                    No assumptions were returned
-                    by this run.
-                  </p>
+                  <p>None reported for this run.</p>
                 )}
               </section>
 
               <section className="analysis-section">
                 <div className="analysis-section-heading">
                   <div>
-                    <span>WARNINGS</span>
-
-                    <h3>
-                      Model Limitations
-                    </h3>
+                    <span>CAVEATS</span>
+                    <h3>Things to know about this run</h3>
                   </div>
                 </div>
 
-                {losses.warnings.length >
-                0 ? (
+                {losses.warnings.length > 0 ? (
                   <ul className="analysis-detail-list analysis-warning-list">
-                    {losses.warnings.map(
-                      (warning, index) => (
-                        <li key={index}>
-                          {warning}
-                        </li>
-                      ),
-                    )}
+                    {losses.warnings.map((warning, index) => (
+                      <li key={index}>{warning}</li>
+                    ))}
                   </ul>
                 ) : (
-                  <p>
-                    No warnings were returned by
-                    this run.
-                  </p>
+                  <p>Nothing flagged for this run.</p>
                 )}
               </section>
             </>
@@ -1418,20 +656,9 @@ function FullAnalysis({
         </div>
 
         <div className="analysis-footer">
-          <span>
-            Independent-event payout
-            approximation
-          </span>
-
-          <span>
-            Before reinsurance, taxes, and
-            capital effects
-          </span>
-
-          <span>
-            Evidence status:{' '}
-            {losses.evidence_status}
-          </span>
+          <span>Each storm counted on its own</span>
+          <span>Estimates, not a forecast</span>
+          <span>Covered by insurance = repair cost above the deductible, up to the home's value</span>
         </div>
       </div>
     </div>

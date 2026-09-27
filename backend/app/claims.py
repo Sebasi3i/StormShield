@@ -5,7 +5,7 @@ residential building per property, direct wind damage to the building, one simpl
 coverage and deductible, mutually exclusive upgrades. Each row is an INDIVIDUAL storm,
 not a simulated year: losses are computed independently per storm, the deductible
 resets, and the building is assumed fully repaired before each event. Annual event
-rates are Adryel's input and Developer 2's to apply - nothing here attaches an annual
+rates are a separate input, applied downstream - nothing here attaches an annual
 probability to anything.
 
 Results are illustrative gross insurer payouts before reinsurance.
@@ -101,6 +101,12 @@ class Curve(NamedTuple):
     # roof shape is unknown). Defaults to "blended" so a curve built without this field
     # - every test fixture written before roof shape existed - behaves exactly as before.
     roof_shape: str = BLENDED_ROOF_SHAPE
+    # The mitigation features this curve's building has installed ("roof_straps",
+    # "shutters"), sorted, as the curve builder derives them from the Hazus
+    # configuration. None for a curve set built without the field: such a set still
+    # prices upgrades by upgrade_id, but cannot answer "which curve is this physical
+    # state" (see mitigation_states.py).
+    features: tuple[str, ...] | None = None
 
     @property
     def max_supported_wind(self) -> float:
@@ -212,6 +218,7 @@ def load_curve_set(path: str | None = None) -> dict:
             evidence_status=entry["evidence_status"],
             source_note=entry["source_note"],
             roof_shape=entry.get("roof_shape", BLENDED_ROOF_SHAPE),
+            features=tuple(sorted(entry["features"])) if entry.get("features") is not None else None,
         )
         validate_curve(curve)
         key = (curve.vulnerability_class, curve.upgrade_id, curve.roof_shape)
@@ -641,11 +648,19 @@ def compute_losses(
                         f"{upgrade_curve.curve_id}."
                     )
 
+                # What the home has and what this upgrade adds, read off the curves'
+                # feature lists so a client can label an upgrade by what it changes
+                # (a post-2002 home already has straps; "shutters" adds shutters only).
+                known_features = baseline_curve.features is not None and upgrade_curve.features is not None
                 rows.append(
                     {
                         "storm_id": storm_id,
                         "property_id": prop.property_id,
                         "upgrade_id": upgrade_id,
+                        "installed_features": list(baseline_curve.features) if baseline_curve.features is not None else None,
+                        "features_added": (
+                            sorted(set(upgrade_curve.features) - set(baseline_curve.features)) if known_features else None
+                        ),
                         "peak_gust_mph": round(exposure.peak_gust_mph, 1),
                         "baseline_damage_usd": _money(baseline_damage),
                         "upgraded_damage_usd": _money(upgraded_damage),

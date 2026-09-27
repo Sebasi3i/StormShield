@@ -91,7 +91,9 @@ version 1.1, snake_case, documented at `/docs`.
 - `GET /api/v1/storm-losses/example` — a complete worked run, no request body needed.
   Takes `?storm_id=`; defaults to the Category 4 Miami landfall.
 - `POST /api/v1/storm-losses` — the contract. Accepts the frontend `Property` shape
-  (`id`, `value`, `latitude`, `longitude`) directly. Optional `storms` prices storms
+  (`id`, `value`, `latitude`, `longitude`, plus `vulnerability_class` and `roof_shape`)
+  directly, and every row says which features the home already has and which the
+  upgrade adds, so a client can label an upgrade by what it changes. Optional `storms` prices storms
   sent with the request (such as generated ones) instead of the stored catalog.
 - `GET /api/v1/storm-catalog` — the storms available to price, with animatable tracks.
 - `GET /api/v1/damage-curves` — the curves and policy template, with their provenance.
@@ -129,6 +131,70 @@ consumes wind exposures rather than tracks.
 wheel in `backend/vendor/`, update its pin, and reinstall. After a `wind-field`
 upgrade, also regenerate `app/fixtures/sample_storm_losses_response.json` with the
 command in `tests/test_storm_losses_api.py`.
+
+### Sample insurer — premium credits for mitigation
+
+The groundwork for the Insurer Lab: a fictional insurer covering the ten demo
+properties, with the workbook's premium-credit tiers and project quotes, so avoided
+payouts can later be set against the premium an insurer gives up to encourage upgrades.
+Endpoints, all under the same prefix as the rest of the API and documented at `/docs`:
+
+- `GET /api/v1/insurer/demo` — the insurer, its ten policies joined to the demo
+  portfolio, both presets, the credit plan, proposals, program defaults, the storms
+  that can be run, and provenance. Everything a client needs to build a request.
+- `POST /api/v1/insurer/compare` — current book versus the selected projects,
+  homeowner-funded and co-funded, per storm. Optional `annual_model`,
+  `selected_proposal_ids`, `policy_ids`, `program` overrides and a `deductible_fraction`
+  sensitivity. Bad ids, state conflicts and a malformed annual model are 422s that
+  name the input.
+- `POST /api/v1/insurer/optimize` — the same request under the `one_event_or_none`
+  model, plus the budget selection and the comparison re-run on the chosen subset.
+
+- `app/premium.py` — feature union -> credit -> wind premium, effective project cost,
+  grants and the homeowner's premium-only payback. Credits are looked up for the union
+  of credited features (both features earn 25%, not 8% + 12%); a quote covers new
+  features only, and an unknown cost is null with a reason, never zero.
+- `app/fixtures/insurer_policies.json`, `premium_credit_plan.json`, `insurer_demo.json`
+  — ten policies joined to the demo portfolio, the credit plan, and two presets:
+  `workbook_reference` (the workbook as written, premium-only) and the default
+  `app_consistent_demo` (post-2002 homes have their class-inherent roof straps installed
+  and credited at baseline, a demo assumption applied to both arms).
+- `app/mitigation_states.py` — prices a policy's home as it is and as its project
+  leaves it, on the same wind: one current/resulting pair per policy and event, no-op
+  pairs included, with payout and uninsured damage split out so a deductible change
+  shows as a transfer. A home that already has straps and adds shutters is compared
+  straps-curve to package-curve, never baseline to a sum of two reductions. For that
+  the curve set gained the pre-2002 shutters-plus-straps package (15 -> 18 curves), and
+  every curve now records the features its building has; the package is also offered
+  by `POST /api/v1/storm-losses` as the upgrade `shutters_roof_straps`.
+- `app/insurer.py` — the economics: three arms (current book, homeowner-funded,
+  insurer co-funded) on the same selected projects and the same wind, each catalog
+  storm reported as an alternative event and never added across storms. A conditional
+  "if this storm occurs in the first policy year" figure is always available. Annual
+  figures (expected avoided payout, insurer NPV, break-even avoided payout, and the
+  break-even annual event probability) exist only under the explicit
+  `one_event_or_none` model, whose probability and storm weights are an invented,
+  editable demo assumption carried back with every result. `optimize` enumerates every
+  subset of the costed proposals and picks the highest insurer NPV within the upfront
+  budget, the empty subset included.
+- `scripts/import_insurer_workbook.py` — rebuilds those fixtures from
+  `data/insurer_demo/workbook_extract.json`, checks the join to the portfolio field by
+  field, and refuses to write unless the engine reproduces the workbook's totals to the
+  cent ($105,895.00 -> $88,526.60 current-to-result wind premium for the reference
+  preset; $104,436.40 -> $87,476.85 for the normalized one). `--workbook` verifies a
+  local copy of the spreadsheet against the recorded hash.
+
+The dashboard's **Insurer Lab** (the switch in the header) is the client for these.
+It opens on the policies for whatever is selected on the map, or the whole book when
+nothing is, runs the comparison straight away, and lets you widen or narrow the book
+from a checklist: the book and its proposals with tick boxes, an assumptions drawer that edits the
+program and the deductible sensitivity, each storm as an alternative event with a
+policy drill-down, the three program arms side by side, an explicit switch for the
+illustrative annual assumptions that reveals NPV and break-even, "Optimize within
+budget", and JSON/CSV export. Settings persist in the browser; "Reset to seed" restores
+the specification's defaults. All arithmetic is the server's; the screen formats it.
+
+Every rate, credit, zone, quote and policy term is an illustrative workbook input.
 
 ### Generating storms
 
@@ -214,15 +280,19 @@ backend/            FastAPI service, risk engine, ETL scripts
     schemas.py      Request and response contracts
     risk.py         County risk model and mitigation economics
     claims.py       Damage and insurer payout engine (pure, no HTTP)
+    premium.py      Sample insurer: mitigation credits -> wind premium, quotes, grants (pure)
+    mitigation_states.py  Sample insurer: current vs upgraded physical state on the same wind (pure)
+    insurer.py      Sample insurer: program arms, event results, annual NPV, budget optimizer (pure)
     wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?
-    fixtures/       Curves, policy template, storm catalog, sample response
+    fixtures/       Curves, policy template, storm catalog, sample response, insurer demo
   scripts/          Adapters that import outside data, and the calibration fits
   tests/            pytest suite
   vendor/           wind_field and hurricane_simulator wheels (not on PyPI)
   requirements.txt  Pinned dependencies
 data/calibration/   Station observations the wind constants are fitted to
+data/insurer_demo/  Workbook extract the sample-insurer fixtures are built from
 data/raw/           Downloaded source datasets (gitignored)
 data/processed/     Build artifacts (gitignored except published profiles)
 docs/               Calibration notes: what each constant rests on

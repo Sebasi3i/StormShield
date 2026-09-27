@@ -7,6 +7,10 @@ export interface StormLossRow {
   storm_id: string
   property_id: string
   upgrade_id: string
+  // What the home already has, and what this upgrade adds on top of it. Null when the
+  // curve set does not record features.
+  installed_features: string[] | null
+  features_added: string[] | null
   peak_gust_mph: number
   baseline_damage_usd: number
   upgraded_damage_usd: number

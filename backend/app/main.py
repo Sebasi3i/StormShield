@@ -19,7 +19,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import claims, generator, risk, wind
+from . import claims, generator, insurer, premium, risk, wind
 from .schemas import (
     CountyConcentration,
     CountyDetail,
@@ -28,6 +28,8 @@ from .schemas import (
     GenerateFloridaStormsRequest,
     GenerateStormsRequest,
     HurricaneCategoryInfo,
+    InsurerCompareRequest,
+    InsurerOptimizeRequest,
     MitigationRequest,
     ModelMeta,
     PortfolioAnalysis,
@@ -860,6 +862,7 @@ def damage_curves() -> dict:
                 "vulnerability_class": curve.vulnerability_class,
                 "upgrade_id": curve.upgrade_id,
                 "roof_shape": curve.roof_shape,
+                "features": list(curve.features) if curve.features is not None else None,
                 "wind_metric": curve.wind_metric,
                 "evidence_status": curve.evidence_status,
                 "source_note": curve.source_note,
@@ -935,3 +938,86 @@ def storm_losses(request: StormLossRequest) -> dict:
         request.eligible_options,
         catalog=_supplied_catalog(request.storms) if request.storms else None,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Sample insurer - premium credits for mitigation, schema insurer-demo-v1
+#
+# A fictional insurer on the ten demo properties: does the premium it gives up to
+# encourage upgrades come back as avoided payouts? The calculations live in
+# app/insurer.py (economics), app/premium.py (credits and quotes) and
+# app/mitigation_states.py (current vs upgraded physical state); these endpoints only
+# validate, call and translate rejections into 422s that name the offending input.
+# --------------------------------------------------------------------------- #
+
+
+def _insurer_kwargs(request: InsurerCompareRequest) -> dict:
+    return {
+        "preset_id": request.preset_id,
+        "policy_ids": request.policy_ids,
+        "storm_ids": request.storm_ids,
+        "selected_proposal_ids": request.selected_proposal_ids,
+        "program": request.program.model_dump(),
+        "annual_model": request.annual_model.model_dump(),
+        "deductible_fraction": request.deductible_fraction,
+    }
+
+
+def _insurer_call(function, request: InsurerCompareRequest) -> dict:
+    try:
+        return function(**_insurer_kwargs(request))
+    except (insurer.InsurerError, premium.PremiumError, claims.EngineError) as error:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": str(error), "error": type(error).__name__},
+        ) from error
+
+
+@app.get(f"{API_PREFIX}/v1/insurer/demo", tags=["sample insurer"])
+def insurer_demo() -> dict:
+    """The fictional insurer, its ten policies joined to the demo portfolio, both input
+    presets, the credit plan, the proposals, the program defaults, the storms that can
+    be run, and the provenance and normalization notes. Everything a client needs to
+    build a compare request."""
+    demo = premium.load_insurer_demo()
+    book = premium.load_policies()
+    plan = premium.load_credit_plan()
+    catalog = wind.load_catalog()
+    return {
+        "schema_version": insurer.SCHEMA_VERSION,
+        "insurer": demo["insurer"],
+        "default_preset_id": demo["default_preset_id"],
+        "presets": demo["presets"],
+        "credit_plan": plan,
+        "program_defaults": demo["program"],
+        "program_note": demo["program_note"],
+        "annual_model_default": demo["annual_model"],
+        "optional_annual_preset": demo["optional_annual_preset"],
+        "deductible_sensitivity_fractions": demo["deductible_sensitivity_fractions"],
+        "policy_plan_id": demo["policy_plan_id"],
+        "policies": book["policies"],
+        "frontend_property_map": book["frontend_property_map"],
+        "policies_note": book["note"],
+        "available_storm_ids": catalog["storm_ids"],
+        "storm_catalog_id": catalog["catalog_id"],
+        "reference_totals": demo["reference_totals"],
+        "provenance": demo["provenance"],
+    }
+
+
+@app.post(f"{API_PREFIX}/v1/insurer/compare", tags=["sample insurer"])
+def insurer_compare(request: InsurerCompareRequest) -> dict:
+    """Current book versus the selected projects, homeowner-funded and co-funded, on
+    each requested storm. Annual economics only under the one_event_or_none model;
+    event-only mode returns them as null with the reason. Incomplete quote data
+    returns 200 with valid physical and premium outputs and `complete: false`."""
+    return _insurer_call(insurer.compare, request)
+
+
+@app.post(f"{API_PREFIX}/v1/insurer/optimize", tags=["sample insurer"])
+def insurer_optimize(request: InsurerOptimizeRequest) -> dict:
+    """The compare request under the one_event_or_none model, plus the subset of
+    costed proposals with the highest insurer NPV within the upfront budget, and the
+    comparison re-run on that subset. "No funded projects improve the modeled insurer
+    result" is a valid outcome."""
+    return _insurer_call(insurer.optimize, request)

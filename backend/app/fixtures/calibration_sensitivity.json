@@ -1,6 +1,6 @@
 {
   "calibration_sensitivity_id": "fl-asos-cohort-sensitivity-v1",
-  "generated_at": "2026-09-27T06:30:01Z",
+  "generated_at": "2026-09-27T09:34:19Z",
   "script": "backend/scripts/compare_calibration_cohorts.py",
   "cohort_policy_note": "The primary (2016-2024) cohort is the predetermined production policy. This report measures whether the combined-cohort or factor-only alternatives score better or worse; it does not select a policy from whichever alternative happens to score best on the same held-out observations, and a material deterioration here is a finding to review, not a reason to change the assertion in this note.",
   "scenarios": {
@@ -592,7 +592,7 @@
   },
   "payout_comparison": {
     "config_held_constant": {
-      "curve_set_id": "hazus-msf1-suburban-v2",
+      "curve_set_id": "hazus-msf1-suburban-v3",
       "policy_template": {
         "policy_template_id": "fl-illustrative-5pct-v1",
         "label": "Illustrative Florida homeowners policy - 5% hurricane deductible",
@@ -654,40 +654,47 @@
       "eligible_upgrades_by_property": {
         "P001": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ],
         "P002": [
           "shutters"
         ],
         "P003": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ],
         "P004": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ],
         "P005": [
           "shutters"
         ],
         "P006": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ],
         "P007": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ],
         "P008": [
           "shutters"
         ],
         "P009": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ],
         "P010": [
           "roof_straps",
-          "shutters"
+          "shutters",
+          "shutters_roof_straps"
         ]
       },
       "storm_ids": [
@@ -748,11 +755,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 226887.62
+              },
+              "shutters_roof_straps": {
+                "P001": 323217.6,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 256754.88
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 353622.4,
-              "shutters": 711279.17
+              "shutters": 711279.17,
+              "shutters_roof_straps": 579972.48
             }
           },
           "factor_only": {
@@ -802,11 +819,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 222085.53
+              },
+              "shutters_roof_straps": {
+                "P001": 312209.76,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 248013.36
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 352323.1,
-              "shutters": 682282.41
+              "shutters": 682282.41,
+              "shutters_roof_straps": 560223.12
             }
           },
           "combined": {
@@ -856,11 +883,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 200433.96
+              },
+              "shutters_roof_straps": {
+                "P001": 278198.2,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 220784.94
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 336464.18,
-              "shutters": 587483.72
+              "shutters": 587483.72,
+              "shutters_roof_straps": 498983.14
             }
           },
           "current_production": {
@@ -910,11 +947,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 231332.63
+              },
+              "shutters_roof_straps": {
+                "P001": 330713.75,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 262726.88
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 348949.73,
-              "shutters": 763707.24
+              "shutters": 763707.24,
+              "shutters_roof_straps": 593440.63
             }
           }
         },
@@ -1099,6 +1146,41 @@
                   "absolute_usd": -4802.09,
                   "relative": -0.0212
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": -11007.84,
+                  "relative": -0.0341
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -8741.52,
+                  "relative": -0.034
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -1109,6 +1191,10 @@
               "shutters": {
                 "absolute_usd": -28996.76,
                 "relative": -0.0408
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": -19749.36,
+                "relative": -0.0341
               }
             }
           },
@@ -1292,6 +1378,41 @@
                   "absolute_usd": -26453.66,
                   "relative": -0.1166
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": -45019.4,
+                  "relative": -0.1393
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -35969.94,
+                  "relative": -0.1401
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -1302,6 +1423,10 @@
               "shutters": {
                 "absolute_usd": -123795.45,
                 "relative": -0.174
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": -80989.34,
+                "relative": -0.1396
               }
             }
           },
@@ -1485,6 +1610,41 @@
                   "absolute_usd": 4445.01,
                   "relative": 0.0196
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 7496.15,
+                  "relative": 0.0232
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 5972.0,
+                  "relative": 0.0233
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -1495,6 +1655,10 @@
               "shutters": {
                 "absolute_usd": 52428.07,
                 "relative": 0.0737
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": 13468.15,
+                "relative": 0.0232
               }
             }
           }
@@ -1549,11 +1713,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 35495.03,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 24730.72,
-              "shutters": 32808.39
+              "shutters": 32808.39,
+              "shutters_roof_straps": 35495.03
             }
           },
           "factor_only": {
@@ -1603,11 +1777,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 25532.88,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 17653.16,
-              "shutters": 24308.41
+              "shutters": 24308.41,
+              "shutters_roof_straps": 25532.88
             }
           },
           "combined": {
@@ -1657,11 +1841,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 3377.9,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 3377.9,
-              "shutters": 3377.9
+              "shutters": 3377.9,
+              "shutters_roof_straps": 3377.9
             }
           },
           "current_production": {
@@ -1711,11 +1905,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 52396.58,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 37382.92,
-              "shutters": 48048.54
+              "shutters": 48048.54,
+              "shutters_roof_straps": 52396.58
             }
           }
         },
@@ -1905,6 +2109,42 @@
                   "relative": null,
                   "relative_null_reason": "reference avoided payout is zero"
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": -9962.15,
+                  "relative": -0.2807
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -1915,6 +2155,10 @@
               "shutters": {
                 "absolute_usd": -8499.98,
                 "relative": -0.2591
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": -9962.15,
+                "relative": -0.2807
               }
             }
           },
@@ -2103,6 +2347,42 @@
                   "relative": null,
                   "relative_null_reason": "reference avoided payout is zero"
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": -32117.13,
+                  "relative": -0.9048
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -2113,6 +2393,10 @@
               "shutters": {
                 "absolute_usd": -29430.49,
                 "relative": -0.897
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": -32117.13,
+                "relative": -0.9048
               }
             }
           },
@@ -2301,6 +2585,42 @@
                   "relative": null,
                   "relative_null_reason": "reference avoided payout is zero"
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 16901.55,
+                  "relative": 0.4762
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -2311,6 +2631,10 @@
               "shutters": {
                 "absolute_usd": 15240.15,
                 "relative": 0.4645
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": 16901.55,
+                "relative": 0.4762
               }
             }
           }
@@ -2365,11 +2689,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 0.0,
-              "shutters": 0.0
+              "shutters": 0.0,
+              "shutters_roof_straps": 0.0
             }
           },
           "factor_only": {
@@ -2419,11 +2753,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 0.0,
-              "shutters": 0.0
+              "shutters": 0.0,
+              "shutters_roof_straps": 0.0
             }
           },
           "combined": {
@@ -2473,11 +2817,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 0.0,
-              "shutters": 0.0
+              "shutters": 0.0,
+              "shutters_roof_straps": 0.0
             }
           },
           "current_production": {
@@ -2527,11 +2881,21 @@
                 "P008": 0.0,
                 "P009": 0.0,
                 "P010": 0.0
+              },
+              "shutters_roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
               "roof_straps": 0.0,
-              "shutters": 0.0
+              "shutters": 0.0,
+              "shutters_roof_straps": 0.0
             }
           }
         },
@@ -2725,6 +3089,43 @@
                   "relative": null,
                   "relative_null_reason": "reference avoided payout is zero"
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -2734,6 +3135,11 @@
                 "relative_null_reason": "reference portfolio avoided payout is zero"
               },
               "shutters": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              },
+              "shutters_roof_straps": {
                 "absolute_usd": 0.0,
                 "relative": null,
                 "relative_null_reason": "reference portfolio avoided payout is zero"
@@ -2929,6 +3335,43 @@
                   "relative": null,
                   "relative_null_reason": "reference avoided payout is zero"
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -2938,6 +3381,11 @@
                 "relative_null_reason": "reference portfolio avoided payout is zero"
               },
               "shutters": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              },
+              "shutters_roof_straps": {
                 "absolute_usd": 0.0,
                 "relative": null,
                 "relative_null_reason": "reference portfolio avoided payout is zero"
@@ -3133,6 +3581,43 @@
                   "relative": null,
                   "relative_null_reason": "reference avoided payout is zero"
                 }
+              },
+              "shutters_roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
               }
             },
             "portfolio_avoided_payout_usd_by_upgrade": {
@@ -3145,6 +3630,11 @@
                 "absolute_usd": 0.0,
                 "relative": null,
                 "relative_null_reason": "reference portfolio avoided payout is zero"
+              },
+              "shutters_roof_straps": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
               }
             }
           }
@@ -3154,7 +3644,7 @@
   },
   "hashes": {
     "example_portfolio_sha256": "b3f21f0d34e5a40b480cdebf18c02df0b7c8d5d0f4a52afbd9bf142fcfe91d2b",
-    "damage_curves_sha256": "f05da581b64c2b5035e4ac0185f399d55108d30cbcbe1486bc288221be489ffe",
+    "damage_curves_sha256": "401853101cb77b8b62c43eb3c53eeaca397bb08534736dc9badcbc55e6ac44f8",
     "gust_pairs_sha256": "1fdd0da37aaefecc52c1b691613c502b2557e45bd08270c78ba28b3937c55bc4"
   }
 }

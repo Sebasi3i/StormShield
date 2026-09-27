@@ -18,6 +18,7 @@ import type {
   StormTrackPoint,
 } from '../types/Storm'
 import { getStormColor } from '../utils/stormColors'
+import { buildLabel } from '../utils/propertyLabels'
 import 'leaflet/dist/leaflet.css'
 
 interface PropertyMapProps {
@@ -657,6 +658,8 @@ function PropertyMap({
                 <p>
                   {property.county} County
                 </p>
+
+                <p>{buildLabel(property)}</p>
 
                 <p>
                   $

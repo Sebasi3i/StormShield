@@ -527,6 +527,17 @@ class StormLossRow(BaseModel):
     storm_id: str
     property_id: str
     upgrade_id: str
+    installed_features: list[str] | None = Field(
+        default=None,
+        description="Mitigation features the home has in its baseline state, from the "
+        "baseline curve (a post_fbc_2002 home has roof_straps by construction). Null "
+        "for a curve set that does not record features.",
+    )
+    features_added: list[str] | None = Field(
+        default=None,
+        description="What this upgrade adds on top of installed_features; label an "
+        "upgrade by this rather than by upgrade_id.",
+    )
     peak_gust_mph: float
     baseline_damage_usd: float
     upgraded_damage_usd: float
@@ -628,3 +639,61 @@ class GenerateFloridaStormsRequest(BaseModel):
         if self.min_florida_hits > self.count:
             raise ValueError("min_florida_hits cannot exceed count.")
         return self
+
+
+# --------------------------------------------------------------------------- #
+# Sample insurer - premium credits for mitigation, schema insurer-demo-v1
+# --------------------------------------------------------------------------- #
+
+
+class InsurerProgramInput(BaseModel):
+    """Funding and program assumptions. Every default is the specification's demo
+    assumption, not a workbook input."""
+
+    grant_share: float = Field(default=0.25, ge=0, le=1, description="Share of each project's effective cost the insurer grants.")
+    grant_cap_usd: float = Field(default=2500, ge=0)
+    inspection_usd_per_project: float = Field(default=100, ge=0)
+    fixed_setup_usd: float = Field(default=500, ge=0, description="Charged once per program, only if at least one project proceeds.")
+    annual_admin_usd: float = Field(default=0, ge=0)
+    budget_usd: float = Field(default=20000, ge=0, description="Upfront insurer budget: grants, inspections and setup.")
+    horizon_years: int = Field(default=10, ge=1, le=30)
+    discount_rate: float = Field(default=0.05, ge=0, le=1)
+
+
+class EventOnlyAnnualModel(BaseModel):
+    kind: Literal["event_only"] = "event_only"
+
+
+class OneEventOrNoneAnnualModel(BaseModel):
+    """At most one catalog event per year, with an explicit, invented probability."""
+
+    kind: Literal["one_event_or_none"]
+    annual_event_probability: float = Field(ge=0, le=1)
+    conditional_storm_weights: dict[str, float] = Field(
+        description="One nonnegative weight per storm being run; must name exactly those storms and sum to more than zero."
+    )
+
+
+class InsurerCompareRequest(BaseModel):
+    """Compare the current book with the selected projects, homeowner-funded and
+    insurer co-funded, on the requested catalog storms."""
+
+    preset_id: str | None = Field(default=None, description="Defaults to the fixture's default preset (app_consistent_demo).")
+    policy_ids: list[str] | None = Field(default=None, description="Defaults to every policy in the book.")
+    storm_ids: list[str] | None = Field(default=None, description="Catalog storm ids. Defaults to the whole stored catalog.")
+    selected_proposal_ids: list[str] | None = Field(default=None, description="Defaults to every proposal on the chosen policies; [] selects none.")
+    policy_plan_id: Literal["demo-deductible-5pct"] = "demo-deductible-5pct"
+    deductible_fraction: float | None = Field(
+        default=None, ge=0, le=1,
+        description="Sensitivity: reprice every policy at this fraction of Coverage A with the premium held fixed.",
+    )
+    program: InsurerProgramInput = Field(default_factory=InsurerProgramInput)
+    annual_model: EventOnlyAnnualModel | OneEventOrNoneAnnualModel = Field(
+        default_factory=EventOnlyAnnualModel, discriminator="kind"
+    )
+
+
+class InsurerOptimizeRequest(InsurerCompareRequest):
+    """The same request; requires the one_event_or_none annual model."""
+
+    objective: Literal["insurer_npv"] = "insurer_npv"
