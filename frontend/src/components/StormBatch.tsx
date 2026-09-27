@@ -1,7 +1,8 @@
-import type { Storm } from '../types/Storm'
+import type { FloridaStormBatch, Storm } from '../types/Storm'
 import type { StormLossResponse } from '../types/StormLoss'
 
 interface StormBatchProps {
+  batch: FloridaStormBatch | null
   storms: Storm[]
   focusedStormId: string | null
   onFocusStorm: (stormId: string) => void
@@ -37,7 +38,12 @@ function baselinePayout(losses: StormLossResponse, stormId: string) {
   )
 }
 
+function formatCoordinate(value: number, positive: string, negative: string) {
+  return `${Math.abs(value).toFixed(1)}°${value >= 0 ? positive : negative}`
+}
+
 function StormBatch({
+  batch,
   storms,
   focusedStormId,
   onFocusStorm,
@@ -54,8 +60,21 @@ function StormBatch({
       </h2>
 
       <p className="generate-intro">
-        One origin, {storms.length} paths. Select a storm here or click its
-        track on the map for that storm's impact.
+        {batch
+          ? `One origin at ${formatCoordinate(
+              batch.generator.start.latitude,
+              'N',
+              'S',
+            )}, ${formatCoordinate(
+              batch.generator.start.longitude,
+              'E',
+              'W',
+            )} on ${batch.generator.start.date}, ${storms.length} paths, seed ${
+              batch.generator.seed
+            }. `
+          : ''}
+        Select a storm here or click its track on the map for that storm's
+        impact.
       </p>
 
       <ul className="storm-batch-list">
@@ -110,6 +129,8 @@ function StormBatch({
           )
         })}
       </ul>
+
+      {batch && <p className="storm-batch-warning">{batch.completeness_warning}</p>}
     </section>
   )
 }

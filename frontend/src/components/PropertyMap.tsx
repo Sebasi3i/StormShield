@@ -10,6 +10,7 @@ import {
 } from 'react-leaflet'
 
 import { Fragment, useEffect } from 'react'
+import { LatLngBounds } from 'leaflet'
 import type { Property } from '../types/Property'
 import type { Storm, StormStart } from '../types/Storm'
 import 'leaflet/dist/leaflet.css'
@@ -55,6 +56,38 @@ function MapResizeHandler() {
   return null
 }
 
+/*
+ * When a batch is simulated, zoom out so every track fits on one screen
+ * (with the properties), then leave the view alone so the person can pan.
+ * A single catalog storm keeps the Florida view it always had.
+ */
+function FitToStorms({ storms }: { storms: Storm[] }) {
+  const map = useMap()
+  const batchKey = storms.length > 1 ? storms.map((storm) => storm.storm_id).join(',') : ''
+
+  useEffect(() => {
+    if (!batchKey) {
+      return
+    }
+
+    const bounds = new LatLngBounds([])
+    storms.forEach((storm) =>
+      storm.track.forEach((point) =>
+        bounds.extend([point.latitude, point.longitude]),
+      ),
+    )
+    // Keep Florida in frame even if every track stays out at sea.
+    bounds.extend([31.0, -87.6])
+    bounds.extend([24.5, -80.0])
+
+    map.fitBounds(bounds, { padding: [40, 40] })
+    // Refit only when the batch changes, not on every animation step.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, batchKey])
+
+  return null
+}
+
 function PropertyMap({
   properties,
   selectedProperties,
@@ -82,6 +115,7 @@ function PropertyMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapResizeHandler />
+      <FitToStorms storms={storms} />
 
       {start && (
         <CircleMarker

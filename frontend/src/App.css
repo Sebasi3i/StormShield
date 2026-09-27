@@ -1670,3 +1670,117 @@
   font-size: 11px;
   font-weight: 600;
 }
+
+/* Generator settings under Storm Scenario */
+
+.storm-controls {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.storm-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.batch-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  padding-top: 8px;
+
+  border-top: 1px solid rgba(85, 167, 255, 0.25);
+}
+
+.batch-fields {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.batch-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  color: #9fb7d1;
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.batch-fields input {
+  width: 92px;
+  padding: 5px 8px;
+
+  background: #102b4a;
+  color: white;
+
+  border: 1px solid rgba(85, 167, 255, 0.45);
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.batch-fields input:focus {
+  outline: none;
+  border-color: var(--storm-blue-light);
+}
+
+.batch-new-seed {
+  padding: 6px 9px;
+
+  background: transparent;
+  color: var(--storm-blue-light);
+
+  border: 1px solid rgba(85, 167, 255, 0.45);
+  border-radius: 6px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.batch-new-seed:hover:not(:disabled) {
+  background: rgba(85, 167, 255, 0.15);
+}
+
+.batch-new-seed:disabled,
+.batch-fields input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.batch-hint {
+  max-width: 330px;
+  margin: 0;
+
+  color: #9fb7d1;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.storm-batch-warning {
+  margin: 10px 0 0;
+
+  color: var(--storm-muted);
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* The scenario controls sit over the map's top-left corner, beside the zoom
+   control, so the generator settings never cover the sidebar. */
+.storm-controls {
+  top: 18px;
+  right: auto;
+  left: 60px;
+}

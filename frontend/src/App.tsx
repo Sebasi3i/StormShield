@@ -14,8 +14,7 @@ import { getStormLosses, lossesForStorm } from './api/stormLosses'
 import StormImpact from './components/StormImpact'
 import StormBatch from './components/StormBatch'
 import FullAnalysis from './components/FullAnalysis'
-import GenerateStorms from './components/GenerateStorms'
-import type { GenerationOptions } from './components/GenerateStorms'
+import BatchSettings from './components/BatchSettings'
 import './App.css'
 
 // The Storm Scenario value that means "the whole generated batch".
@@ -45,7 +44,11 @@ function App() {
   const [stormError, setStormError] = useState<string | null>(null)
   const [analysisOpen, setAnalysisOpen] = useState(false)
 
-  // Florida batch generator.
+  // Florida batch generator: its settings live under Storm Scenario, and
+  // Simulate generates the batch (or reuses the one already generated for
+  // these settings) before running it.
+  const [batchSeed, setBatchSeed] = useState(42)
+  const [batchWindKt, setBatchWindKt] = useState(70)
   const [batch, setBatch] = useState<FloridaStormBatch | null>(null)
   const [generating, setGenerating] = useState(false)
   const [generationError, setGenerationError] = useState<string | null>(null)
@@ -100,25 +103,36 @@ function App() {
     setAnalysisOpen(false)
   }
 
-  const runGeneration = async (options: GenerationOptions) => {
+  // The batch for the current settings: the one already generated, or a new
+  // search. Returns null when generation failed (the error is shown).
+  const batchForSettings = async (): Promise<FloridaStormBatch | null> => {
+    if (
+      batch &&
+      batch.generator.seed === batchSeed &&
+      batch.generator.start.max_wind_kt === batchWindKt
+    ) {
+      return batch
+    }
+
     try {
       setGenerating(true)
       setGenerationError(null)
+      resetSimulation()
 
       const generated = await generateFloridaStorms({
-        seed: options.seed,
+        seed: batchSeed,
         count: 10,
-        max_wind_kt: options.maxWindKt,
+        max_wind_kt: batchWindKt,
         min_florida_hits: 2,
       })
 
       setBatch(generated)
-      setScenario(FLORIDA_BATCH)
-      resetSimulation()
+      return generated
     } catch (error) {
       setGenerationError(
         error instanceof Error ? error.message : 'Storm generation failed.',
       )
+      return null
     } finally {
       setGenerating(false)
     }
@@ -131,12 +145,14 @@ function App() {
     let supplied: Storm[] | undefined
 
     if (scenario === FLORIDA_BATCH) {
-      if (!batch) {
+      const current = await batchForSettings()
+
+      if (!current) {
         return
       }
 
-      storms = batch.storms
-      supplied = batch.storms
+      storms = current.storms
+      supplied = current.storms
     } else {
       const catalogStorm = catalog?.storms.find(
         (storm) => storm.storm_id === scenario,
@@ -254,10 +270,12 @@ function App() {
       </header>
 
       <section className="workspace">
+        <div className="map-container">
         <div className="storm-controls">
-          <label htmlFor="storm-select">Storm Scenario</label>
+          <div className="storm-controls-row">
+            <label htmlFor="storm-select">Storm Scenario</label>
 
-          <select
+            <select
             id="storm-select"
             value={scenario}
             onChange={(event) => {
@@ -281,17 +299,33 @@ function App() {
               )}
             </optgroup>
 
-            {batch && (
-              <optgroup label="Generated">
-                <option value={FLORIDA_BATCH}>
-                  Florida batch · {batch.storms.length} storms · seed{' '}
-                  {batch.generator.seed}
-                </option>
-              </optgroup>
-            )}
+            <optgroup label="Generator">
+              <option value={FLORIDA_BATCH}>
+                Generate 10 Florida storms
+              </option>
+            </optgroup>
           </select>
+          </div>
+
+          {scenario === FLORIDA_BATCH && (
+            <BatchSettings
+              seed={batchSeed}
+              maxWindKt={batchWindKt}
+              onSeedChange={(seed) => {
+                setBatchSeed(seed)
+                resetSimulation()
+              }}
+              onMaxWindKtChange={(maxWindKt) => {
+                setBatchWindKt(maxWindKt)
+                resetSimulation()
+              }}
+              disabled={generating || stormLoading || stormAnimating}
+              generating={generating}
+              error={generationError}
+              batch={batch}
+            />
+          )}
         </div>
-        <div className="map-container">
           <button
             className="simulate-button"
             type="button"
@@ -299,20 +333,23 @@ function App() {
             disabled={
               stormLoading ||
               stormAnimating ||
-              (scenario === FLORIDA_BATCH ? !batch : !catalog)
+              generating ||
+              (scenario !== FLORIDA_BATCH && !catalog)
             }
           >
             <span className="simulate-icon">◉</span>
 
-            {stormLoading
-              ? 'Loading Storm...'
-              : stormAnimating
-                ? 'Simulating...'
-                : activeStorms.length > 0
-                  ? 'Replay Catastrophe'
-                  : scenario === FLORIDA_BATCH
-                    ? 'Simulate Batch'
-                    : 'Simulate Catastrophe'}
+            {generating
+              ? 'Generating Storms...'
+              : stormLoading
+                ? 'Loading Storm...'
+                : stormAnimating
+                  ? 'Simulating...'
+                  : activeStorms.length > 0
+                    ? 'Replay Catastrophe'
+                    : scenario === FLORIDA_BATCH
+                      ? 'Generate & Simulate'
+                      : 'Simulate Catastrophe'}
           </button>
 
           {(stormError || catalogError) && (
@@ -425,6 +462,7 @@ function App() {
 
           {isBatch && (
             <StormBatch
+              batch={batch}
               storms={activeStorms}
               focusedStormId={focusedStorm?.storm_id ?? null}
               onFocusStorm={setFocusedStormId}
@@ -442,13 +480,6 @@ function App() {
               />
             )}
 
-          <GenerateStorms
-            onGenerate={runGeneration}
-            generating={generating}
-            disabled={stormLoading || stormAnimating}
-            error={generationError}
-            result={batch}
-          />
         </div>
       </section>
       {analysisOpen && focusedLosses && (

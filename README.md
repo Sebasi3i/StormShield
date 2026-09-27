@@ -160,13 +160,14 @@ wind; it gives up with a 422 after 400 starts, which a weaker start wind makes m
 likely. Like every generated set, a batch is a **selected** subset: do not derive annual
 rates from it.
 
-In the dashboard, the Generate Storms card does this: **Generate 10 storms** runs the
-search for the given seed (**New seed** picks another), and the batch appears under Storm
-Scenario as "Florida batch". **Simulate Batch** animates all ten tracks together and
-prices them in one storm-losses run; Florida hits are drawn in red. Click a track on the
-map, or a row in the Florida Batch list, to focus that storm: the status panel, Portfolio
-Impact and Full Analysis then show that storm. The three catalog tracks stay selectable
-individually and are loaded from `GET /api/v1/storm-catalog`.
+In the dashboard, the generator is the fourth entry under Storm Scenario, **Generate 10
+Florida storms**, next to the three catalog tracks (loaded from `GET /api/v1/storm-catalog`).
+Choosing it shows the seed and start wind; **Generate & Simulate** runs the search, then
+animates all ten tracks together on the map and prices them in one storm-losses run.
+Florida hits are drawn in red. The same seed reuses the batch already generated, so Replay
+does not search again; **New seed** picks another. Click a track on the map, or a row in
+the Florida Batch list, to focus that storm: the status panel, Portfolio Impact and Full
+Analysis then show that storm.
 
 Re-import a new simulator run:
 
