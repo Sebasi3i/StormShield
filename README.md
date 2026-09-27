@@ -111,10 +111,12 @@ Florida ASOS stations during 19 hurricanes (`scripts/fit_gust_factor.py`); and t
 profile's decay exponent and an open-terrain land factor fitted jointly to the peak
 gusts those stations recorded (`scripts/calibrate_wind_field.py`), with
 `scripts/validate_wind_field.py` recording how the whole step compares with the
-observations. The station data lives in `data/calibration/`. Every damage curve
-currently shipped is still an **assumed fixture**, so every response carries
-`evidence_status: assumed` even though its wind step is sourced. Replace
-`app/fixtures/damage_curves.json` when the research team supplies real curves;
+observations. The station data lives in `data/calibration/`. The damage curves are
+FEMA Hazus hurricane building loss functions for one-story masonry homes, mapped to
+the platform's classes and upgrades by `scripts/build_damage_curves.py` (the mapping,
+including an assumed equal mix of gable and hip roofs, is in the fixture's provenance
+and `docs/calibration.md`), so responses now carry `evidence_status: sourced`. Sourced
+means documented and reproducible, not validated against this portfolio's claims.
 `app/claims.py` is unaffected by the curves and the wind model alike, because it
 consumes wind exposures rather than tracks.
 

@@ -13,14 +13,14 @@ branch.
 | Land exposure factor | none (marine profile) | 0.775 on the sustained wind | Florida ASOS peaks, 19 hurricanes | sourced, calibrated |
 | Gust factor | 1.25, assumed | 1.314, measured | Florida ASOS 2-minute pairs, 19 hurricanes | sourced |
 | Taper start / cutoff | 200 / 300 km | 259 / 444 km, record quantiles | HURDAT2 34 kt radii | sourced |
-| Damage curves | assumed fixtures | unchanged | none available | assumed |
+| Damage curves | assumed fixtures | FEMA Hazus building loss functions, one-story masonry | Hazus Technical Manual via SimCenter's library | sourced |
 
-The wind step is now `sourced` end to end and validated against station observations,
+The wind step is `sourced` end to end and validated against station observations,
 including a leave-one-storm-out check that the calibration carries over to storms it
-was not fitted on.
-The run as a whole stays `assumed` because the damage curves are. "Sourced" means each
-number has a documented origin and a reproducible fit; the validation section says how
-large the remaining errors are, and they are not small.
+was not fitted on. The damage curves are now published Hazus functions, so the run as a
+whole is `sourced`. "Sourced" means each number has a documented origin and a
+reproducible derivation; it does not mean validated against this portfolio's claims.
+The validation section says how large the wind errors are, and they are not small.
 
 Every fixture is produced by a script from committed data, and a test refits each one
 and checks the committed values:
@@ -31,6 +31,7 @@ python scripts/fit_storm_size.py        # app/fixtures/storm_size_model.json
 python scripts/fit_gust_factor.py       # app/fixtures/gust_factor_model.json
 python scripts/calibrate_wind_field.py  # app/fixtures/wind_calibration.json
 python scripts/validate_wind_field.py   # app/fixtures/wind_validation.json
+python scripts/build_damage_curves.py   # app/fixtures/damage_curves.json
 python -m pytest tests -q
 ```
 
@@ -298,11 +299,80 @@ To run any of this from a cloud session, the environment's network policy needs 
 hosts allowed: `fcmp.ce.ufl.edu` and `www.aoml.noaa.gov` for these two, and
 `mesonet.agron.iastate.edu` or `www.ncei.noaa.gov` to refetch the airports.
 
-## 7. Damage curves: still assumed
+## 7. Damage curves: FEMA Hazus
 
-Every curve in `backend/app/fixtures/damage_curves.json` derives from the platform's
-earlier formula, and the Finance workbook returned no damage-effect evidence.
-Calibration needs insurer claims by wind speed and construction class, or published
-curves such as the Florida Public Hurricane Loss Model or HAZUS with their evidence
-status carried through. Nothing in the repository supplies either. Until then the loss
-figures inherit the curve assumption on top of the wind errors above.
+The curves were an assumed formula with upgrades as flat percentage cuts. They are now
+built by `scripts/build_damage_curves.py` from the FEMA Hazus hurricane model's building
+loss functions, taken from the machine-readable copy in NHERI SimCenter's Damage and
+Loss Model Library (`data/calibration/hazus_hurricane_loss` has the extract and its
+provenance). Hazus was chosen because it is published, validated by its authors against
+insurance losses (Vickery et al. 2006), and indexed by exactly the features the
+platform's upgrades change. Florida's own public model (FPHLM) would be the natural
+alternative, but its damage ratios by wind speed are withheld as trade secret in its
+public submission to the state commission.
+
+**Wind basis.** Hazus takes the open-terrain peak gust at 10 m, which is what the wind
+step produces, so no conversion is applied. The home's surroundings are a separate Hazus
+input, set to suburban roughness (0.35 m). Setting it to open terrain as well would
+count the land reduction twice: at 140 mph it would raise the pre-2002 loss from 39% to
+74%.
+
+**Mapping.** Every home is a one-story masonry single-family house with a wood-truss
+roof (Hazus M.SF.1):
+
+| Platform curve | Hazus features |
+| --- | --- |
+| pre-2002 baseline | roof-to-wall toe-nails, 6d deck nails, no secondary water resistance, no shutters |
+| pre-2002 + shutters | the same, with shutters |
+| pre-2002 + roof straps | straps instead of toe-nails |
+| post-2002 baseline | straps, 8d deck nails, secondary water resistance, no shutters |
+| post-2002 + shutters | the same, with shutters |
+
+Each curve is the mean of the Hazus gable-roof and hip-roof curves. A hip roof loses
+about half as much at 140 mph; no source for Florida's mix was available, so the equal
+weighting is an assumption and the largest one left in the curves. Wood-frame curves
+differ from masonry by at most 2 points of replacement cost for four of the five, and by
+up to 9 for post-2002 with shutters; masonry reinforcing moves them by under one.
+
+| Peak gust | Pre-2002, before → now | + shutters, before → now | Post-2002, before → now |
+| --- | ---: | ---: | ---: |
+| 105 mph | 2.7% → 2.1% | 2.0% → 1.9% | 1.6% → 1.7% |
+| 120 mph | 6.5% → 7.2% | 4.9% → 4.8% | 3.9% → 3.4% |
+| 140 mph | 14.5% → 38.8% | 10.9% → 18.7% | 8.7% → 13.2% |
+| 160 mph | 26.1% → 81.8% | 19.6% → 51.1% | 15.7% → 39.2% |
+| 180 mph | 41.5% → 97.4% | 31.1% → 82.9% | 24.9% → 73.7% |
+
+Below about 120 mph little changes. Above it the old curves were far too flat, and the
+upgrades were worth far less than Hazus gives them: at 140 mph shutters now cut an older
+home's loss by 52% and roof straps by 34%, against the flat 25% and 20% assumed before.
+
+**Effect on the demo** (ten-home demo portfolio, 19-storm wind calibration, per-home
+baseline payouts summed, 5% deductible):
+
+| Storm | Top gust | Baseline payout, before → now | Avoided by shutters, before → now |
+| --- | ---: | ---: | ---: |
+| SYN0155 | 152 mph | $348,688 → $1,203,610 | $121,204 → $691,687 |
+| SYN0697 | 123 mph | $19,252 → $38,273 | $13,703 → $30,195 |
+| SYN0973 | 116 mph | $0 → $0 | $0 → $0 |
+
+**Adjustments to the source.** The engine refuses a curve whose damage falls as wind
+rises, and an upgrade that adds damage would show as a negative avoided payout. Each
+averaged curve is made nondecreasing (the largest change is 0.5% of replacement cost),
+and each upgrade is capped at its baseline, the post-2002 baseline at the pre-2002 one
+(largest change 0.01%, simulation noise below 105 mph). Both are recorded in the fixture.
+
+**What is still open.**
+
+- **Roof shape.** The single largest assumption. With each home's roof type on record,
+  it could use its own Hazus curve instead of the mix.
+- **Building detail per home.** Story count, wall type, deck nailing and secondary
+  water resistance vary by home and year built; the platform has only the two classes.
+  Hazus has curves for each, so more property attributes would feed straight in.
+- **Scope.** Building only. Contents and loss of use are separate Hazus functions; the
+  payouts cover the structure.
+- **Low winds.** Hazus understates small losses below about 100 mph, where fallen trees
+  do much of the damage.
+- **Not checked against claims.** Hazus was validated on past storms by its authors,
+  not on this portfolio. Insurer claims by wind speed and construction class would test
+  both the curves and the mapping, and the Finance workbook's upgrade damage-effect
+  request is still unanswered.

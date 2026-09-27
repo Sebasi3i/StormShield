@@ -51,7 +51,7 @@ def test_example_answers_with_no_request_body(example):
     assert example["schema_version"] == "1.1"
     assert example["storm_ids"] == [EXAMPLE_STORM]
     assert len(example["property_ids"]) == 10
-    assert example["evidence_status"] == "assumed"
+    assert example["evidence_status"] == "sourced", "wind and curves are both sourced now"
     assert example["rows"]
 
 
@@ -121,7 +121,8 @@ def test_run_publishes_the_provenance_a_reader_needs(example):
     assert metadata["sampling_description"]
     assert metadata["curve_wind_metric"] == metadata["wind_model"]["wind_metric"]
     assert metadata["wind_model"]["evidence_status"] == "sourced"
-    assert example["evidence_status"] == "assumed", "the curves are still assumed"
+    assert example["evidence_status"] == "sourced", "the curves are Hazus, the wind is calibrated"
+    assert metadata["curve_provenance"]["class_mapping"], "the Hazus mapping must travel with the run"
     assert metadata["wind_model"]["reference_height_m"] == 10
     assert metadata["wind_model"]["gust_factor"]
     assert metadata["policy_basis"]["deductible_percent"] == 0.05
@@ -184,7 +185,7 @@ def test_curves_endpoint_publishes_evidence_status_per_curve():
 
     assert curves["curves"]
     for curve in curves["curves"]:
-        assert curve["evidence_status"] == "assumed"
+        assert curve["evidence_status"] == "sourced"
         assert curve["source_note"]
         assert curve["wind_metric"] == curves["wind_metric"]
     assert "roof_straps" not in curves["eligible_upgrades_by_class"]["post_fbc_2002"]
@@ -240,8 +241,10 @@ def test_post_accepts_supplied_wind_exposures():
 
     assert response.status_code == 200, response.text
     body = response.json()
-    # 140 mph is a declared point on the curve: 0.1448 x 500,000.
-    assert body["rows"][0]["baseline_damage_usd"] == pytest.approx(72_400, abs=1)
+    # 140 mph is a declared point on the shipped curve: its fraction x 500,000.
+    curve = claims.load_curve_set()["curves"][("pre_fbc_2002", "baseline")]
+    fraction = dict(curve.points)[140.0]
+    assert body["rows"][0]["baseline_damage_usd"] == pytest.approx(fraction * 500_000, abs=1)
     assert body["metadata"]["wind_model"]["evidence_status"] == "caller-declared"
 
 

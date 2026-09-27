@@ -842,9 +842,9 @@ def _supplied_catalog(storms: list[StormInput]) -> dict:
 def damage_curves() -> dict:
     """The vulnerability curves and the policy template, with their provenance.
 
-    Published so a client can show what a number rests on. Every curve here is an
-    assumed fixture, and the evidence status and source note say so per curve rather
-    than in a footnote somewhere else.
+    Published so a client can show what a number rests on. Each curve carries its
+    evidence status and source note (currently FEMA Hazus loss functions, see the
+    provenance block), per curve rather than in a footnote somewhere else.
     """
     curve_set = claims.load_curve_set()
     classes = sorted({c.vulnerability_class for c in curve_set["curves"].values()})

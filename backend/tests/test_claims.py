@@ -205,6 +205,42 @@ def test_shipped_curve_set_validates():
         assert (name, "baseline") in curve_set["curves"]
 
 
+def test_shipped_curves_are_reproducible_from_hazus():
+    """damage_curves.json is exactly what scripts/build_damage_curves.py derives from the
+    committed Hazus extract, so the curves cannot drift from their source unnoticed."""
+    import importlib.util
+    import json
+    import pathlib
+
+    backend = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("build_damage_curves", backend / "scripts" / "build_damage_curves.py")
+    script = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(script)
+
+    committed = json.loads((backend / "app" / "fixtures" / "damage_curves.json").read_text(encoding="utf-8"))
+    assert script.build_curve_set() == committed
+
+
+def test_shipped_upgrades_never_add_damage():
+    """An upgrade curve must sit at or below its class baseline at every speed, and the
+    post-2002 baseline at or below the pre-2002 one; otherwise an avoided payout could go
+    negative for a reason the source does not support."""
+    import numpy as np
+
+    claims.reset_caches()
+    curves = claims.load_curve_set()["curves"]
+    grid = np.arange(0, 251, 5)
+
+    def at(key):
+        winds, damage = zip(*curves[key].points)
+        return np.interp(grid, winds, damage)
+
+    for (vclass, upgrade) in curves:
+        if upgrade != "baseline":
+            assert (at((vclass, upgrade)) <= at((vclass, "baseline")) + 1e-9).all(), (vclass, upgrade)
+    assert (at(("post_fbc_2002", "baseline")) <= at(("pre_fbc_2002", "baseline")) + 1e-9).all()
+
+
 # --------------------------------------------------------------------------- #
 # Validation errors the brief asks for by name
 # --------------------------------------------------------------------------- #

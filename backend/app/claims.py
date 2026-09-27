@@ -218,6 +218,22 @@ def load_curve_set(path: str | None = None) -> dict:
     }
 
 
+def _curve_assumption(curve_set: dict, evidence_statuses: set[str]) -> str:
+    """One line on what the damage curves rest on, for the run's assumptions list."""
+    if "assumed" in evidence_statuses:
+        return (
+            "Every damage curve in this run is an assumed fixture. The Finance workbook's "
+            "upgrade damage-effect request is still unanswered."
+        )
+    return (
+        f"Damage curves ({curve_set['curve_set_id']}) are published FEMA Hazus building "
+        "loss functions mapped to the platform's classes; the mapping, including an "
+        "assumed equal mix of gable and hip roofs, is in metadata.curve_provenance. Not "
+        "checked against this portfolio's own claims, and the Finance workbook's upgrade "
+        "damage-effect request is still unanswered."
+    )
+
+
 def reset_caches() -> None:
     load_curve_set.cache_clear()
     load_policy_template.cache_clear()
@@ -505,8 +521,7 @@ def compute_losses(
     assumptions = [
         "Illustrative gross insurer payouts before reinsurance. Not calibrated and not "
         "validated against loss experience.",
-        "Every damage curve in this run is an assumed fixture. The Finance workbook's "
-        "upgrade damage-effect request is still unanswered.",
+        _curve_assumption(curve_set, evidence_statuses),
         "payout = min(coverage_limit, max(0, damage - deductible)). The prototype's "
         "agreed contract, pending Finance approval of its scope.",
         "Each storm is priced independently: the deductible resets and the building is "
