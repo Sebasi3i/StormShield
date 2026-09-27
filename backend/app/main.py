@@ -623,6 +623,7 @@ def _storm_losses(
                 property_id=prop.property_id,
                 replacement_cost_usd=prop.replacement_cost_usd,
                 vulnerability_class=prop.vulnerability_class,
+                roof_shape=prop.roof_shape,
             )
         )
         # Coverage A defaults to replacement cost, and is also the base the percentage
@@ -680,8 +681,10 @@ def _storm_losses(
         ]
         exposures = []
         exposure_detail = []
+        storm_size = []
         for storm_id in ids:
             storm = wind.storm_by_id(storm_id, catalog)
+            storm_size.append(wind.storm_parameters(storm))
             try:
                 storm_exposures, detail = wind.exposures_for_storm(storm, coordinates)
             except ValueError as error:
@@ -735,6 +738,8 @@ def _storm_losses(
         # Closest approach per property, so a zero-loss row reads as an audited miss
         # rather than looking like a row that went missing.
         result["metadata"]["wind_exposure_detail"] = exposure_detail
+        # The size each storm was modeled with, and the track point it came from.
+        result["metadata"]["storm_size"] = storm_size
     return result
 
 
@@ -838,9 +843,9 @@ def _supplied_catalog(storms: list[StormInput]) -> dict:
 def damage_curves() -> dict:
     """The vulnerability curves and the policy template, with their provenance.
 
-    Published so a client can show what a number rests on. Every curve here is an
-    assumed fixture, and the evidence status and source note say so per curve rather
-    than in a footnote somewhere else.
+    Published so a client can show what a number rests on. Each curve carries its
+    evidence status and source note (currently FEMA Hazus loss functions, see the
+    provenance block), per curve rather than in a footnote somewhere else.
     """
     curve_set = claims.load_curve_set()
     classes = sorted({c.vulnerability_class for c in curve_set["curves"].values()})
@@ -854,6 +859,7 @@ def damage_curves() -> dict:
                 "curve_id": curve.curve_id,
                 "vulnerability_class": curve.vulnerability_class,
                 "upgrade_id": curve.upgrade_id,
+                "roof_shape": curve.roof_shape,
                 "wind_metric": curve.wind_metric,
                 "evidence_status": curve.evidence_status,
                 "source_note": curve.source_note,
@@ -889,6 +895,7 @@ def storm_losses_example(storm_id: str = "SYN0155") -> dict:
             property_id=entry["property_id"],
             replacement_cost_usd=entry["replacement_cost_usd"],
             vulnerability_class=entry["vulnerability_class"],
+            roof_shape=entry.get("roof_shape", "unknown"),
             latitude=entry["latitude"],
             longitude=entry["longitude"],
         )

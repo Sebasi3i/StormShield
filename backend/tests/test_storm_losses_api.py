@@ -51,7 +51,7 @@ def test_example_answers_with_no_request_body(example):
     assert example["schema_version"] == "1.1"
     assert example["storm_ids"] == [EXAMPLE_STORM]
     assert len(example["property_ids"]) == 10
-    assert example["evidence_status"] == "assumed"
+    assert example["evidence_status"] == "sourced", "wind and curves are both sourced now"
     assert example["rows"]
 
 
@@ -120,7 +120,9 @@ def test_run_publishes_the_provenance_a_reader_needs(example):
     assert metadata["curve_source_notes"]
     assert metadata["sampling_description"]
     assert metadata["curve_wind_metric"] == metadata["wind_model"]["wind_metric"]
-    assert metadata["wind_model"]["evidence_status"] == "assumed"
+    assert metadata["wind_model"]["evidence_status"] == "sourced"
+    assert example["evidence_status"] == "sourced", "the curves are Hazus, the wind is calibrated"
+    assert metadata["curve_provenance"]["class_mapping"], "the Hazus mapping must travel with the run"
     assert metadata["wind_model"]["reference_height_m"] == 10
     assert metadata["wind_model"]["gust_factor"]
     assert metadata["policy_basis"]["deductible_percent"] == 0.05
@@ -183,11 +185,37 @@ def test_curves_endpoint_publishes_evidence_status_per_curve():
 
     assert curves["curves"]
     for curve in curves["curves"]:
-        assert curve["evidence_status"] == "assumed"
+        assert curve["evidence_status"] == "sourced"
         assert curve["source_note"]
         assert curve["wind_metric"] == curves["wind_metric"]
+        assert curve["roof_shape"] in ("gable", "hip", "blended")
+    assert {c["roof_shape"] for c in curves["curves"]} == {"gable", "hip", "blended"}
     assert "roof_straps" not in curves["eligible_upgrades_by_class"]["post_fbc_2002"]
     assert curves["policy_template"]["deductible"]["percent"] == 0.05
+
+
+def test_demo_roof_shapes_are_reproducible_from_the_seed():
+    """example_portfolio.json's roof_shape values are exactly what
+    scripts/assign_demo_roof_shapes.py's fixed seed derives, and every value is a
+    real roof shape - never invented data quietly upgraded past "not measured"."""
+    import importlib.util
+
+    backend = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "assign_demo_roof_shapes", backend / "scripts" / "assign_demo_roof_shapes.py"
+    )
+    script = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(script)
+
+    portfolio_path = backend / "app" / "fixtures" / "example_portfolio.json"
+    portfolio = json.loads(portfolio_path.read_text(encoding="utf-8"))
+    expected = script.assign_roof_shapes(portfolio["properties"])
+
+    assert portfolio["properties"], "no demo properties to check"
+    for prop in portfolio["properties"]:
+        assert prop["roof_shape"] == expected[prop["property_id"]]
+        assert prop["roof_shape"] in ("gable", "hip")
+    assert "roof_shape" in portfolio["missing_input"], "the placeholder must say it is not measured"
 
 
 # --------------------------------------------------------------------------- #
@@ -239,8 +267,11 @@ def test_post_accepts_supplied_wind_exposures():
 
     assert response.status_code == 200, response.text
     body = response.json()
-    # 140 mph is a declared point on the curve: 0.1448 x 500,000.
-    assert body["rows"][0]["baseline_damage_usd"] == pytest.approx(72_400, abs=1)
+    # 140 mph is a declared point on the shipped curve: its fraction x 500,000. No
+    # roof_shape was declared, so this property falls back to the blended curve.
+    curve = claims.load_curve_set()["curves"][("pre_fbc_2002", "baseline", "blended")]
+    fraction = dict(curve.points)[140.0]
+    assert body["rows"][0]["baseline_damage_usd"] == pytest.approx(fraction * 500_000, abs=1)
     assert body["metadata"]["wind_model"]["evidence_status"] == "caller-declared"
 
 
@@ -336,13 +367,15 @@ def _storm(*points):
     }
 
 
-def _expected_gust(distance_km, centre_wind_kt):
-    """The gust wind_field's profile gives at this distance, the independent check."""
+def _expected_gust(distance_km, centre_wind_kt, storm):
+    """The gust wind_field's profile gives at this distance, the independent check,
+    using the size the storm-size model assigns to this storm."""
+    size = wind.storm_parameters(storm)
     sustained = sustained_wind_profile_kt(
-        distance_km, centre_wind_kt, SIZE["rmw_km"], SIZE["outer_decay_exponent"],
-        SIZE["taper_start_km"], SIZE["cutoff_km"],
+        distance_km, centre_wind_kt, size["rmw_km"], size["outer_decay_exponent"],
+        size["taper_start_km"], size["cutoff_km"],
     )
-    return sustained * wind.KT_TO_MPH * wind.GUST_FACTOR
+    return sustained * wind.KT_TO_MPH * wind.land_exposure_factor() * wind.GUST_FACTOR
 
 
 def _km_east(latitude, longitude, km):
@@ -360,21 +393,21 @@ def test_peak_gust_is_the_worst_over_the_track_not_the_value_at_landfall():
     exposures, detail = wind.exposures_for_storm(storm, [("HOME", *home)])
 
     distance = haversine_distance_km(*home, 25.0, -80.0)
-    assert exposures[0].peak_gust_mph == pytest.approx(_expected_gust(distance, 130.0), abs=0.01)
+    assert exposures[0].peak_gust_mph == pytest.approx(_expected_gust(distance, 130.0, storm), abs=0.01)
     assert detail[0]["peak_time_utc"] == "2026-09-01T00:00:00"
 
 
 def test_wind_peaks_at_the_radius_of_maximum_wind_not_in_the_eye():
     storm = _storm((25.0, -80.0, 130.0))
-    eyewall = (25.0, _km_east(25.0, -80.0, SIZE["rmw_km"]))
+    eyewall = (25.0, _km_east(25.0, -80.0, wind.storm_parameters(storm)["rmw_km"]))
     exposures, _ = wind.exposures_for_storm(storm, [("EYE", 25.0, -80.0), ("EYEWALL", *eyewall)])
     gust = {exposure.property_id: exposure.peak_gust_mph for exposure in exposures}
 
     assert gust["EYE"] == 0.0
     assert gust["EYEWALL"] == pytest.approx(
-        _expected_gust(haversine_distance_km(*eyewall, 25.0, -80.0), 130.0), abs=0.01
+        _expected_gust(haversine_distance_km(*eyewall, 25.0, -80.0), 130.0, storm), abs=0.01
     )
-    assert gust["EYEWALL"] > 0.99 * 130.0 * wind.KT_TO_MPH * wind.GUST_FACTOR
+    assert gust["EYEWALL"] > 0.99 * 130.0 * wind.KT_TO_MPH * wind.land_exposure_factor() * wind.GUST_FACTOR
 
 
 def test_distant_property_is_floored_to_zero_exposure():
@@ -426,8 +459,12 @@ def test_wind_model_is_wind_field_with_the_agreed_gust_factor(example):
 
     assert wind_model["model"] == "wind_field"
     assert wind_model["package_version"] == wind_field.__version__
-    assert wind_model["gust_factor"] == 1.25
-    assert wind_model["storm_parameters"]["parameter_status"] == "assumed"
+    assert wind_model["gust_factor"] == wind.GUST_FACTOR == wind.load_gust_factor_model()["gust_factor"]
+    assert wind_model["evidence_status"] == "sourced"
+    assert wind_model["validation"]["wind_validation_id"] == "fl-asos-hurricane-peaks-v2"
+    assert wind_model["storm_parameters"]["parameter_status"] == "sourced"
+    assert wind_model["storm_parameters"]["storm_size_model_id"] == "hurdat2-radii-fit-v1"
+    assert example["metadata"]["storm_size"][0]["storm_id"] == "SYN0155"
 
 
 def test_wind_field_labels_its_output_with_the_curves_metric():

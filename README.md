@@ -103,11 +103,24 @@ version 1.1, snake_case, documented at `/docs`.
 The gust at each property comes from **wind_field**, the property-level wind model
 from the hurricane simulator project, called by `app/wind.py`: a radial wind profile
 around the storm centre (calm eye, strongest at the radius of maximum wind), moved
-along the track in 15-minute steps so each home sees the storm's closest pass, with a
-1.25 gust factor. Its storm size is still an assumed demonstration value, the same for
-every storm, and every damage curve currently shipped is an **assumed fixture**. Both
-say so in their own provenance, and every response carries `evidence_status`. Replace
-`app/fixtures/damage_curves.json` when the research team supplies real curves;
+along the track in 15-minute steps so each home sees the storm's closest pass. Its
+constants are calibrated (see `docs/calibration.md` for the fits, the data and the
+validation): the radius of maximum wind per storm from a model fitted to the wind radii
+in NOAA's HURDAT2 record (`scripts/fit_storm_size.py`); the gust factor measured at
+Florida ASOS stations during 19 hurricanes (`scripts/fit_gust_factor.py`); and the
+profile's decay exponent and an open-terrain land factor fitted jointly to the peak
+gusts those stations recorded (`scripts/calibrate_wind_field.py`), with
+`scripts/validate_wind_field.py` recording how the whole step compares with the
+observations. The station data lives in `data/calibration/`. The damage curves are
+FEMA Hazus hurricane building loss functions for one-story masonry homes, mapped to
+the platform's classes and upgrades by `scripts/build_damage_curves.py` (the mapping is
+in the fixture's provenance and `docs/calibration.md`), so responses now carry
+`evidence_status: sourced`. Sourced means documented and reproducible, not validated
+against this portfolio's claims. Each curve is published separately for gable roofs,
+hip roofs, and their blend; a property's `roof_shape` picks the matching one, and an
+unlabeled property falls back to the blend, an assumed equal mix with no source for
+Florida's actual gable/hip split (`scripts/assign_demo_roof_shapes.py` gives the demo
+portfolio an illustrative, seeded-random mix of both so this has something to exercise).
 `app/claims.py` is unaffected by the curves and the wind model alike, because it
 consumes wind exposures rather than tracks.
 
@@ -205,11 +218,13 @@ backend/            FastAPI service, risk engine, ETL scripts
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?
     fixtures/       Curves, policy template, storm catalog, sample response
-  scripts/          Adapters that import outside data
+  scripts/          Adapters that import outside data, and the calibration fits
   tests/            pytest suite
   vendor/           wind_field and hurricane_simulator wheels (not on PyPI)
   requirements.txt  Pinned dependencies
+data/calibration/   Station observations the wind constants are fitted to
 data/raw/           Downloaded source datasets (gitignored)
 data/processed/     Build artifacts (gitignored except published profiles)
+docs/               Calibration notes: what each constant rests on
 frontend/           React + TypeScript + Vite dashboard
 ```

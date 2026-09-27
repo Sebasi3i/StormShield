@@ -1,0 +1,2400 @@
+{
+  "wind_calibration_id": "fl-asos-hurricane-peaks-v2",
+  "cohort_id": "primary_2016_2024",
+  "evidence_status": "sourced",
+  "calibrated_at": "2026-09-27T06:29:06Z",
+  "script": "backend/scripts/calibrate_wind_field.py",
+  "gust_factor_model_id": "fl-asos-hurricane-gust-v2",
+  "gust_factor": 1.333,
+  "storm_size_model_id": "hurdat2-radii-fit-v1",
+  "size_basis": "peak intensity within the Florida window (wind.size_basis_point)",
+  "outer_decay_exponent": 0.275,
+  "land_exposure_factor": 0.75,
+  "chosen": {
+    "outer_decay_exponent": 0.275,
+    "land_exposure_factor": 0.75,
+    "n": 156,
+    "median_ratio": 1.033,
+    "mean_absolute_error_kt": 14.11,
+    "within_15_percent": 0.365,
+    "median_ratio_within_75_km": 1.132,
+    "median_ratio_beyond_75_km": 0.986,
+    "median_ratio_observed_64kt_or_more": 0.901,
+    "per_storm_median_ratio_range": [
+      0.814,
+      1.558
+    ],
+    "strong_gust_constraint_evaluable": true
+  },
+  "objective": "minimum mean absolute error among candidates with median modelled/observed ratio within 5% of 1 overall and within 10% of 1 where the observed gust was 64 kt or more (the second constraint is skipped, not treated as passed, when a training subset has no 64 kt+ pairs)",
+  "uncalibrated_reference": {
+    "note": "decay 0.5 (near the HURDAT2 radii median) and no land factor, at this cohort's own measured gust factor",
+    "outer_decay_exponent": 0.5,
+    "land_exposure_factor": 1.0,
+    "n": 156,
+    "median_ratio": 0.98,
+    "mean_absolute_error_kt": 16.55,
+    "within_15_percent": 0.353,
+    "median_ratio_within_75_km": 1.228,
+    "median_ratio_beyond_75_km": 0.902,
+    "median_ratio_observed_64kt_or_more": 0.943,
+    "per_storm_median_ratio_range": [
+      0.762,
+      1.775
+    ]
+  },
+  "data": {
+    "dataset": "data/calibration/fl_hurricane_gust_data",
+    "storms": 11,
+    "station_storm_pairs": 156,
+    "selection": {
+      "max_closest_approach_km": 250.0,
+      "min_observed_gust_kt": 40.0,
+      "truncated_records_excluded": true
+    }
+  },
+  "grid": {
+    "outer_decay_exponent": [
+      0.25,
+      0.275,
+      0.3,
+      0.325,
+      0.35,
+      0.375,
+      0.4,
+      0.425,
+      0.45,
+      0.475,
+      0.5
+    ],
+    "land_exposure_factor": [
+      0.7,
+      0.725,
+      0.75,
+      0.775,
+      0.8,
+      0.825,
+      0.85,
+      0.875,
+      0.9,
+      0.925,
+      0.95,
+      0.975,
+      1.0
+    ]
+  },
+  "candidates": [
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 1.011,
+      "mean_absolute_error_kt": 13.56,
+      "within_15_percent": 0.385,
+      "median_ratio_within_75_km": 1.087,
+      "median_ratio_beyond_75_km": 0.964,
+      "median_ratio_observed_64kt_or_more": 0.867,
+      "per_storm_median_ratio_range": [
+        0.784,
+        1.49
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 1.047,
+      "mean_absolute_error_kt": 14.04,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.125,
+      "median_ratio_beyond_75_km": 0.999,
+      "median_ratio_observed_64kt_or_more": 0.898,
+      "per_storm_median_ratio_range": [
+        0.812,
+        1.544
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 1.084,
+      "mean_absolute_error_kt": 14.7,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.164,
+      "median_ratio_beyond_75_km": 1.033,
+      "median_ratio_observed_64kt_or_more": 0.929,
+      "per_storm_median_ratio_range": [
+        0.84,
+        1.597
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 1.12,
+      "mean_absolute_error_kt": 15.56,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.203,
+      "median_ratio_beyond_75_km": 1.068,
+      "median_ratio_observed_64kt_or_more": 0.96,
+      "per_storm_median_ratio_range": [
+        0.868,
+        1.65
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 1.156,
+      "mean_absolute_error_kt": 16.53,
+      "within_15_percent": 0.327,
+      "median_ratio_within_75_km": 1.242,
+      "median_ratio_beyond_75_km": 1.102,
+      "median_ratio_observed_64kt_or_more": 0.991,
+      "per_storm_median_ratio_range": [
+        0.896,
+        1.703
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 1.192,
+      "mean_absolute_error_kt": 17.69,
+      "within_15_percent": 0.34,
+      "median_ratio_within_75_km": 1.281,
+      "median_ratio_beyond_75_km": 1.137,
+      "median_ratio_observed_64kt_or_more": 1.022,
+      "per_storm_median_ratio_range": [
+        0.924,
+        1.757
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 1.228,
+      "mean_absolute_error_kt": 18.92,
+      "within_15_percent": 0.282,
+      "median_ratio_within_75_km": 1.319,
+      "median_ratio_beyond_75_km": 1.171,
+      "median_ratio_observed_64kt_or_more": 1.053,
+      "per_storm_median_ratio_range": [
+        0.952,
+        1.81
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 1.264,
+      "mean_absolute_error_kt": 20.27,
+      "within_15_percent": 0.269,
+      "median_ratio_within_75_km": 1.358,
+      "median_ratio_beyond_75_km": 1.205,
+      "median_ratio_observed_64kt_or_more": 1.084,
+      "per_storm_median_ratio_range": [
+        0.98,
+        1.863
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.3,
+      "mean_absolute_error_kt": 21.72,
+      "within_15_percent": 0.263,
+      "median_ratio_within_75_km": 1.397,
+      "median_ratio_beyond_75_km": 1.24,
+      "median_ratio_observed_64kt_or_more": 1.115,
+      "per_storm_median_ratio_range": [
+        1.008,
+        1.916
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.336,
+      "mean_absolute_error_kt": 23.26,
+      "within_15_percent": 0.237,
+      "median_ratio_within_75_km": 1.436,
+      "median_ratio_beyond_75_km": 1.274,
+      "median_ratio_observed_64kt_or_more": 1.146,
+      "per_storm_median_ratio_range": [
+        1.036,
+        1.969
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.372,
+      "mean_absolute_error_kt": 24.87,
+      "within_15_percent": 0.224,
+      "median_ratio_within_75_km": 1.475,
+      "median_ratio_beyond_75_km": 1.309,
+      "median_ratio_observed_64kt_or_more": 1.177,
+      "per_storm_median_ratio_range": [
+        1.064,
+        2.023
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.409,
+      "mean_absolute_error_kt": 26.55,
+      "within_15_percent": 0.212,
+      "median_ratio_within_75_km": 1.513,
+      "median_ratio_beyond_75_km": 1.343,
+      "median_ratio_observed_64kt_or_more": 1.208,
+      "per_storm_median_ratio_range": [
+        1.092,
+        2.076
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.25,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.445,
+      "mean_absolute_error_kt": 28.23,
+      "within_15_percent": 0.205,
+      "median_ratio_within_75_km": 1.552,
+      "median_ratio_beyond_75_km": 1.378,
+      "median_ratio_observed_64kt_or_more": 1.239,
+      "per_storm_median_ratio_range": [
+        1.12,
+        2.129
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.964,
+      "mean_absolute_error_kt": 13.33,
+      "within_15_percent": 0.391,
+      "median_ratio_within_75_km": 1.057,
+      "median_ratio_beyond_75_km": 0.92,
+      "median_ratio_observed_64kt_or_more": 0.841,
+      "per_storm_median_ratio_range": [
+        0.759,
+        1.454
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.999,
+      "mean_absolute_error_kt": 13.64,
+      "within_15_percent": 0.385,
+      "median_ratio_within_75_km": 1.095,
+      "median_ratio_beyond_75_km": 0.953,
+      "median_ratio_observed_64kt_or_more": 0.871,
+      "per_storm_median_ratio_range": [
+        0.786,
+        1.506
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 1.033,
+      "mean_absolute_error_kt": 14.11,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.132,
+      "median_ratio_beyond_75_km": 0.986,
+      "median_ratio_observed_64kt_or_more": 0.901,
+      "per_storm_median_ratio_range": [
+        0.814,
+        1.558
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 1.068,
+      "mean_absolute_error_kt": 14.71,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.17,
+      "median_ratio_beyond_75_km": 1.019,
+      "median_ratio_observed_64kt_or_more": 0.931,
+      "per_storm_median_ratio_range": [
+        0.841,
+        1.61
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 1.102,
+      "mean_absolute_error_kt": 15.45,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.208,
+      "median_ratio_beyond_75_km": 1.052,
+      "median_ratio_observed_64kt_or_more": 0.961,
+      "per_storm_median_ratio_range": [
+        0.868,
+        1.662
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 1.137,
+      "mean_absolute_error_kt": 16.43,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.246,
+      "median_ratio_beyond_75_km": 1.085,
+      "median_ratio_observed_64kt_or_more": 0.991,
+      "per_storm_median_ratio_range": [
+        0.895,
+        1.714
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 1.171,
+      "mean_absolute_error_kt": 17.52,
+      "within_15_percent": 0.314,
+      "median_ratio_within_75_km": 1.283,
+      "median_ratio_beyond_75_km": 1.118,
+      "median_ratio_observed_64kt_or_more": 1.021,
+      "per_storm_median_ratio_range": [
+        0.922,
+        1.766
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 1.206,
+      "mean_absolute_error_kt": 18.7,
+      "within_15_percent": 0.314,
+      "median_ratio_within_75_km": 1.321,
+      "median_ratio_beyond_75_km": 1.151,
+      "median_ratio_observed_64kt_or_more": 1.051,
+      "per_storm_median_ratio_range": [
+        0.949,
+        1.818
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.24,
+      "mean_absolute_error_kt": 19.96,
+      "within_15_percent": 0.269,
+      "median_ratio_within_75_km": 1.359,
+      "median_ratio_beyond_75_km": 1.183,
+      "median_ratio_observed_64kt_or_more": 1.081,
+      "per_storm_median_ratio_range": [
+        0.976,
+        1.87
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.274,
+      "mean_absolute_error_kt": 21.31,
+      "within_15_percent": 0.25,
+      "median_ratio_within_75_km": 1.397,
+      "median_ratio_beyond_75_km": 1.216,
+      "median_ratio_observed_64kt_or_more": 1.111,
+      "per_storm_median_ratio_range": [
+        1.003,
+        1.922
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.309,
+      "mean_absolute_error_kt": 22.79,
+      "within_15_percent": 0.231,
+      "median_ratio_within_75_km": 1.434,
+      "median_ratio_beyond_75_km": 1.249,
+      "median_ratio_observed_64kt_or_more": 1.141,
+      "per_storm_median_ratio_range": [
+        1.03,
+        1.974
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.343,
+      "mean_absolute_error_kt": 24.31,
+      "within_15_percent": 0.231,
+      "median_ratio_within_75_km": 1.472,
+      "median_ratio_beyond_75_km": 1.282,
+      "median_ratio_observed_64kt_or_more": 1.171,
+      "per_storm_median_ratio_range": [
+        1.058,
+        2.026
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.275,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.378,
+      "mean_absolute_error_kt": 25.85,
+      "within_15_percent": 0.218,
+      "median_ratio_within_75_km": 1.51,
+      "median_ratio_beyond_75_km": 1.315,
+      "median_ratio_observed_64kt_or_more": 1.201,
+      "per_storm_median_ratio_range": [
+        1.085,
+        2.078
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.933,
+      "mean_absolute_error_kt": 13.32,
+      "within_15_percent": 0.353,
+      "median_ratio_within_75_km": 1.047,
+      "median_ratio_beyond_75_km": 0.886,
+      "median_ratio_observed_64kt_or_more": 0.825,
+      "per_storm_median_ratio_range": [
+        0.743,
+        1.431
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.967,
+      "mean_absolute_error_kt": 13.46,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.084,
+      "median_ratio_beyond_75_km": 0.918,
+      "median_ratio_observed_64kt_or_more": 0.855,
+      "per_storm_median_ratio_range": [
+        0.769,
+        1.482
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 1.0,
+      "mean_absolute_error_kt": 13.73,
+      "within_15_percent": 0.385,
+      "median_ratio_within_75_km": 1.122,
+      "median_ratio_beyond_75_km": 0.95,
+      "median_ratio_observed_64kt_or_more": 0.884,
+      "per_storm_median_ratio_range": [
+        0.796,
+        1.533
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 1.034,
+      "mean_absolute_error_kt": 14.19,
+      "within_15_percent": 0.391,
+      "median_ratio_within_75_km": 1.159,
+      "median_ratio_beyond_75_km": 0.981,
+      "median_ratio_observed_64kt_or_more": 0.914,
+      "per_storm_median_ratio_range": [
+        0.822,
+        1.584
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 1.067,
+      "mean_absolute_error_kt": 14.75,
+      "within_15_percent": 0.34,
+      "median_ratio_within_75_km": 1.197,
+      "median_ratio_beyond_75_km": 1.013,
+      "median_ratio_observed_64kt_or_more": 0.943,
+      "per_storm_median_ratio_range": [
+        0.849,
+        1.635
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 1.1,
+      "mean_absolute_error_kt": 15.44,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.234,
+      "median_ratio_beyond_75_km": 1.045,
+      "median_ratio_observed_64kt_or_more": 0.973,
+      "per_storm_median_ratio_range": [
+        0.876,
+        1.686
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 1.134,
+      "mean_absolute_error_kt": 16.34,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.271,
+      "median_ratio_beyond_75_km": 1.076,
+      "median_ratio_observed_64kt_or_more": 1.002,
+      "per_storm_median_ratio_range": [
+        0.902,
+        1.738
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 1.167,
+      "mean_absolute_error_kt": 17.38,
+      "within_15_percent": 0.308,
+      "median_ratio_within_75_km": 1.309,
+      "median_ratio_beyond_75_km": 1.108,
+      "median_ratio_observed_64kt_or_more": 1.032,
+      "per_storm_median_ratio_range": [
+        0.929,
+        1.789
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.2,
+      "mean_absolute_error_kt": 18.5,
+      "within_15_percent": 0.308,
+      "median_ratio_within_75_km": 1.346,
+      "median_ratio_beyond_75_km": 1.14,
+      "median_ratio_observed_64kt_or_more": 1.061,
+      "per_storm_median_ratio_range": [
+        0.955,
+        1.84
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.234,
+      "mean_absolute_error_kt": 19.7,
+      "within_15_percent": 0.295,
+      "median_ratio_within_75_km": 1.384,
+      "median_ratio_beyond_75_km": 1.171,
+      "median_ratio_observed_64kt_or_more": 1.091,
+      "per_storm_median_ratio_range": [
+        0.982,
+        1.891
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.267,
+      "mean_absolute_error_kt": 20.99,
+      "within_15_percent": 0.25,
+      "median_ratio_within_75_km": 1.421,
+      "median_ratio_beyond_75_km": 1.203,
+      "median_ratio_observed_64kt_or_more": 1.12,
+      "per_storm_median_ratio_range": [
+        1.008,
+        1.942
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.3,
+      "mean_absolute_error_kt": 22.37,
+      "within_15_percent": 0.237,
+      "median_ratio_within_75_km": 1.458,
+      "median_ratio_beyond_75_km": 1.235,
+      "median_ratio_observed_64kt_or_more": 1.15,
+      "per_storm_median_ratio_range": [
+        1.035,
+        1.993
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.3,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.334,
+      "mean_absolute_error_kt": 23.79,
+      "within_15_percent": 0.212,
+      "median_ratio_within_75_km": 1.496,
+      "median_ratio_beyond_75_km": 1.266,
+      "median_ratio_observed_64kt_or_more": 1.179,
+      "per_storm_median_ratio_range": [
+        1.061,
+        2.044
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.891,
+      "mean_absolute_error_kt": 13.56,
+      "within_15_percent": 0.333,
+      "median_ratio_within_75_km": 1.017,
+      "median_ratio_beyond_75_km": 0.849,
+      "median_ratio_observed_64kt_or_more": 0.798,
+      "per_storm_median_ratio_range": [
+        0.724,
+        1.408
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.923,
+      "mean_absolute_error_kt": 13.52,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.054,
+      "median_ratio_beyond_75_km": 0.879,
+      "median_ratio_observed_64kt_or_more": 0.826,
+      "per_storm_median_ratio_range": [
+        0.75,
+        1.458
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.955,
+      "mean_absolute_error_kt": 13.65,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.09,
+      "median_ratio_beyond_75_km": 0.909,
+      "median_ratio_observed_64kt_or_more": 0.855,
+      "per_storm_median_ratio_range": [
+        0.776,
+        1.508
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.987,
+      "mean_absolute_error_kt": 13.88,
+      "within_15_percent": 0.404,
+      "median_ratio_within_75_km": 1.126,
+      "median_ratio_beyond_75_km": 0.94,
+      "median_ratio_observed_64kt_or_more": 0.883,
+      "per_storm_median_ratio_range": [
+        0.802,
+        1.559
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 1.019,
+      "mean_absolute_error_kt": 14.29,
+      "within_15_percent": 0.385,
+      "median_ratio_within_75_km": 1.163,
+      "median_ratio_beyond_75_km": 0.97,
+      "median_ratio_observed_64kt_or_more": 0.912,
+      "per_storm_median_ratio_range": [
+        0.828,
+        1.609
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 1.051,
+      "mean_absolute_error_kt": 14.82,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.199,
+      "median_ratio_beyond_75_km": 1.0,
+      "median_ratio_observed_64kt_or_more": 0.94,
+      "per_storm_median_ratio_range": [
+        0.853,
+        1.659
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 1.083,
+      "mean_absolute_error_kt": 15.49,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.235,
+      "median_ratio_beyond_75_km": 1.03,
+      "median_ratio_observed_64kt_or_more": 0.968,
+      "per_storm_median_ratio_range": [
+        0.879,
+        1.71
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 1.114,
+      "mean_absolute_error_kt": 16.3,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.271,
+      "median_ratio_beyond_75_km": 1.061,
+      "median_ratio_observed_64kt_or_more": 0.997,
+      "per_storm_median_ratio_range": [
+        0.905,
+        1.76
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.146,
+      "mean_absolute_error_kt": 17.26,
+      "within_15_percent": 0.314,
+      "median_ratio_within_75_km": 1.308,
+      "median_ratio_beyond_75_km": 1.091,
+      "median_ratio_observed_64kt_or_more": 1.025,
+      "per_storm_median_ratio_range": [
+        0.931,
+        1.81
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.178,
+      "mean_absolute_error_kt": 18.31,
+      "within_15_percent": 0.301,
+      "median_ratio_within_75_km": 1.344,
+      "median_ratio_beyond_75_km": 1.121,
+      "median_ratio_observed_64kt_or_more": 1.054,
+      "per_storm_median_ratio_range": [
+        0.957,
+        1.86
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.21,
+      "mean_absolute_error_kt": 19.46,
+      "within_15_percent": 0.276,
+      "median_ratio_within_75_km": 1.38,
+      "median_ratio_beyond_75_km": 1.152,
+      "median_ratio_observed_64kt_or_more": 1.082,
+      "per_storm_median_ratio_range": [
+        0.983,
+        1.911
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.242,
+      "mean_absolute_error_kt": 20.7,
+      "within_15_percent": 0.25,
+      "median_ratio_within_75_km": 1.417,
+      "median_ratio_beyond_75_km": 1.182,
+      "median_ratio_observed_64kt_or_more": 1.111,
+      "per_storm_median_ratio_range": [
+        1.009,
+        1.961
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.325,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.274,
+      "mean_absolute_error_kt": 22.01,
+      "within_15_percent": 0.231,
+      "median_ratio_within_75_km": 1.453,
+      "median_ratio_beyond_75_km": 1.212,
+      "median_ratio_observed_64kt_or_more": 1.139,
+      "per_storm_median_ratio_range": [
+        1.035,
+        2.011
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.854,
+      "mean_absolute_error_kt": 14.06,
+      "within_15_percent": 0.314,
+      "median_ratio_within_75_km": 0.989,
+      "median_ratio_beyond_75_km": 0.816,
+      "median_ratio_observed_64kt_or_more": 0.771,
+      "per_storm_median_ratio_range": [
+        0.705,
+        1.385
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.884,
+      "mean_absolute_error_kt": 13.83,
+      "within_15_percent": 0.333,
+      "median_ratio_within_75_km": 1.025,
+      "median_ratio_beyond_75_km": 0.845,
+      "median_ratio_observed_64kt_or_more": 0.799,
+      "per_storm_median_ratio_range": [
+        0.73,
+        1.435
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.915,
+      "mean_absolute_error_kt": 13.79,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.06,
+      "median_ratio_beyond_75_km": 0.874,
+      "median_ratio_observed_64kt_or_more": 0.826,
+      "per_storm_median_ratio_range": [
+        0.756,
+        1.484
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.945,
+      "mean_absolute_error_kt": 13.89,
+      "within_15_percent": 0.391,
+      "median_ratio_within_75_km": 1.095,
+      "median_ratio_beyond_75_km": 0.903,
+      "median_ratio_observed_64kt_or_more": 0.854,
+      "per_storm_median_ratio_range": [
+        0.781,
+        1.534
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.976,
+      "mean_absolute_error_kt": 14.11,
+      "within_15_percent": 0.391,
+      "median_ratio_within_75_km": 1.131,
+      "median_ratio_beyond_75_km": 0.932,
+      "median_ratio_observed_64kt_or_more": 0.881,
+      "per_storm_median_ratio_range": [
+        0.806,
+        1.583
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 1.006,
+      "mean_absolute_error_kt": 14.45,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.166,
+      "median_ratio_beyond_75_km": 0.961,
+      "median_ratio_observed_64kt_or_more": 0.909,
+      "per_storm_median_ratio_range": [
+        0.831,
+        1.632
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 1.037,
+      "mean_absolute_error_kt": 14.94,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.201,
+      "median_ratio_beyond_75_km": 0.99,
+      "median_ratio_observed_64kt_or_more": 0.937,
+      "per_storm_median_ratio_range": [
+        0.856,
+        1.682
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 1.067,
+      "mean_absolute_error_kt": 15.59,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.237,
+      "median_ratio_beyond_75_km": 1.02,
+      "median_ratio_observed_64kt_or_more": 0.964,
+      "per_storm_median_ratio_range": [
+        0.882,
+        1.731
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.098,
+      "mean_absolute_error_kt": 16.36,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.272,
+      "median_ratio_beyond_75_km": 1.049,
+      "median_ratio_observed_64kt_or_more": 0.992,
+      "per_storm_median_ratio_range": [
+        0.907,
+        1.781
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.128,
+      "mean_absolute_error_kt": 17.24,
+      "within_15_percent": 0.333,
+      "median_ratio_within_75_km": 1.307,
+      "median_ratio_beyond_75_km": 1.078,
+      "median_ratio_observed_64kt_or_more": 1.019,
+      "per_storm_median_ratio_range": [
+        0.932,
+        1.83
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.159,
+      "mean_absolute_error_kt": 18.22,
+      "within_15_percent": 0.288,
+      "median_ratio_within_75_km": 1.343,
+      "median_ratio_beyond_75_km": 1.107,
+      "median_ratio_observed_64kt_or_more": 1.047,
+      "per_storm_median_ratio_range": [
+        0.957,
+        1.88
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.189,
+      "mean_absolute_error_kt": 19.28,
+      "within_15_percent": 0.288,
+      "median_ratio_within_75_km": 1.378,
+      "median_ratio_beyond_75_km": 1.136,
+      "median_ratio_observed_64kt_or_more": 1.074,
+      "per_storm_median_ratio_range": [
+        0.982,
+        1.929
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.35,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.22,
+      "mean_absolute_error_kt": 20.46,
+      "within_15_percent": 0.244,
+      "median_ratio_within_75_km": 1.413,
+      "median_ratio_beyond_75_km": 1.165,
+      "median_ratio_observed_64kt_or_more": 1.102,
+      "per_storm_median_ratio_range": [
+        1.008,
+        1.979
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.813,
+      "mean_absolute_error_kt": 14.76,
+      "within_15_percent": 0.295,
+      "median_ratio_within_75_km": 0.959,
+      "median_ratio_beyond_75_km": 0.775,
+      "median_ratio_observed_64kt_or_more": 0.758,
+      "per_storm_median_ratio_range": [
+        0.672,
+        1.363
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.842,
+      "mean_absolute_error_kt": 14.38,
+      "within_15_percent": 0.295,
+      "median_ratio_within_75_km": 0.994,
+      "median_ratio_beyond_75_km": 0.803,
+      "median_ratio_observed_64kt_or_more": 0.786,
+      "per_storm_median_ratio_range": [
+        0.696,
+        1.412
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.871,
+      "mean_absolute_error_kt": 14.15,
+      "within_15_percent": 0.34,
+      "median_ratio_within_75_km": 1.028,
+      "median_ratio_beyond_75_km": 0.831,
+      "median_ratio_observed_64kt_or_more": 0.813,
+      "per_storm_median_ratio_range": [
+        0.72,
+        1.46
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.9,
+      "mean_absolute_error_kt": 14.09,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.062,
+      "median_ratio_beyond_75_km": 0.858,
+      "median_ratio_observed_64kt_or_more": 0.84,
+      "per_storm_median_ratio_range": [
+        0.744,
+        1.509
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.929,
+      "mean_absolute_error_kt": 14.16,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.096,
+      "median_ratio_beyond_75_km": 0.886,
+      "median_ratio_observed_64kt_or_more": 0.867,
+      "per_storm_median_ratio_range": [
+        0.768,
+        1.558
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 0.958,
+      "mean_absolute_error_kt": 14.38,
+      "within_15_percent": 0.385,
+      "median_ratio_within_75_km": 1.131,
+      "median_ratio_beyond_75_km": 0.914,
+      "median_ratio_observed_64kt_or_more": 0.894,
+      "per_storm_median_ratio_range": [
+        0.792,
+        1.606
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 0.987,
+      "mean_absolute_error_kt": 14.69,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.165,
+      "median_ratio_beyond_75_km": 0.942,
+      "median_ratio_observed_64kt_or_more": 0.921,
+      "per_storm_median_ratio_range": [
+        0.816,
+        1.655
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 1.016,
+      "mean_absolute_error_kt": 15.11,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.199,
+      "median_ratio_beyond_75_km": 0.969,
+      "median_ratio_observed_64kt_or_more": 0.948,
+      "per_storm_median_ratio_range": [
+        0.84,
+        1.704
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.045,
+      "mean_absolute_error_kt": 15.71,
+      "within_15_percent": 0.372,
+      "median_ratio_within_75_km": 1.233,
+      "median_ratio_beyond_75_km": 0.997,
+      "median_ratio_observed_64kt_or_more": 0.975,
+      "per_storm_median_ratio_range": [
+        0.864,
+        1.752
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.074,
+      "mean_absolute_error_kt": 16.44,
+      "within_15_percent": 0.34,
+      "median_ratio_within_75_km": 1.268,
+      "median_ratio_beyond_75_km": 1.025,
+      "median_ratio_observed_64kt_or_more": 1.002,
+      "per_storm_median_ratio_range": [
+        0.888,
+        1.801
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.103,
+      "mean_absolute_error_kt": 17.25,
+      "within_15_percent": 0.327,
+      "median_ratio_within_75_km": 1.302,
+      "median_ratio_beyond_75_km": 1.052,
+      "median_ratio_observed_64kt_or_more": 1.029,
+      "per_storm_median_ratio_range": [
+        0.912,
+        1.85
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.132,
+      "mean_absolute_error_kt": 18.18,
+      "within_15_percent": 0.301,
+      "median_ratio_within_75_km": 1.336,
+      "median_ratio_beyond_75_km": 1.08,
+      "median_ratio_observed_64kt_or_more": 1.056,
+      "per_storm_median_ratio_range": [
+        0.936,
+        1.898
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.375,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.162,
+      "mean_absolute_error_kt": 19.18,
+      "within_15_percent": 0.282,
+      "median_ratio_within_75_km": 1.371,
+      "median_ratio_beyond_75_km": 1.108,
+      "median_ratio_observed_64kt_or_more": 1.083,
+      "per_storm_median_ratio_range": [
+        0.96,
+        1.947
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.783,
+      "mean_absolute_error_kt": 15.52,
+      "within_15_percent": 0.282,
+      "median_ratio_within_75_km": 0.939,
+      "median_ratio_beyond_75_km": 0.742,
+      "median_ratio_observed_64kt_or_more": 0.741,
+      "per_storm_median_ratio_range": [
+        0.641,
+        1.341
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.811,
+      "mean_absolute_error_kt": 15.09,
+      "within_15_percent": 0.282,
+      "median_ratio_within_75_km": 0.972,
+      "median_ratio_beyond_75_km": 0.768,
+      "median_ratio_observed_64kt_or_more": 0.768,
+      "per_storm_median_ratio_range": [
+        0.664,
+        1.389
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.838,
+      "mean_absolute_error_kt": 14.72,
+      "within_15_percent": 0.282,
+      "median_ratio_within_75_km": 1.006,
+      "median_ratio_beyond_75_km": 0.795,
+      "median_ratio_observed_64kt_or_more": 0.794,
+      "per_storm_median_ratio_range": [
+        0.687,
+        1.437
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.866,
+      "mean_absolute_error_kt": 14.5,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.039,
+      "median_ratio_beyond_75_km": 0.821,
+      "median_ratio_observed_64kt_or_more": 0.821,
+      "per_storm_median_ratio_range": [
+        0.71,
+        1.485
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.894,
+      "mean_absolute_error_kt": 14.43,
+      "within_15_percent": 0.333,
+      "median_ratio_within_75_km": 1.073,
+      "median_ratio_beyond_75_km": 0.848,
+      "median_ratio_observed_64kt_or_more": 0.847,
+      "per_storm_median_ratio_range": [
+        0.733,
+        1.533
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 0.922,
+      "mean_absolute_error_kt": 14.47,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.106,
+      "median_ratio_beyond_75_km": 0.874,
+      "median_ratio_observed_64kt_or_more": 0.874,
+      "per_storm_median_ratio_range": [
+        0.756,
+        1.581
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 0.95,
+      "mean_absolute_error_kt": 14.66,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.14,
+      "median_ratio_beyond_75_km": 0.901,
+      "median_ratio_observed_64kt_or_more": 0.9,
+      "per_storm_median_ratio_range": [
+        0.779,
+        1.628
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 0.978,
+      "mean_absolute_error_kt": 14.96,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.173,
+      "median_ratio_beyond_75_km": 0.927,
+      "median_ratio_observed_64kt_or_more": 0.926,
+      "per_storm_median_ratio_range": [
+        0.802,
+        1.676
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 1.006,
+      "mean_absolute_error_kt": 15.33,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.207,
+      "median_ratio_beyond_75_km": 0.954,
+      "median_ratio_observed_64kt_or_more": 0.953,
+      "per_storm_median_ratio_range": [
+        0.825,
+        1.724
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.034,
+      "mean_absolute_error_kt": 15.88,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.24,
+      "median_ratio_beyond_75_km": 0.98,
+      "median_ratio_observed_64kt_or_more": 0.979,
+      "per_storm_median_ratio_range": [
+        0.847,
+        1.772
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.062,
+      "mean_absolute_error_kt": 16.54,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.274,
+      "median_ratio_beyond_75_km": 1.007,
+      "median_ratio_observed_64kt_or_more": 1.006,
+      "per_storm_median_ratio_range": [
+        0.87,
+        1.82
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.09,
+      "mean_absolute_error_kt": 17.31,
+      "within_15_percent": 0.321,
+      "median_ratio_within_75_km": 1.307,
+      "median_ratio_beyond_75_km": 1.033,
+      "median_ratio_observed_64kt_or_more": 1.032,
+      "per_storm_median_ratio_range": [
+        0.893,
+        1.868
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.4,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.118,
+      "mean_absolute_error_kt": 18.19,
+      "within_15_percent": 0.314,
+      "median_ratio_within_75_km": 1.341,
+      "median_ratio_beyond_75_km": 1.06,
+      "median_ratio_observed_64kt_or_more": 1.059,
+      "per_storm_median_ratio_range": [
+        0.916,
+        1.916
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.764,
+      "mean_absolute_error_kt": 16.36,
+      "within_15_percent": 0.282,
+      "median_ratio_within_75_km": 0.895,
+      "median_ratio_beyond_75_km": 0.709,
+      "median_ratio_observed_64kt_or_more": 0.712,
+      "per_storm_median_ratio_range": [
+        0.612,
+        1.32
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.791,
+      "mean_absolute_error_kt": 15.87,
+      "within_15_percent": 0.25,
+      "median_ratio_within_75_km": 0.927,
+      "median_ratio_beyond_75_km": 0.734,
+      "median_ratio_observed_64kt_or_more": 0.737,
+      "per_storm_median_ratio_range": [
+        0.634,
+        1.367
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.818,
+      "mean_absolute_error_kt": 15.45,
+      "within_15_percent": 0.288,
+      "median_ratio_within_75_km": 0.959,
+      "median_ratio_beyond_75_km": 0.759,
+      "median_ratio_observed_64kt_or_more": 0.763,
+      "per_storm_median_ratio_range": [
+        0.656,
+        1.414
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.846,
+      "mean_absolute_error_kt": 15.11,
+      "within_15_percent": 0.295,
+      "median_ratio_within_75_km": 0.991,
+      "median_ratio_beyond_75_km": 0.785,
+      "median_ratio_observed_64kt_or_more": 0.788,
+      "per_storm_median_ratio_range": [
+        0.678,
+        1.461
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.873,
+      "mean_absolute_error_kt": 14.88,
+      "within_15_percent": 0.301,
+      "median_ratio_within_75_km": 1.023,
+      "median_ratio_beyond_75_km": 0.81,
+      "median_ratio_observed_64kt_or_more": 0.813,
+      "per_storm_median_ratio_range": [
+        0.699,
+        1.508
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 0.9,
+      "mean_absolute_error_kt": 14.83,
+      "within_15_percent": 0.321,
+      "median_ratio_within_75_km": 1.055,
+      "median_ratio_beyond_75_km": 0.835,
+      "median_ratio_observed_64kt_or_more": 0.839,
+      "per_storm_median_ratio_range": [
+        0.721,
+        1.555
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 0.928,
+      "mean_absolute_error_kt": 14.85,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.087,
+      "median_ratio_beyond_75_km": 0.86,
+      "median_ratio_observed_64kt_or_more": 0.864,
+      "per_storm_median_ratio_range": [
+        0.743,
+        1.602
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 0.955,
+      "mean_absolute_error_kt": 14.96,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.118,
+      "median_ratio_beyond_75_km": 0.886,
+      "median_ratio_observed_64kt_or_more": 0.89,
+      "per_storm_median_ratio_range": [
+        0.765,
+        1.649
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 0.982,
+      "mean_absolute_error_kt": 15.24,
+      "within_15_percent": 0.385,
+      "median_ratio_within_75_km": 1.15,
+      "median_ratio_beyond_75_km": 0.911,
+      "median_ratio_observed_64kt_or_more": 0.915,
+      "per_storm_median_ratio_range": [
+        0.787,
+        1.697
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 1.009,
+      "mean_absolute_error_kt": 15.61,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.182,
+      "median_ratio_beyond_75_km": 0.936,
+      "median_ratio_observed_64kt_or_more": 0.94,
+      "per_storm_median_ratio_range": [
+        0.809,
+        1.744
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.037,
+      "mean_absolute_error_kt": 16.1,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.214,
+      "median_ratio_beyond_75_km": 0.962,
+      "median_ratio_observed_64kt_or_more": 0.966,
+      "per_storm_median_ratio_range": [
+        0.831,
+        1.791
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.064,
+      "mean_absolute_error_kt": 16.68,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.246,
+      "median_ratio_beyond_75_km": 0.987,
+      "median_ratio_observed_64kt_or_more": 0.991,
+      "per_storm_median_ratio_range": [
+        0.853,
+        1.838
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.425,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.091,
+      "mean_absolute_error_kt": 17.39,
+      "within_15_percent": 0.327,
+      "median_ratio_within_75_km": 1.278,
+      "median_ratio_beyond_75_km": 1.012,
+      "median_ratio_observed_64kt_or_more": 1.017,
+      "per_storm_median_ratio_range": [
+        0.874,
+        1.885
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.749,
+      "mean_absolute_error_kt": 17.23,
+      "within_15_percent": 0.237,
+      "median_ratio_within_75_km": 0.873,
+      "median_ratio_beyond_75_km": 0.673,
+      "median_ratio_observed_64kt_or_more": 0.689,
+      "per_storm_median_ratio_range": [
+        0.584,
+        1.299
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.776,
+      "mean_absolute_error_kt": 16.71,
+      "within_15_percent": 0.269,
+      "median_ratio_within_75_km": 0.904,
+      "median_ratio_beyond_75_km": 0.697,
+      "median_ratio_observed_64kt_or_more": 0.714,
+      "per_storm_median_ratio_range": [
+        0.605,
+        1.345
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.803,
+      "mean_absolute_error_kt": 16.24,
+      "within_15_percent": 0.256,
+      "median_ratio_within_75_km": 0.936,
+      "median_ratio_beyond_75_km": 0.721,
+      "median_ratio_observed_64kt_or_more": 0.738,
+      "per_storm_median_ratio_range": [
+        0.626,
+        1.391
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.829,
+      "mean_absolute_error_kt": 15.83,
+      "within_15_percent": 0.269,
+      "median_ratio_within_75_km": 0.967,
+      "median_ratio_beyond_75_km": 0.745,
+      "median_ratio_observed_64kt_or_more": 0.763,
+      "per_storm_median_ratio_range": [
+        0.647,
+        1.438
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.856,
+      "mean_absolute_error_kt": 15.52,
+      "within_15_percent": 0.308,
+      "median_ratio_within_75_km": 0.998,
+      "median_ratio_beyond_75_km": 0.769,
+      "median_ratio_observed_64kt_or_more": 0.788,
+      "per_storm_median_ratio_range": [
+        0.668,
+        1.484
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 0.883,
+      "mean_absolute_error_kt": 15.32,
+      "within_15_percent": 0.295,
+      "median_ratio_within_75_km": 1.029,
+      "median_ratio_beyond_75_km": 0.793,
+      "median_ratio_observed_64kt_or_more": 0.812,
+      "per_storm_median_ratio_range": [
+        0.689,
+        1.53
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 0.91,
+      "mean_absolute_error_kt": 15.24,
+      "within_15_percent": 0.321,
+      "median_ratio_within_75_km": 1.06,
+      "median_ratio_beyond_75_km": 0.817,
+      "median_ratio_observed_64kt_or_more": 0.837,
+      "per_storm_median_ratio_range": [
+        0.71,
+        1.577
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 0.936,
+      "mean_absolute_error_kt": 15.25,
+      "within_15_percent": 0.372,
+      "median_ratio_within_75_km": 1.091,
+      "median_ratio_beyond_75_km": 0.841,
+      "median_ratio_observed_64kt_or_more": 0.861,
+      "per_storm_median_ratio_range": [
+        0.73,
+        1.623
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 0.963,
+      "mean_absolute_error_kt": 15.32,
+      "within_15_percent": 0.391,
+      "median_ratio_within_75_km": 1.123,
+      "median_ratio_beyond_75_km": 0.865,
+      "median_ratio_observed_64kt_or_more": 0.886,
+      "per_storm_median_ratio_range": [
+        0.751,
+        1.67
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 0.99,
+      "mean_absolute_error_kt": 15.51,
+      "within_15_percent": 0.378,
+      "median_ratio_within_75_km": 1.154,
+      "median_ratio_beyond_75_km": 0.889,
+      "median_ratio_observed_64kt_or_more": 0.911,
+      "per_storm_median_ratio_range": [
+        0.772,
+        1.716
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 1.017,
+      "mean_absolute_error_kt": 15.9,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.185,
+      "median_ratio_beyond_75_km": 0.913,
+      "median_ratio_observed_64kt_or_more": 0.935,
+      "per_storm_median_ratio_range": [
+        0.793,
+        1.762
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 1.044,
+      "mean_absolute_error_kt": 16.36,
+      "within_15_percent": 0.346,
+      "median_ratio_within_75_km": 1.216,
+      "median_ratio_beyond_75_km": 0.937,
+      "median_ratio_observed_64kt_or_more": 0.96,
+      "per_storm_median_ratio_range": [
+        0.814,
+        1.809
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.45,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.07,
+      "mean_absolute_error_kt": 16.9,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.247,
+      "median_ratio_beyond_75_km": 0.961,
+      "median_ratio_observed_64kt_or_more": 0.984,
+      "per_storm_median_ratio_range": [
+        0.835,
+        1.855
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.717,
+      "mean_absolute_error_kt": 18.19,
+      "within_15_percent": 0.224,
+      "median_ratio_within_75_km": 0.862,
+      "median_ratio_beyond_75_km": 0.654,
+      "median_ratio_observed_64kt_or_more": 0.673,
+      "per_storm_median_ratio_range": [
+        0.558,
+        1.274
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.743,
+      "mean_absolute_error_kt": 17.59,
+      "within_15_percent": 0.237,
+      "median_ratio_within_75_km": 0.893,
+      "median_ratio_beyond_75_km": 0.678,
+      "median_ratio_observed_64kt_or_more": 0.697,
+      "per_storm_median_ratio_range": [
+        0.578,
+        1.319
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.769,
+      "mean_absolute_error_kt": 17.08,
+      "within_15_percent": 0.231,
+      "median_ratio_within_75_km": 0.923,
+      "median_ratio_beyond_75_km": 0.701,
+      "median_ratio_observed_64kt_or_more": 0.721,
+      "per_storm_median_ratio_range": [
+        0.598,
+        1.364
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.794,
+      "mean_absolute_error_kt": 16.65,
+      "within_15_percent": 0.237,
+      "median_ratio_within_75_km": 0.954,
+      "median_ratio_beyond_75_km": 0.725,
+      "median_ratio_observed_64kt_or_more": 0.745,
+      "per_storm_median_ratio_range": [
+        0.618,
+        1.41
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.82,
+      "mean_absolute_error_kt": 16.25,
+      "within_15_percent": 0.244,
+      "median_ratio_within_75_km": 0.985,
+      "median_ratio_beyond_75_km": 0.748,
+      "median_ratio_observed_64kt_or_more": 0.769,
+      "per_storm_median_ratio_range": [
+        0.638,
+        1.455
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 0.845,
+      "mean_absolute_error_kt": 15.96,
+      "within_15_percent": 0.288,
+      "median_ratio_within_75_km": 1.016,
+      "median_ratio_beyond_75_km": 0.771,
+      "median_ratio_observed_64kt_or_more": 0.793,
+      "per_storm_median_ratio_range": [
+        0.658,
+        1.501
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 0.871,
+      "mean_absolute_error_kt": 15.8,
+      "within_15_percent": 0.301,
+      "median_ratio_within_75_km": 1.047,
+      "median_ratio_beyond_75_km": 0.795,
+      "median_ratio_observed_64kt_or_more": 0.817,
+      "per_storm_median_ratio_range": [
+        0.678,
+        1.546
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 0.897,
+      "mean_absolute_error_kt": 15.7,
+      "within_15_percent": 0.314,
+      "median_ratio_within_75_km": 1.077,
+      "median_ratio_beyond_75_km": 0.818,
+      "median_ratio_observed_64kt_or_more": 0.841,
+      "per_storm_median_ratio_range": [
+        0.698,
+        1.592
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 0.922,
+      "mean_absolute_error_kt": 15.68,
+      "within_15_percent": 0.365,
+      "median_ratio_within_75_km": 1.108,
+      "median_ratio_beyond_75_km": 0.841,
+      "median_ratio_observed_64kt_or_more": 0.865,
+      "per_storm_median_ratio_range": [
+        0.718,
+        1.637
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 0.948,
+      "mean_absolute_error_kt": 15.73,
+      "within_15_percent": 0.397,
+      "median_ratio_within_75_km": 1.139,
+      "median_ratio_beyond_75_km": 0.865,
+      "median_ratio_observed_64kt_or_more": 0.89,
+      "per_storm_median_ratio_range": [
+        0.737,
+        1.683
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 0.973,
+      "mean_absolute_error_kt": 15.87,
+      "within_15_percent": 0.372,
+      "median_ratio_within_75_km": 1.17,
+      "median_ratio_beyond_75_km": 0.888,
+      "median_ratio_observed_64kt_or_more": 0.914,
+      "per_storm_median_ratio_range": [
+        0.757,
+        1.728
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 0.999,
+      "mean_absolute_error_kt": 16.19,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.2,
+      "median_ratio_beyond_75_km": 0.912,
+      "median_ratio_observed_64kt_or_more": 0.938,
+      "per_storm_median_ratio_range": [
+        0.777,
+        1.774
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.475,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 1.025,
+      "mean_absolute_error_kt": 16.63,
+      "within_15_percent": 0.353,
+      "median_ratio_within_75_km": 1.231,
+      "median_ratio_beyond_75_km": 0.935,
+      "median_ratio_observed_64kt_or_more": 0.962,
+      "per_storm_median_ratio_range": [
+        0.797,
+        1.819
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.7,
+      "n": 156,
+      "median_ratio": 0.686,
+      "mean_absolute_error_kt": 19.19,
+      "within_15_percent": 0.179,
+      "median_ratio_within_75_km": 0.859,
+      "median_ratio_beyond_75_km": 0.631,
+      "median_ratio_observed_64kt_or_more": 0.66,
+      "per_storm_median_ratio_range": [
+        0.533,
+        1.243
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.725,
+      "n": 156,
+      "median_ratio": 0.711,
+      "mean_absolute_error_kt": 18.55,
+      "within_15_percent": 0.205,
+      "median_ratio_within_75_km": 0.89,
+      "median_ratio_beyond_75_km": 0.654,
+      "median_ratio_observed_64kt_or_more": 0.684,
+      "per_storm_median_ratio_range": [
+        0.552,
+        1.287
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.75,
+      "n": 156,
+      "median_ratio": 0.735,
+      "mean_absolute_error_kt": 17.97,
+      "within_15_percent": 0.231,
+      "median_ratio_within_75_km": 0.921,
+      "median_ratio_beyond_75_km": 0.676,
+      "median_ratio_observed_64kt_or_more": 0.708,
+      "per_storm_median_ratio_range": [
+        0.571,
+        1.331
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.775,
+      "n": 156,
+      "median_ratio": 0.76,
+      "mean_absolute_error_kt": 17.5,
+      "within_15_percent": 0.218,
+      "median_ratio_within_75_km": 0.951,
+      "median_ratio_beyond_75_km": 0.699,
+      "median_ratio_observed_64kt_or_more": 0.731,
+      "per_storm_median_ratio_range": [
+        0.59,
+        1.376
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.8,
+      "n": 156,
+      "median_ratio": 0.784,
+      "mean_absolute_error_kt": 17.08,
+      "within_15_percent": 0.231,
+      "median_ratio_within_75_km": 0.982,
+      "median_ratio_beyond_75_km": 0.721,
+      "median_ratio_observed_64kt_or_more": 0.755,
+      "per_storm_median_ratio_range": [
+        0.609,
+        1.42
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.825,
+      "n": 156,
+      "median_ratio": 0.809,
+      "mean_absolute_error_kt": 16.71,
+      "within_15_percent": 0.244,
+      "median_ratio_within_75_km": 1.013,
+      "median_ratio_beyond_75_km": 0.744,
+      "median_ratio_observed_64kt_or_more": 0.778,
+      "per_storm_median_ratio_range": [
+        0.628,
+        1.465
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.85,
+      "n": 156,
+      "median_ratio": 0.833,
+      "mean_absolute_error_kt": 16.43,
+      "within_15_percent": 0.288,
+      "median_ratio_within_75_km": 1.043,
+      "median_ratio_beyond_75_km": 0.766,
+      "median_ratio_observed_64kt_or_more": 0.802,
+      "per_storm_median_ratio_range": [
+        0.647,
+        1.509
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.875,
+      "n": 156,
+      "median_ratio": 0.858,
+      "mean_absolute_error_kt": 16.27,
+      "within_15_percent": 0.301,
+      "median_ratio_within_75_km": 1.074,
+      "median_ratio_beyond_75_km": 0.789,
+      "median_ratio_observed_64kt_or_more": 0.825,
+      "per_storm_median_ratio_range": [
+        0.666,
+        1.553
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.9,
+      "n": 156,
+      "median_ratio": 0.882,
+      "mean_absolute_error_kt": 16.19,
+      "within_15_percent": 0.327,
+      "median_ratio_within_75_km": 1.105,
+      "median_ratio_beyond_75_km": 0.812,
+      "median_ratio_observed_64kt_or_more": 0.849,
+      "per_storm_median_ratio_range": [
+        0.685,
+        1.598
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.925,
+      "n": 156,
+      "median_ratio": 0.907,
+      "mean_absolute_error_kt": 16.14,
+      "within_15_percent": 0.372,
+      "median_ratio_within_75_km": 1.136,
+      "median_ratio_beyond_75_km": 0.834,
+      "median_ratio_observed_64kt_or_more": 0.873,
+      "per_storm_median_ratio_range": [
+        0.704,
+        1.642
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.95,
+      "n": 156,
+      "median_ratio": 0.931,
+      "mean_absolute_error_kt": 16.17,
+      "within_15_percent": 0.359,
+      "median_ratio_within_75_km": 1.166,
+      "median_ratio_beyond_75_km": 0.857,
+      "median_ratio_observed_64kt_or_more": 0.896,
+      "per_storm_median_ratio_range": [
+        0.724,
+        1.687
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 0.975,
+      "n": 156,
+      "median_ratio": 0.956,
+      "mean_absolute_error_kt": 16.31,
+      "within_15_percent": 0.372,
+      "median_ratio_within_75_km": 1.197,
+      "median_ratio_beyond_75_km": 0.879,
+      "median_ratio_observed_64kt_or_more": 0.92,
+      "per_storm_median_ratio_range": [
+        0.743,
+        1.731
+      ]
+    },
+    {
+      "outer_decay_exponent": 0.5,
+      "land_exposure_factor": 1.0,
+      "n": 156,
+      "median_ratio": 0.98,
+      "mean_absolute_error_kt": 16.55,
+      "within_15_percent": 0.353,
+      "median_ratio_within_75_km": 1.228,
+      "median_ratio_beyond_75_km": 0.902,
+      "median_ratio_observed_64kt_or_more": 0.943,
+      "per_storm_median_ratio_range": [
+        0.762,
+        1.775
+      ]
+    }
+  ],
+  "cross_validation": {
+    "method": "leave one storm out: refit the gust factor, decay and land factor on the other cohort storms, score the held-out storm with all three",
+    "cohort_id": "primary_2016_2024",
+    "folds": [
+      {
+        "held_out_storm_id": "AL042024",
+        "pairs": 17,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.3,
+        "land_exposure_factor": 0.775,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 0.929,
+        "held_out_mean_absolute_error_kt": 7.4
+      },
+      {
+        "held_out_storm_id": "AL092016",
+        "pairs": 9,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.03,
+        "held_out_mean_absolute_error_kt": 4.19
+      },
+      {
+        "held_out_storm_id": "AL092022",
+        "pairs": 27,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.25,
+        "land_exposure_factor": 0.75,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.298,
+        "held_out_mean_absolute_error_kt": 21.08
+      },
+      {
+        "held_out_storm_id": "AL092024",
+        "pairs": 12,
+        "gust_factor": 1.325,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.35,
+        "land_exposure_factor": 0.825,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.09,
+        "held_out_mean_absolute_error_kt": 9.68
+      },
+      {
+        "held_out_storm_id": "AL102023",
+        "pairs": 1,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.498,
+        "held_out_mean_absolute_error_kt": 21.39
+      },
+      {
+        "held_out_storm_id": "AL112017",
+        "pairs": 31,
+        "gust_factor": 1.359,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.325,
+        "land_exposure_factor": 0.7,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 0.738,
+        "held_out_mean_absolute_error_kt": 20.99
+      },
+      {
+        "held_out_storm_id": "AL142016",
+        "pairs": 15,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.385,
+        "held_out_mean_absolute_error_kt": 20.21
+      },
+      {
+        "held_out_storm_id": "AL142018",
+        "pairs": 4,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.325,
+        "land_exposure_factor": 0.825,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.659,
+        "held_out_mean_absolute_error_kt": 42.77
+      },
+      {
+        "held_out_storm_id": "AL142024",
+        "pairs": 20,
+        "gust_factor": 1.324,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.45,
+        "land_exposure_factor": 0.975,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.017,
+        "held_out_median_ratio": 0.917,
+        "held_out_mean_absolute_error_kt": 10.24
+      },
+      {
+        "held_out_storm_id": "AL172022",
+        "pairs": 16,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.3,
+        "land_exposure_factor": 0.775,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 0.822,
+        "held_out_mean_absolute_error_kt": 11.25
+      },
+      {
+        "held_out_storm_id": "AL192020",
+        "pairs": 4,
+        "gust_factor": 1.333,
+        "gust_factor_contributing_storms": 10,
+        "outer_decay_exponent": 0.275,
+        "land_exposure_factor": 0.75,
+        "strong_gust_constraint_evaluable": true,
+        "bounds_relaxed_by": 0.0,
+        "held_out_median_ratio": 1.311,
+        "held_out_mean_absolute_error_kt": 17.56
+      }
+    ],
+    "storms_with_no_evaluable_peak_comparisons": [],
+    "out_of_sample": {
+      "n": 156,
+      "mean_absolute_error_kt": 15.7,
+      "median_ratio": 0.993
+    },
+    "out_of_sample_mean_of_per_storm_mae_kt": 16.98,
+    "in_sample": {
+      "n": 156,
+      "mean_absolute_error_kt": 14.11,
+      "median_ratio": 1.033
+    },
+    "chosen_constants_across_folds": {
+      "gust_factor": {
+        "min": 1.324,
+        "max": 1.359
+      },
+      "outer_decay_exponent": {
+        "min": 0.25,
+        "max": 0.45,
+        "in_sample": 0.275
+      },
+      "land_exposure_factor": {
+        "min": 0.7,
+        "max": 0.975,
+        "in_sample": 0.75
+      }
+    }
+  },
+  "interpretation": "The decay exponent is flatter than the radii-implied mean-wind value because observed peak gusts away from the centre include convective gusts the mean profile lacks; the land factor stands in for the surface roughness the marine profile ignores. Both are effective, calibrated values for reproducing station peak gusts, not physical measurements, and they were fitted jointly with the gust factor: only the combination is validated. A grid-edge choice is a diagnostic to look at, not by itself a sign the fit is wrong."
+}

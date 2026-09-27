@@ -1,61 +1,2842 @@
 {
-  "curve_set_id": "wrp-assumed-v1",
+  "curve_set_id": "hazus-msf1-suburban-v2",
   "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
-  "evidence_status": "assumed",
-  "upper_supported_wind_mph": 220,
+  "evidence_status": "sourced",
+  "upper_supported_wind_mph": 250,
   "provenance": {
-    "summary": "Provisional fixture curves. Every damage fraction below is ASSUMED. No curve here is measured, calibrated or validated against loss experience.",
-    "baseline_derivation": "Baseline pre-FBC fractions are the platform's already-published vulnerability assumption (risk.wind_damage_ratio: min(0.85, 0.9 * ((kt - 50) / 100) ** 2.2), sustained knots) evaluated on this file's gust grid using kt = mph / (1.15078 * 1.30). Reusing it keeps one vulnerability assumption in the product rather than two competing ones.",
-    "upgrade_derivation": "Upgrade curves are the baseline scaled by (1 - effectiveness) using the hurricane effectiveness already published on /api/meta/model: opening-protection 0.25 for 'shutters', roof-to-wall 0.20 for 'roof_straps'. This is an assumed uniform effect across all wind speeds, which is almost certainly wrong in shape: real mitigation effects vary with intensity.",
-    "code_uplift_derivation": "post_fbc_2002 baseline is pre_fbc_2002 scaled by 0.60, an assumed uplift for homes built to the 2002 Florida Building Code. Not sourced.",
-    "finance_workbook_status": "StormShield_Finance_Data_v5.xlsx returned NO damage-effect evidence: 'Data Request - Upgrades' tables A and B have every Answer cell blank ('—'), under an explicit ground rule that a premium discount must not be converted into a damage reduction. These fixtures exist so the engine can run before that request is answered; they are not a substitute for it.",
-    "do_not": "Do not present these as FORTIFIED, IBHS or study-derived results. Replace this whole file when the math/research team supplies curves."
+    "summary": "Building loss as a fraction of replacement cost, from the FEMA Hazus hurricane model's published loss functions for one-story masonry single-family homes. Sourced: every point is a Hazus value or the mean of two. The mapping from the platform's classes to Hazus building features is a modelling choice, recorded below.",
+    "roof_shape_variants": [
+      "gable",
+      "hip",
+      "blended"
+    ],
+    "version_note": "v2 (27 September 2026): every curve split into gable, hip and blended variants (5 -> 15 curves) and roof_shape added as a field; v1 published only the single blended-equivalent curve per class/upgrade. See roof_shape below.",
+    "source": "FEMA Hazus Hurricane Model building loss functions (Technical Manual v4.2), machine-readable copy from the NHERI SimCenter Damage and Loss Model Library (BSD 3-Clause), commit 662999759cc59bf9cfc099d4ff5a5814a7bf01c8. Method and validation against insurance losses: Vickery et al. 2006, Natural Hazards Review 7(2). Extract and provenance: data/calibration/hazus_hurricane_loss.",
+    "wind_basis": "Hazus loss functions take the open-terrain peak gust at 10 m, the metric the wind step produces; no conversion is applied. The home's surroundings enter through the Hazus terrain field, set to suburban (z0 = 0.35 m) for every home.",
+    "class_mapping": {
+      "building": "Hazus M.SF.1: one-story masonry, wood-truss roof, no garage, no masonry reinforcing, roof cover unknown",
+      "pre_fbc_2002": "roof-to-wall toe-nails, 6d roof-deck nails, no secondary water resistance, no shutters",
+      "post_fbc_2002": "roof-to-wall straps, 8d roof-deck nails, secondary water resistance, no shutters",
+      "shutters": "same class with Hazus shutters on",
+      "roof_straps": "pre_fbc_2002 with straps in place of toe-nails; not offered for post_fbc_2002, which already has them"
+    },
+    "roof_shape": "Published separately: the Hazus gable curve, the Hazus hip curve, and their mean ('blended') at each speed. A hip roof loses about half as much as a gable roof at 140 mph. A property that declares its own roof_shape ('gable' or 'hip') gets the matching curve; without one it gets 'blended', an equal-weight assumption with no source for Florida's actual gable/hip mix. That fallback, not the split itself, is the largest remaining assumption in these curves - which roof shape an unlabeled Florida home actually has is a separate, larger open question.",
+    "monotone_adjustment": "Every curve (gable, hip and blended alike) made nondecreasing with a running maximum; the largest adjustment was 0.0254 of replacement cost, on curve post_fbc_2002.shutters.gable at 205 mph. Every curve's own adjustment, and where on its wind axis it happens, is in monotone_adjustment_detail below, largest first.",
+    "monotone_adjustment_detail": [
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "wind_mph": 205.0,
+        "adjustment": 0.0254
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "wind_mph": 245.0,
+        "adjustment": 0.009
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "wind_mph": 205.0,
+        "adjustment": 0.0048
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "wind_mph": 245.0,
+        "adjustment": 0.0042
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "wind_mph": 215.0,
+        "adjustment": 0.0033
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "hip",
+        "wind_mph": 245.0,
+        "adjustment": 0.0015
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "hip",
+        "wind_mph": 210.0,
+        "adjustment": 0.001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "blended",
+        "wind_mph": 245.0,
+        "adjustment": 0.0008
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "blended",
+        "wind_mph": 210.0,
+        "adjustment": 0.0005
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "gable",
+        "wind_mph": 215.0,
+        "adjustment": 0.0005
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "gable",
+        "wind_mph": 245.0,
+        "adjustment": 0.0004
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "gable",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "hip",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "blended",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      }
+    ],
+    "ordering_adjustment": "Within each roof shape, every upgrade capped at its class baseline, and the post-2002 baseline at the pre-2002 one, so an upgrade never adds damage; the largest cap was 0.0003 of replacement cost, where the source curves cross by simulation noise below 105 mph, on curve pre_fbc_2002.roof_straps.hip at 100 mph (capped to pre_fbc_2002.baseline). Every curve's own cap is in ordering_adjustment_detail below, largest first.",
+    "ordering_adjustment_detail": [
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 100.0,
+        "adjustment": 0.0003
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 90.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 85.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "roof_straps",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 100.0,
+        "adjustment": 0.0001
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 50.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "gable",
+        "capped_to": "post_fbc_2002.baseline",
+        "wind_mph": 60.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "hip",
+        "capped_to": "post_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "baseline",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "pre_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "capped_to": "pre_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      },
+      {
+        "vulnerability_class": "post_fbc_2002",
+        "upgrade_id": "shutters",
+        "roof_shape": "blended",
+        "capped_to": "post_fbc_2002.baseline",
+        "wind_mph": 80.0,
+        "adjustment": 0.0
+      }
+    ],
+    "scope": "Building structure only; contents and loss of use are separate Hazus functions and are not included. Hazus tends to understate small losses below about 100 mph, where fallen trees (not modelled) do much of the damage.",
+    "not_validated_here": "Hazus was validated by its authors against insurance losses from past storms; these curves have not been checked against this portfolio's own claims. The Finance workbook's upgrade damage-effect request is still unanswered.",
+    "script": "backend/scripts/build_damage_curves.py"
   },
   "curves": [
     {
-      "curve_id": "pre_fbc_2002.baseline.assumed.v1",
+      "curve_id": "pre_fbc_2002.baseline.gable.hazus.v1",
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "baseline",
+      "roof_shape": "gable",
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
-      "evidence_status": "assumed",
-      "source_note": "Assumed. Platform vulnerability curve risk.wind_damage_ratio on the gust grid. Single-family home built before the 2002 Florida Building Code.",
-      "points": [[0, 0.0], [75, 0.0], [90, 0.0059], [105, 0.0266], [120, 0.0647], [140, 0.1448], [160, 0.2608], [180, 0.4148], [200, 0.6083], [220, 0.8428]]
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, as built, gable roof: Hazus M.SF.1.gab.tnail.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0002
+        ],
+        [
+          65,
+          0.0006
+        ],
+        [
+          70,
+          0.0013
+        ],
+        [
+          75,
+          0.0026
+        ],
+        [
+          80,
+          0.0042
+        ],
+        [
+          85,
+          0.0062
+        ],
+        [
+          90,
+          0.0084
+        ],
+        [
+          95,
+          0.011
+        ],
+        [
+          100,
+          0.0144
+        ],
+        [
+          105,
+          0.0206
+        ],
+        [
+          110,
+          0.0308
+        ],
+        [
+          115,
+          0.0535
+        ],
+        [
+          120,
+          0.0928
+        ],
+        [
+          125,
+          0.1693
+        ],
+        [
+          130,
+          0.2647
+        ],
+        [
+          135,
+          0.3898
+        ],
+        [
+          140,
+          0.504
+        ],
+        [
+          145,
+          0.6125
+        ],
+        [
+          150,
+          0.7124
+        ],
+        [
+          155,
+          0.811
+        ],
+        [
+          160,
+          0.889
+        ],
+        [
+          165,
+          0.9291
+        ],
+        [
+          170,
+          0.9512
+        ],
+        [
+          175,
+          0.9705
+        ],
+        [
+          180,
+          0.9873
+        ],
+        [
+          185,
+          0.9949
+        ],
+        [
+          190,
+          0.9986
+        ],
+        [
+          195,
+          0.9993
+        ],
+        [
+          200,
+          0.9998
+        ],
+        [
+          205,
+          0.9999
+        ],
+        [
+          210,
+          1.0
+        ],
+        [
+          215,
+          1.0
+        ],
+        [
+          220,
+          1.0
+        ],
+        [
+          225,
+          1.0
+        ],
+        [
+          230,
+          1.0
+        ],
+        [
+          235,
+          1.0
+        ],
+        [
+          240,
+          1.0
+        ],
+        [
+          245,
+          1.0
+        ],
+        [
+          250,
+          1.0
+        ]
+      ]
     },
     {
-      "curve_id": "pre_fbc_2002.shutters.assumed.v1",
+      "curve_id": "pre_fbc_2002.baseline.hip.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "baseline",
+      "roof_shape": "hip",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, as built, hip roof: Hazus M.SF.1.hip.tnail.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          60,
+          0.0
+        ],
+        [
+          65,
+          0.0001
+        ],
+        [
+          70,
+          0.0005
+        ],
+        [
+          75,
+          0.0015
+        ],
+        [
+          80,
+          0.0032
+        ],
+        [
+          85,
+          0.0056
+        ],
+        [
+          90,
+          0.0086
+        ],
+        [
+          95,
+          0.012
+        ],
+        [
+          100,
+          0.0158
+        ],
+        [
+          105,
+          0.0206
+        ],
+        [
+          110,
+          0.0271
+        ],
+        [
+          115,
+          0.0371
+        ],
+        [
+          120,
+          0.0514
+        ],
+        [
+          125,
+          0.0774
+        ],
+        [
+          130,
+          0.1181
+        ],
+        [
+          135,
+          0.1843
+        ],
+        [
+          140,
+          0.2711
+        ],
+        [
+          145,
+          0.3951
+        ],
+        [
+          150,
+          0.5139
+        ],
+        [
+          155,
+          0.6447
+        ],
+        [
+          160,
+          0.7477
+        ],
+        [
+          165,
+          0.8084
+        ],
+        [
+          170,
+          0.8602
+        ],
+        [
+          175,
+          0.921
+        ],
+        [
+          180,
+          0.9598
+        ],
+        [
+          185,
+          0.9794
+        ],
+        [
+          190,
+          0.989
+        ],
+        [
+          195,
+          0.9946
+        ],
+        [
+          200,
+          0.9972
+        ],
+        [
+          205,
+          0.9986
+        ],
+        [
+          210,
+          0.9986
+        ],
+        [
+          215,
+          0.9993
+        ],
+        [
+          220,
+          0.9996
+        ],
+        [
+          225,
+          1.0
+        ],
+        [
+          230,
+          1.0
+        ],
+        [
+          235,
+          1.0
+        ],
+        [
+          240,
+          1.0
+        ],
+        [
+          245,
+          1.0
+        ],
+        [
+          250,
+          1.0
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.baseline.blended.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "baseline",
+      "roof_shape": "blended",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, as built: mean of Hazus M.SF.1.gab.tnail.trs.6d.0.0.no.0.null.35 and M.SF.1.hip.tnail.trs.6d.0.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0001
+        ],
+        [
+          65,
+          0.0003
+        ],
+        [
+          70,
+          0.0009
+        ],
+        [
+          75,
+          0.002
+        ],
+        [
+          80,
+          0.0037
+        ],
+        [
+          85,
+          0.0059
+        ],
+        [
+          90,
+          0.0085
+        ],
+        [
+          95,
+          0.0115
+        ],
+        [
+          100,
+          0.0151
+        ],
+        [
+          105,
+          0.0206
+        ],
+        [
+          110,
+          0.0289
+        ],
+        [
+          115,
+          0.0453
+        ],
+        [
+          120,
+          0.0721
+        ],
+        [
+          125,
+          0.1234
+        ],
+        [
+          130,
+          0.1914
+        ],
+        [
+          135,
+          0.287
+        ],
+        [
+          140,
+          0.3875
+        ],
+        [
+          145,
+          0.5038
+        ],
+        [
+          150,
+          0.6132
+        ],
+        [
+          155,
+          0.7278
+        ],
+        [
+          160,
+          0.8183
+        ],
+        [
+          165,
+          0.8687
+        ],
+        [
+          170,
+          0.9057
+        ],
+        [
+          175,
+          0.9457
+        ],
+        [
+          180,
+          0.9736
+        ],
+        [
+          185,
+          0.9871
+        ],
+        [
+          190,
+          0.9938
+        ],
+        [
+          195,
+          0.997
+        ],
+        [
+          200,
+          0.9985
+        ],
+        [
+          205,
+          0.9993
+        ],
+        [
+          210,
+          0.9993
+        ],
+        [
+          215,
+          0.9996
+        ],
+        [
+          220,
+          0.9998
+        ],
+        [
+          225,
+          1.0
+        ],
+        [
+          230,
+          1.0
+        ],
+        [
+          235,
+          1.0
+        ],
+        [
+          240,
+          1.0
+        ],
+        [
+          245,
+          1.0
+        ],
+        [
+          250,
+          1.0
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.shutters.gable.hazus.v1",
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "shutters",
+      "roof_shape": "gable",
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
-      "evidence_status": "assumed",
-      "source_note": "Assumed. Baseline x 0.75 (opening-protection hurricane effectiveness 0.25). Scope: whole-house accordion shutters on every opening, per Finance workbook row 'Hurricane shutters — accordion, whole-house'.",
-      "points": [[0, 0.0], [75, 0.0], [90, 0.0044], [105, 0.0199], [120, 0.0485], [140, 0.1086], [160, 0.1956], [180, 0.3111], [200, 0.4562], [220, 0.6321]]
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added, gable roof: Hazus M.SF.1.gab.tnail.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0002
+        ],
+        [
+          65,
+          0.0005
+        ],
+        [
+          70,
+          0.0013
+        ],
+        [
+          75,
+          0.0026
+        ],
+        [
+          80,
+          0.0042
+        ],
+        [
+          85,
+          0.0062
+        ],
+        [
+          90,
+          0.0083
+        ],
+        [
+          95,
+          0.0108
+        ],
+        [
+          100,
+          0.0137
+        ],
+        [
+          105,
+          0.0185
+        ],
+        [
+          110,
+          0.0255
+        ],
+        [
+          115,
+          0.0376
+        ],
+        [
+          120,
+          0.0547
+        ],
+        [
+          125,
+          0.0835
+        ],
+        [
+          130,
+          0.12
+        ],
+        [
+          135,
+          0.1714
+        ],
+        [
+          140,
+          0.23
+        ],
+        [
+          145,
+          0.2913
+        ],
+        [
+          150,
+          0.3745
+        ],
+        [
+          155,
+          0.4624
+        ],
+        [
+          160,
+          0.5748
+        ],
+        [
+          165,
+          0.6586
+        ],
+        [
+          170,
+          0.7295
+        ],
+        [
+          175,
+          0.8043
+        ],
+        [
+          180,
+          0.8741
+        ],
+        [
+          185,
+          0.918
+        ],
+        [
+          190,
+          0.9496
+        ],
+        [
+          195,
+          0.9609
+        ],
+        [
+          200,
+          0.9771
+        ],
+        [
+          205,
+          0.9795
+        ],
+        [
+          210,
+          0.9859
+        ],
+        [
+          215,
+          0.9859
+        ],
+        [
+          220,
+          0.9912
+        ],
+        [
+          225,
+          0.9946
+        ],
+        [
+          230,
+          0.9979
+        ],
+        [
+          235,
+          0.9993
+        ],
+        [
+          240,
+          0.9998
+        ],
+        [
+          245,
+          1.0
+        ],
+        [
+          250,
+          1.0
+        ]
+      ]
     },
     {
-      "curve_id": "pre_fbc_2002.roof_straps.assumed.v1",
+      "curve_id": "pre_fbc_2002.shutters.hip.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "shutters",
+      "roof_shape": "hip",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added, hip roof: Hazus M.SF.1.hip.tnail.trs.6d.1.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          60,
+          0.0
+        ],
+        [
+          65,
+          0.0001
+        ],
+        [
+          70,
+          0.0005
+        ],
+        [
+          75,
+          0.0015
+        ],
+        [
+          80,
+          0.0032
+        ],
+        [
+          85,
+          0.0056
+        ],
+        [
+          90,
+          0.0086
+        ],
+        [
+          95,
+          0.0118
+        ],
+        [
+          100,
+          0.0153
+        ],
+        [
+          105,
+          0.0194
+        ],
+        [
+          110,
+          0.0243
+        ],
+        [
+          115,
+          0.0307
+        ],
+        [
+          120,
+          0.041
+        ],
+        [
+          125,
+          0.0559
+        ],
+        [
+          130,
+          0.0776
+        ],
+        [
+          135,
+          0.107
+        ],
+        [
+          140,
+          0.1444
+        ],
+        [
+          145,
+          0.2008
+        ],
+        [
+          150,
+          0.2684
+        ],
+        [
+          155,
+          0.3521
+        ],
+        [
+          160,
+          0.4472
+        ],
+        [
+          165,
+          0.5291
+        ],
+        [
+          170,
+          0.6153
+        ],
+        [
+          175,
+          0.7067
+        ],
+        [
+          180,
+          0.7842
+        ],
+        [
+          185,
+          0.8393
+        ],
+        [
+          190,
+          0.8861
+        ],
+        [
+          195,
+          0.928
+        ],
+        [
+          200,
+          0.9562
+        ],
+        [
+          205,
+          0.9562
+        ],
+        [
+          210,
+          0.975
+        ],
+        [
+          215,
+          0.975
+        ],
+        [
+          220,
+          0.9805
+        ],
+        [
+          225,
+          0.9856
+        ],
+        [
+          230,
+          0.9911
+        ],
+        [
+          235,
+          0.9938
+        ],
+        [
+          240,
+          0.9938
+        ],
+        [
+          245,
+          0.9938
+        ],
+        [
+          250,
+          0.9938
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.shutters.blended.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "shutters",
+      "roof_shape": "blended",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with shutters added: mean of Hazus M.SF.1.gab.tnail.trs.6d.1.0.no.0.null.35 and M.SF.1.hip.tnail.trs.6d.1.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall toe nails. Wood truss roof frame. 6d roof deck nails. Has Shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0001
+        ],
+        [
+          65,
+          0.0003
+        ],
+        [
+          70,
+          0.0009
+        ],
+        [
+          75,
+          0.002
+        ],
+        [
+          80,
+          0.0037
+        ],
+        [
+          85,
+          0.0059
+        ],
+        [
+          90,
+          0.0085
+        ],
+        [
+          95,
+          0.0113
+        ],
+        [
+          100,
+          0.0145
+        ],
+        [
+          105,
+          0.0189
+        ],
+        [
+          110,
+          0.0249
+        ],
+        [
+          115,
+          0.0342
+        ],
+        [
+          120,
+          0.0478
+        ],
+        [
+          125,
+          0.0697
+        ],
+        [
+          130,
+          0.0988
+        ],
+        [
+          135,
+          0.1392
+        ],
+        [
+          140,
+          0.1872
+        ],
+        [
+          145,
+          0.246
+        ],
+        [
+          150,
+          0.3214
+        ],
+        [
+          155,
+          0.4073
+        ],
+        [
+          160,
+          0.511
+        ],
+        [
+          165,
+          0.5939
+        ],
+        [
+          170,
+          0.6724
+        ],
+        [
+          175,
+          0.7555
+        ],
+        [
+          180,
+          0.8291
+        ],
+        [
+          185,
+          0.8787
+        ],
+        [
+          190,
+          0.9179
+        ],
+        [
+          195,
+          0.9445
+        ],
+        [
+          200,
+          0.9667
+        ],
+        [
+          205,
+          0.9667
+        ],
+        [
+          210,
+          0.9804
+        ],
+        [
+          215,
+          0.9804
+        ],
+        [
+          220,
+          0.9858
+        ],
+        [
+          225,
+          0.9901
+        ],
+        [
+          230,
+          0.9945
+        ],
+        [
+          235,
+          0.9966
+        ],
+        [
+          240,
+          0.9966
+        ],
+        [
+          245,
+          0.9966
+        ],
+        [
+          250,
+          0.9966
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.roof_straps.gable.hazus.v1",
       "vulnerability_class": "pre_fbc_2002",
       "upgrade_id": "roof_straps",
+      "roof_shape": "gable",
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
-      "evidence_status": "assumed",
-      "source_note": "Assumed. Baseline x 0.80 (roof-to-wall hurricane effectiveness 0.20). Scope: roof-to-wall strap/clip retrofit on an existing roof. Finance workbook flags the sourced price at $850-$5,000, not the $20,000 the starter model assumed.",
-      "points": [[0, 0.0], [75, 0.0], [90, 0.0047], [105, 0.0213], [120, 0.0518], [140, 0.1158], [160, 0.2086], [180, 0.3318], [200, 0.4866], [220, 0.6742]]
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails, gable roof: Hazus M.SF.1.gab.strap.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0002
+        ],
+        [
+          65,
+          0.0005
+        ],
+        [
+          70,
+          0.0013
+        ],
+        [
+          75,
+          0.0026
+        ],
+        [
+          80,
+          0.0042
+        ],
+        [
+          85,
+          0.0062
+        ],
+        [
+          90,
+          0.0083
+        ],
+        [
+          95,
+          0.0109
+        ],
+        [
+          100,
+          0.0143
+        ],
+        [
+          105,
+          0.0204
+        ],
+        [
+          110,
+          0.0289
+        ],
+        [
+          115,
+          0.044
+        ],
+        [
+          120,
+          0.0647
+        ],
+        [
+          125,
+          0.1016
+        ],
+        [
+          130,
+          0.1517
+        ],
+        [
+          135,
+          0.2159
+        ],
+        [
+          140,
+          0.2924
+        ],
+        [
+          145,
+          0.3824
+        ],
+        [
+          150,
+          0.4803
+        ],
+        [
+          155,
+          0.5863
+        ],
+        [
+          160,
+          0.6892
+        ],
+        [
+          165,
+          0.7545
+        ],
+        [
+          170,
+          0.8297
+        ],
+        [
+          175,
+          0.8859
+        ],
+        [
+          180,
+          0.9313
+        ],
+        [
+          185,
+          0.9563
+        ],
+        [
+          190,
+          0.9744
+        ],
+        [
+          195,
+          0.9878
+        ],
+        [
+          200,
+          0.9943
+        ],
+        [
+          205,
+          0.9946
+        ],
+        [
+          210,
+          0.9977
+        ],
+        [
+          215,
+          0.9977
+        ],
+        [
+          220,
+          0.9993
+        ],
+        [
+          225,
+          0.9996
+        ],
+        [
+          230,
+          1.0
+        ],
+        [
+          235,
+          1.0
+        ],
+        [
+          240,
+          1.0
+        ],
+        [
+          245,
+          1.0
+        ],
+        [
+          250,
+          1.0
+        ]
+      ]
     },
     {
-      "curve_id": "post_fbc_2002.baseline.assumed.v1",
+      "curve_id": "pre_fbc_2002.roof_straps.hip.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "roof_straps",
+      "roof_shape": "hip",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails, hip roof: Hazus M.SF.1.hip.strap.trs.6d.0.0.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          60,
+          0.0
+        ],
+        [
+          65,
+          0.0001
+        ],
+        [
+          70,
+          0.0005
+        ],
+        [
+          75,
+          0.0015
+        ],
+        [
+          80,
+          0.0032
+        ],
+        [
+          85,
+          0.0056
+        ],
+        [
+          90,
+          0.0086
+        ],
+        [
+          95,
+          0.012
+        ],
+        [
+          100,
+          0.0158
+        ],
+        [
+          105,
+          0.0206
+        ],
+        [
+          110,
+          0.027
+        ],
+        [
+          115,
+          0.037
+        ],
+        [
+          120,
+          0.0497
+        ],
+        [
+          125,
+          0.0729
+        ],
+        [
+          130,
+          0.1051
+        ],
+        [
+          135,
+          0.1545
+        ],
+        [
+          140,
+          0.2179
+        ],
+        [
+          145,
+          0.288
+        ],
+        [
+          150,
+          0.3669
+        ],
+        [
+          155,
+          0.4679
+        ],
+        [
+          160,
+          0.5686
+        ],
+        [
+          165,
+          0.6428
+        ],
+        [
+          170,
+          0.7296
+        ],
+        [
+          175,
+          0.815
+        ],
+        [
+          180,
+          0.8823
+        ],
+        [
+          185,
+          0.9234
+        ],
+        [
+          190,
+          0.9525
+        ],
+        [
+          195,
+          0.9689
+        ],
+        [
+          200,
+          0.9825
+        ],
+        [
+          205,
+          0.9868
+        ],
+        [
+          210,
+          0.9931
+        ],
+        [
+          215,
+          0.9966
+        ],
+        [
+          220,
+          0.9991
+        ],
+        [
+          225,
+          0.9998
+        ],
+        [
+          230,
+          0.9999
+        ],
+        [
+          235,
+          0.9999
+        ],
+        [
+          240,
+          0.9999
+        ],
+        [
+          245,
+          0.9999
+        ],
+        [
+          250,
+          0.9999
+        ]
+      ]
+    },
+    {
+      "curve_id": "pre_fbc_2002.roof_straps.blended.hazus.v1",
+      "vulnerability_class": "pre_fbc_2002",
+      "upgrade_id": "roof_straps",
+      "roof_shape": "blended",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built before the 2002 Florida Building Code, with roof-to-wall straps replacing toe-nails: mean of Hazus M.SF.1.gab.strap.trs.6d.0.0.no.0.null.35 and M.SF.1.hip.strap.trs.6d.0.0.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 6d roof deck nails. No shutters. No secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0001
+        ],
+        [
+          65,
+          0.0003
+        ],
+        [
+          70,
+          0.0009
+        ],
+        [
+          75,
+          0.002
+        ],
+        [
+          80,
+          0.0037
+        ],
+        [
+          85,
+          0.0059
+        ],
+        [
+          90,
+          0.0085
+        ],
+        [
+          95,
+          0.0115
+        ],
+        [
+          100,
+          0.0151
+        ],
+        [
+          105,
+          0.0206
+        ],
+        [
+          110,
+          0.0279
+        ],
+        [
+          115,
+          0.0405
+        ],
+        [
+          120,
+          0.0572
+        ],
+        [
+          125,
+          0.0873
+        ],
+        [
+          130,
+          0.1284
+        ],
+        [
+          135,
+          0.1852
+        ],
+        [
+          140,
+          0.2552
+        ],
+        [
+          145,
+          0.3352
+        ],
+        [
+          150,
+          0.4236
+        ],
+        [
+          155,
+          0.5271
+        ],
+        [
+          160,
+          0.6289
+        ],
+        [
+          165,
+          0.6987
+        ],
+        [
+          170,
+          0.7796
+        ],
+        [
+          175,
+          0.8504
+        ],
+        [
+          180,
+          0.9068
+        ],
+        [
+          185,
+          0.9399
+        ],
+        [
+          190,
+          0.9634
+        ],
+        [
+          195,
+          0.9784
+        ],
+        [
+          200,
+          0.9884
+        ],
+        [
+          205,
+          0.9907
+        ],
+        [
+          210,
+          0.9954
+        ],
+        [
+          215,
+          0.9969
+        ],
+        [
+          220,
+          0.9992
+        ],
+        [
+          225,
+          0.9997
+        ],
+        [
+          230,
+          0.9999
+        ],
+        [
+          235,
+          0.9999
+        ],
+        [
+          240,
+          0.9999
+        ],
+        [
+          245,
+          0.9999
+        ],
+        [
+          250,
+          0.9999
+        ]
+      ]
+    },
+    {
+      "curve_id": "post_fbc_2002.baseline.gable.hazus.v1",
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "baseline",
+      "roof_shape": "gable",
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
-      "evidence_status": "assumed",
-      "source_note": "Assumed. pre_fbc_2002 baseline x 0.60 code-uplift factor. Single-family home built to the 2002 Florida Building Code or later.",
-      "points": [[0, 0.0], [75, 0.0], [90, 0.0035], [105, 0.016], [120, 0.0388], [140, 0.0869], [160, 0.1565], [180, 0.2489], [200, 0.365], [220, 0.5057]]
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built, gable roof: Hazus M.SF.1.gab.strap.trs.8d.0.1.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0002
+        ],
+        [
+          65,
+          0.0005
+        ],
+        [
+          70,
+          0.0013
+        ],
+        [
+          75,
+          0.0026
+        ],
+        [
+          80,
+          0.0042
+        ],
+        [
+          85,
+          0.0061
+        ],
+        [
+          90,
+          0.008
+        ],
+        [
+          95,
+          0.0099
+        ],
+        [
+          100,
+          0.012
+        ],
+        [
+          105,
+          0.0147
+        ],
+        [
+          110,
+          0.0178
+        ],
+        [
+          115,
+          0.0237
+        ],
+        [
+          120,
+          0.0313
+        ],
+        [
+          125,
+          0.0473
+        ],
+        [
+          130,
+          0.0678
+        ],
+        [
+          135,
+          0.1006
+        ],
+        [
+          140,
+          0.1379
+        ],
+        [
+          145,
+          0.1922
+        ],
+        [
+          150,
+          0.2432
+        ],
+        [
+          155,
+          0.3338
+        ],
+        [
+          160,
+          0.4158
+        ],
+        [
+          165,
+          0.4521
+        ],
+        [
+          170,
+          0.5428
+        ],
+        [
+          175,
+          0.6641
+        ],
+        [
+          180,
+          0.7655
+        ],
+        [
+          185,
+          0.8189
+        ],
+        [
+          190,
+          0.8577
+        ],
+        [
+          195,
+          0.9125
+        ],
+        [
+          200,
+          0.9378
+        ],
+        [
+          205,
+          0.9413
+        ],
+        [
+          210,
+          0.9557
+        ],
+        [
+          215,
+          0.9755
+        ],
+        [
+          220,
+          0.9914
+        ],
+        [
+          225,
+          0.9974
+        ],
+        [
+          230,
+          0.9993
+        ],
+        [
+          235,
+          0.9996
+        ],
+        [
+          240,
+          0.9996
+        ],
+        [
+          245,
+          0.9996
+        ],
+        [
+          250,
+          0.9996
+        ]
+      ]
     },
     {
-      "curve_id": "post_fbc_2002.shutters.assumed.v1",
+      "curve_id": "post_fbc_2002.baseline.hip.hazus.v1",
+      "vulnerability_class": "post_fbc_2002",
+      "upgrade_id": "baseline",
+      "roof_shape": "hip",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built, hip roof: Hazus M.SF.1.hip.strap.trs.8d.0.1.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          60,
+          0.0
+        ],
+        [
+          65,
+          0.0001
+        ],
+        [
+          70,
+          0.0005
+        ],
+        [
+          75,
+          0.0015
+        ],
+        [
+          80,
+          0.0032
+        ],
+        [
+          85,
+          0.0056
+        ],
+        [
+          90,
+          0.0086
+        ],
+        [
+          95,
+          0.0119
+        ],
+        [
+          100,
+          0.0152
+        ],
+        [
+          105,
+          0.0189
+        ],
+        [
+          110,
+          0.0227
+        ],
+        [
+          115,
+          0.0284
+        ],
+        [
+          120,
+          0.0357
+        ],
+        [
+          125,
+          0.0485
+        ],
+        [
+          130,
+          0.067
+        ],
+        [
+          135,
+          0.0929
+        ],
+        [
+          140,
+          0.1259
+        ],
+        [
+          145,
+          0.1738
+        ],
+        [
+          150,
+          0.2236
+        ],
+        [
+          155,
+          0.2969
+        ],
+        [
+          160,
+          0.369
+        ],
+        [
+          165,
+          0.3969
+        ],
+        [
+          170,
+          0.4694
+        ],
+        [
+          175,
+          0.5925
+        ],
+        [
+          180,
+          0.7088
+        ],
+        [
+          185,
+          0.7606
+        ],
+        [
+          190,
+          0.7983
+        ],
+        [
+          195,
+          0.8612
+        ],
+        [
+          200,
+          0.9042
+        ],
+        [
+          205,
+          0.9063
+        ],
+        [
+          210,
+          0.9244
+        ],
+        [
+          215,
+          0.9483
+        ],
+        [
+          220,
+          0.963
+        ],
+        [
+          225,
+          0.9654
+        ],
+        [
+          230,
+          0.966
+        ],
+        [
+          235,
+          0.9695
+        ],
+        [
+          240,
+          0.9892
+        ],
+        [
+          245,
+          0.9992
+        ],
+        [
+          250,
+          0.9992
+        ]
+      ]
+    },
+    {
+      "curve_id": "post_fbc_2002.baseline.blended.hazus.v1",
+      "vulnerability_class": "post_fbc_2002",
+      "upgrade_id": "baseline",
+      "roof_shape": "blended",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, as built: mean of Hazus M.SF.1.gab.strap.trs.8d.0.1.no.0.null.35 and M.SF.1.hip.strap.trs.8d.0.1.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. No shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0001
+        ],
+        [
+          65,
+          0.0003
+        ],
+        [
+          70,
+          0.0009
+        ],
+        [
+          75,
+          0.002
+        ],
+        [
+          80,
+          0.0037
+        ],
+        [
+          85,
+          0.0059
+        ],
+        [
+          90,
+          0.0083
+        ],
+        [
+          95,
+          0.0109
+        ],
+        [
+          100,
+          0.0136
+        ],
+        [
+          105,
+          0.0168
+        ],
+        [
+          110,
+          0.0203
+        ],
+        [
+          115,
+          0.026
+        ],
+        [
+          120,
+          0.0335
+        ],
+        [
+          125,
+          0.0479
+        ],
+        [
+          130,
+          0.0674
+        ],
+        [
+          135,
+          0.0968
+        ],
+        [
+          140,
+          0.1319
+        ],
+        [
+          145,
+          0.183
+        ],
+        [
+          150,
+          0.2334
+        ],
+        [
+          155,
+          0.3153
+        ],
+        [
+          160,
+          0.3924
+        ],
+        [
+          165,
+          0.4245
+        ],
+        [
+          170,
+          0.5061
+        ],
+        [
+          175,
+          0.6283
+        ],
+        [
+          180,
+          0.7372
+        ],
+        [
+          185,
+          0.7898
+        ],
+        [
+          190,
+          0.828
+        ],
+        [
+          195,
+          0.8869
+        ],
+        [
+          200,
+          0.921
+        ],
+        [
+          205,
+          0.9238
+        ],
+        [
+          210,
+          0.94
+        ],
+        [
+          215,
+          0.9619
+        ],
+        [
+          220,
+          0.9772
+        ],
+        [
+          225,
+          0.9814
+        ],
+        [
+          230,
+          0.9827
+        ],
+        [
+          235,
+          0.9846
+        ],
+        [
+          240,
+          0.9943
+        ],
+        [
+          245,
+          0.9992
+        ],
+        [
+          250,
+          0.9992
+        ]
+      ]
+    },
+    {
+      "curve_id": "post_fbc_2002.shutters.gable.hazus.v1",
       "vulnerability_class": "post_fbc_2002",
       "upgrade_id": "shutters",
+      "roof_shape": "gable",
       "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
-      "evidence_status": "assumed",
-      "source_note": "Assumed. post_fbc_2002 baseline x 0.75. No roof_straps curve exists for this class: roof-to-wall connections are already required by the 2002 code, so the retrofit is not an eligible option and must not be offered.",
-      "points": [[0, 0.0], [75, 0.0], [90, 0.0027], [105, 0.012], [120, 0.0291], [140, 0.0652], [160, 0.1174], [180, 0.1867], [200, 0.2737], [220, 0.3793]]
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, with shutters added, gable roof: Hazus M.SF.1.gab.strap.trs.8d.1.1.no.0.null.35. Masonry, Single-family, One-story. Gable roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. Has Shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0002
+        ],
+        [
+          65,
+          0.0005
+        ],
+        [
+          70,
+          0.0013
+        ],
+        [
+          75,
+          0.0025
+        ],
+        [
+          80,
+          0.0042
+        ],
+        [
+          85,
+          0.006
+        ],
+        [
+          90,
+          0.0078
+        ],
+        [
+          95,
+          0.0096
+        ],
+        [
+          100,
+          0.0113
+        ],
+        [
+          105,
+          0.0131
+        ],
+        [
+          110,
+          0.0153
+        ],
+        [
+          115,
+          0.0179
+        ],
+        [
+          120,
+          0.0209
+        ],
+        [
+          125,
+          0.0247
+        ],
+        [
+          130,
+          0.0307
+        ],
+        [
+          135,
+          0.0382
+        ],
+        [
+          140,
+          0.0486
+        ],
+        [
+          145,
+          0.0596
+        ],
+        [
+          150,
+          0.0751
+        ],
+        [
+          155,
+          0.0972
+        ],
+        [
+          160,
+          0.1284
+        ],
+        [
+          165,
+          0.1516
+        ],
+        [
+          170,
+          0.1985
+        ],
+        [
+          175,
+          0.2648
+        ],
+        [
+          180,
+          0.3412
+        ],
+        [
+          185,
+          0.3909
+        ],
+        [
+          190,
+          0.4474
+        ],
+        [
+          195,
+          0.5313
+        ],
+        [
+          200,
+          0.6005
+        ],
+        [
+          205,
+          0.6005
+        ],
+        [
+          210,
+          0.6155
+        ],
+        [
+          215,
+          0.6881
+        ],
+        [
+          220,
+          0.7768
+        ],
+        [
+          225,
+          0.8111
+        ],
+        [
+          230,
+          0.8297
+        ],
+        [
+          235,
+          0.8408
+        ],
+        [
+          240,
+          0.865
+        ],
+        [
+          245,
+          0.8769
+        ],
+        [
+          250,
+          0.8769
+        ]
+      ]
+    },
+    {
+      "curve_id": "post_fbc_2002.shutters.hip.hazus.v1",
+      "vulnerability_class": "post_fbc_2002",
+      "upgrade_id": "shutters",
+      "roof_shape": "hip",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, with shutters added, hip roof: Hazus M.SF.1.hip.strap.trs.8d.1.1.no.0.null.35. Masonry, Single-family, One-story. Hip roof. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. Has Shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          60,
+          0.0
+        ],
+        [
+          65,
+          0.0001
+        ],
+        [
+          70,
+          0.0005
+        ],
+        [
+          75,
+          0.0015
+        ],
+        [
+          80,
+          0.0032
+        ],
+        [
+          85,
+          0.0056
+        ],
+        [
+          90,
+          0.0086
+        ],
+        [
+          95,
+          0.0116
+        ],
+        [
+          100,
+          0.0146
+        ],
+        [
+          105,
+          0.0175
+        ],
+        [
+          110,
+          0.0204
+        ],
+        [
+          115,
+          0.0234
+        ],
+        [
+          120,
+          0.0264
+        ],
+        [
+          125,
+          0.0302
+        ],
+        [
+          130,
+          0.0351
+        ],
+        [
+          135,
+          0.0415
+        ],
+        [
+          140,
+          0.05
+        ],
+        [
+          145,
+          0.0608
+        ],
+        [
+          150,
+          0.0726
+        ],
+        [
+          155,
+          0.09
+        ],
+        [
+          160,
+          0.1089
+        ],
+        [
+          165,
+          0.1281
+        ],
+        [
+          170,
+          0.161
+        ],
+        [
+          175,
+          0.2199
+        ],
+        [
+          180,
+          0.287
+        ],
+        [
+          185,
+          0.3216
+        ],
+        [
+          190,
+          0.3598
+        ],
+        [
+          195,
+          0.4433
+        ],
+        [
+          200,
+          0.5032
+        ],
+        [
+          205,
+          0.519
+        ],
+        [
+          210,
+          0.5565
+        ],
+        [
+          215,
+          0.5984
+        ],
+        [
+          220,
+          0.6528
+        ],
+        [
+          225,
+          0.6877
+        ],
+        [
+          230,
+          0.7251
+        ],
+        [
+          235,
+          0.7648
+        ],
+        [
+          240,
+          0.8333
+        ],
+        [
+          245,
+          0.8665
+        ],
+        [
+          250,
+          0.8665
+        ]
+      ]
+    },
+    {
+      "curve_id": "post_fbc_2002.shutters.blended.hazus.v1",
+      "vulnerability_class": "post_fbc_2002",
+      "upgrade_id": "shutters",
+      "roof_shape": "blended",
+      "wind_metric": "peak_3s_gust_10m_open_terrain_mph",
+      "evidence_status": "sourced",
+      "source_note": "FEMA Hazus hurricane building loss function. Single-family home built to the 2002 Florida Building Code or later, with shutters added: mean of Hazus M.SF.1.gab.strap.trs.8d.1.1.no.0.null.35 and M.SF.1.hip.strap.trs.8d.1.1.no.0.null.35 (gable and hip roof). Masonry, Single-family, One-story. Roof-to-wall straps. Wood truss roof frame. 8d roof deck nails. Has Shutters. Secondary water resistance. No garage. No masonry reinforcing. No information on roof cover. Terrain surface roughness: 0.35 m.",
+      "points": [
+        [
+          0,
+          0.0
+        ],
+        [
+          55,
+          0.0
+        ],
+        [
+          60,
+          0.0001
+        ],
+        [
+          65,
+          0.0003
+        ],
+        [
+          70,
+          0.0009
+        ],
+        [
+          75,
+          0.002
+        ],
+        [
+          80,
+          0.0037
+        ],
+        [
+          85,
+          0.0058
+        ],
+        [
+          90,
+          0.0082
+        ],
+        [
+          95,
+          0.0106
+        ],
+        [
+          100,
+          0.0129
+        ],
+        [
+          105,
+          0.0153
+        ],
+        [
+          110,
+          0.0178
+        ],
+        [
+          115,
+          0.0206
+        ],
+        [
+          120,
+          0.0236
+        ],
+        [
+          125,
+          0.0275
+        ],
+        [
+          130,
+          0.0329
+        ],
+        [
+          135,
+          0.0399
+        ],
+        [
+          140,
+          0.0493
+        ],
+        [
+          145,
+          0.0602
+        ],
+        [
+          150,
+          0.0738
+        ],
+        [
+          155,
+          0.0936
+        ],
+        [
+          160,
+          0.1187
+        ],
+        [
+          165,
+          0.1398
+        ],
+        [
+          170,
+          0.1798
+        ],
+        [
+          175,
+          0.2423
+        ],
+        [
+          180,
+          0.3141
+        ],
+        [
+          185,
+          0.3563
+        ],
+        [
+          190,
+          0.4036
+        ],
+        [
+          195,
+          0.4873
+        ],
+        [
+          200,
+          0.5518
+        ],
+        [
+          205,
+          0.5518
+        ],
+        [
+          210,
+          0.586
+        ],
+        [
+          215,
+          0.6433
+        ],
+        [
+          220,
+          0.7148
+        ],
+        [
+          225,
+          0.7494
+        ],
+        [
+          230,
+          0.7774
+        ],
+        [
+          235,
+          0.8028
+        ],
+        [
+          240,
+          0.8491
+        ],
+        [
+          245,
+          0.8717
+        ],
+        [
+          250,
+          0.8717
+        ]
+      ]
     }
   ]
 }

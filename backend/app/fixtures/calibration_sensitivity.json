@@ -1,0 +1,3160 @@
+{
+  "calibration_sensitivity_id": "fl-asos-cohort-sensitivity-v1",
+  "generated_at": "2026-09-27T06:30:01Z",
+  "script": "backend/scripts/compare_calibration_cohorts.py",
+  "cohort_policy_note": "The primary (2016-2024) cohort is the predetermined production policy. This report measures whether the combined-cohort or factor-only alternatives score better or worse; it does not select a policy from whichever alternative happens to score best on the same held-out observations, and a material deterioration here is a finding to review, not a reason to change the assertion in this note.",
+  "scenarios": {
+    "primary": {
+      "gust_factor": 1.333,
+      "land_exposure_factor": 0.75,
+      "outer_decay_exponent": 0.275,
+      "wind_calibration_id": "fl-asos-hurricane-peaks-v2",
+      "role": "production: the primary (2016-2024) cohort's own gust factor and profile fit"
+    },
+    "factor_only": {
+      "gust_factor": 1.314,
+      "land_exposure_factor": 0.75,
+      "outer_decay_exponent": 0.275,
+      "wind_calibration_id": "diagnostic: fl-asos-hurricane-peaks-v2 gust factor + fl-asos-hurricane-peaks-v2 profile",
+      "role": "diagnostic only: the combined cohort's gust factor with the primary cohort's decay and land factor frozen, to isolate arithmetic sensitivity to the gust factor alone. Not an independently fitted bundle; never a candidate production policy."
+    },
+    "combined": {
+      "gust_factor": 1.314,
+      "land_exposure_factor": 0.725,
+      "outer_decay_exponent": 0.25,
+      "wind_calibration_id": "fl-asos-hurricane-peaks-v2",
+      "role": "alternative: the combined (2004-2024) cohort's own gust factor and profile fit, refit jointly"
+    },
+    "current_production": {
+      "gust_factor": 1.314,
+      "land_exposure_factor": 0.775,
+      "outer_decay_exponent": 0.3,
+      "wind_calibration_id": "fl-asos-hurricane-peaks-v1",
+      "role": "before-change benchmark: the production bundle as captured by the caller before this comparison's own fits were promoted (see the module docstring's current_production_bundle note)."
+    }
+  },
+  "effective_multiplier": {
+    "primary": 0.9997,
+    "factor_only": 0.9855,
+    "combined": 0.9526,
+    "current_production": 1.0184
+  },
+  "wind_accuracy": {
+    "primary": {
+      "primary_2016_2024": {
+        "n": 156,
+        "bias_kt": 3.5,
+        "mean_absolute_error_kt": 14.1,
+        "median_ratio_modeled_over_observed": 1.033,
+        "within_15_percent": 0.37,
+        "observed_mean_kt": 55.5,
+        "modeled_mean_kt": 59.0
+      },
+      "legacy_2004_2005": {
+        "n": 53,
+        "bias_kt": 5.6,
+        "mean_absolute_error_kt": 12.4,
+        "median_ratio_modeled_over_observed": 1.091,
+        "within_15_percent": 0.43,
+        "observed_mean_kt": 54.5,
+        "modeled_mean_kt": 60.1
+      },
+      "combined_2004_2024": {
+        "n": 209,
+        "bias_kt": 4.0,
+        "mean_absolute_error_kt": 13.7,
+        "median_ratio_modeled_over_observed": 1.074,
+        "within_15_percent": 0.38,
+        "observed_mean_kt": 55.3,
+        "modeled_mean_kt": 59.3
+      }
+    },
+    "factor_only": {
+      "primary_2016_2024": {
+        "n": 156,
+        "bias_kt": 2.6,
+        "mean_absolute_error_kt": 13.9,
+        "median_ratio_modeled_over_observed": 1.019,
+        "within_15_percent": 0.38,
+        "observed_mean_kt": 55.5,
+        "modeled_mean_kt": 58.2
+      },
+      "legacy_2004_2005": {
+        "n": 53,
+        "bias_kt": 4.7,
+        "mean_absolute_error_kt": 12.1,
+        "median_ratio_modeled_over_observed": 1.075,
+        "within_15_percent": 0.45,
+        "observed_mean_kt": 54.5,
+        "modeled_mean_kt": 59.2
+      },
+      "combined_2004_2024": {
+        "n": 209,
+        "bias_kt": 3.2,
+        "mean_absolute_error_kt": 13.4,
+        "median_ratio_modeled_over_observed": 1.059,
+        "within_15_percent": 0.4,
+        "observed_mean_kt": 55.3,
+        "modeled_mean_kt": 58.4
+      }
+    },
+    "combined": {
+      "primary_2016_2024": {
+        "n": 156,
+        "bias_kt": 2.9,
+        "mean_absolute_error_kt": 13.8,
+        "median_ratio_modeled_over_observed": 1.033,
+        "within_15_percent": 0.35,
+        "observed_mean_kt": 55.5,
+        "modeled_mean_kt": 58.5
+      },
+      "legacy_2004_2005": {
+        "n": 53,
+        "bias_kt": 4.7,
+        "mean_absolute_error_kt": 12.1,
+        "median_ratio_modeled_over_observed": 1.083,
+        "within_15_percent": 0.49,
+        "observed_mean_kt": 54.5,
+        "modeled_mean_kt": 59.2
+      },
+      "combined_2004_2024": {
+        "n": 209,
+        "bias_kt": 3.4,
+        "mean_absolute_error_kt": 13.4,
+        "median_ratio_modeled_over_observed": 1.049,
+        "within_15_percent": 0.39,
+        "observed_mean_kt": 55.3,
+        "modeled_mean_kt": 58.7
+      }
+    },
+    "current_production": {
+      "primary_2016_2024": {
+        "n": 156,
+        "bias_kt": 2.3,
+        "mean_absolute_error_kt": 14.0,
+        "median_ratio_modeled_over_observed": 1.019,
+        "within_15_percent": 0.38,
+        "observed_mean_kt": 55.5,
+        "modeled_mean_kt": 57.8
+      },
+      "legacy_2004_2005": {
+        "n": 53,
+        "bias_kt": 4.7,
+        "mean_absolute_error_kt": 12.1,
+        "median_ratio_modeled_over_observed": 1.093,
+        "within_15_percent": 0.45,
+        "observed_mean_kt": 54.5,
+        "modeled_mean_kt": 59.2
+      },
+      "combined_2004_2024": {
+        "n": 209,
+        "bias_kt": 2.9,
+        "mean_absolute_error_kt": 13.5,
+        "median_ratio_modeled_over_observed": 1.038,
+        "within_15_percent": 0.4,
+        "observed_mean_kt": 55.3,
+        "modeled_mean_kt": 58.2
+      }
+    }
+  },
+  "holdout": {
+    "primary": {
+      "method": "leave one storm out: refit the gust factor, decay and land factor on the other cohort storms, score the held-out storm with all three",
+      "cohort_id": "primary_2016_2024",
+      "folds": [
+        {
+          "held_out_storm_id": "AL042024",
+          "pairs": 17,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.3,
+          "land_exposure_factor": 0.775,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.929,
+          "held_out_mean_absolute_error_kt": 7.4
+        },
+        {
+          "held_out_storm_id": "AL092016",
+          "pairs": 9,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.03,
+          "held_out_mean_absolute_error_kt": 4.19
+        },
+        {
+          "held_out_storm_id": "AL092022",
+          "pairs": 27,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.298,
+          "held_out_mean_absolute_error_kt": 21.08
+        },
+        {
+          "held_out_storm_id": "AL092024",
+          "pairs": 12,
+          "gust_factor": 1.325,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.35,
+          "land_exposure_factor": 0.825,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.09,
+          "held_out_mean_absolute_error_kt": 9.68
+        },
+        {
+          "held_out_storm_id": "AL102023",
+          "pairs": 1,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.498,
+          "held_out_mean_absolute_error_kt": 21.39
+        },
+        {
+          "held_out_storm_id": "AL112017",
+          "pairs": 31,
+          "gust_factor": 1.359,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.325,
+          "land_exposure_factor": 0.7,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.738,
+          "held_out_mean_absolute_error_kt": 20.99
+        },
+        {
+          "held_out_storm_id": "AL142016",
+          "pairs": 15,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.385,
+          "held_out_mean_absolute_error_kt": 20.21
+        },
+        {
+          "held_out_storm_id": "AL142018",
+          "pairs": 4,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.325,
+          "land_exposure_factor": 0.825,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.659,
+          "held_out_mean_absolute_error_kt": 42.77
+        },
+        {
+          "held_out_storm_id": "AL142024",
+          "pairs": 20,
+          "gust_factor": 1.324,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.45,
+          "land_exposure_factor": 0.975,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.017,
+          "held_out_median_ratio": 0.917,
+          "held_out_mean_absolute_error_kt": 10.24
+        },
+        {
+          "held_out_storm_id": "AL172022",
+          "pairs": 16,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.3,
+          "land_exposure_factor": 0.775,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.822,
+          "held_out_mean_absolute_error_kt": 11.25
+        },
+        {
+          "held_out_storm_id": "AL192020",
+          "pairs": 4,
+          "gust_factor": 1.333,
+          "gust_factor_contributing_storms": 10,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.311,
+          "held_out_mean_absolute_error_kt": 17.56
+        }
+      ],
+      "storms_with_no_evaluable_peak_comparisons": [],
+      "out_of_sample": {
+        "n": 156,
+        "mean_absolute_error_kt": 15.7,
+        "median_ratio": 0.993
+      },
+      "out_of_sample_mean_of_per_storm_mae_kt": 16.98,
+      "in_sample": {
+        "n": 156,
+        "mean_absolute_error_kt": 14.11,
+        "median_ratio": 1.033
+      },
+      "chosen_constants_across_folds": {
+        "gust_factor": {
+          "min": 1.324,
+          "max": 1.359
+        },
+        "outer_decay_exponent": {
+          "min": 0.25,
+          "max": 0.45,
+          "in_sample": 0.275
+        },
+        "land_exposure_factor": {
+          "min": 0.7,
+          "max": 0.975,
+          "in_sample": 0.75
+        }
+      }
+    },
+    "combined": {
+      "method": "leave one storm out: refit the gust factor, decay and land factor on the other cohort storms, score the held-out storm with all three",
+      "cohort_id": "combined_2004_2024",
+      "folds": [
+        {
+          "held_out_storm_id": "AL032004",
+          "pairs": 2,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.114,
+          "held_out_mean_absolute_error_kt": 20.9
+        },
+        {
+          "held_out_storm_id": "AL042005",
+          "pairs": 7,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.382,
+          "held_out_mean_absolute_error_kt": 16.21
+        },
+        {
+          "held_out_storm_id": "AL042024",
+          "pairs": 17,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.35,
+          "land_exposure_factor": 0.825,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.917,
+          "held_out_mean_absolute_error_kt": 8.06
+        },
+        {
+          "held_out_storm_id": "AL062004",
+          "pairs": 8,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.109,
+          "held_out_mean_absolute_error_kt": 13.94
+        },
+        {
+          "held_out_storm_id": "AL092004",
+          "pairs": 2,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.3,
+          "land_exposure_factor": 0.775,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.579,
+          "held_out_mean_absolute_error_kt": 23.07
+        },
+        {
+          "held_out_storm_id": "AL092016",
+          "pairs": 9,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.3,
+          "land_exposure_factor": 0.775,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.014,
+          "held_out_mean_absolute_error_kt": 4.29
+        },
+        {
+          "held_out_storm_id": "AL092022",
+          "pairs": 27,
+          "gust_factor": 1.306,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.775,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.248,
+          "held_out_mean_absolute_error_kt": 19.16
+        },
+        {
+          "held_out_storm_id": "AL092024",
+          "pairs": 12,
+          "gust_factor": 1.306,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.35,
+          "land_exposure_factor": 0.825,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.075,
+          "held_out_mean_absolute_error_kt": 9.46
+        },
+        {
+          "held_out_storm_id": "AL102023",
+          "pairs": 1,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.492,
+          "held_out_mean_absolute_error_kt": 21.15
+        },
+        {
+          "held_out_storm_id": "AL112004",
+          "pairs": 8,
+          "gust_factor": 1.316,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.3,
+          "land_exposure_factor": 0.775,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.961,
+          "held_out_mean_absolute_error_kt": 12.95
+        },
+        {
+          "held_out_storm_id": "AL112017",
+          "pairs": 31,
+          "gust_factor": 1.312,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.325,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.738,
+          "held_out_mean_absolute_error_kt": 20.99
+        },
+        {
+          "held_out_storm_id": "AL122005",
+          "pairs": 7,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.4,
+          "land_exposure_factor": 0.85,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.126,
+          "held_out_mean_absolute_error_kt": 9.2
+        },
+        {
+          "held_out_storm_id": "AL142016",
+          "pairs": 15,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.356,
+          "held_out_mean_absolute_error_kt": 19.16
+        },
+        {
+          "held_out_storm_id": "AL142018",
+          "pairs": 4,
+          "gust_factor": 1.311,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.533,
+          "held_out_mean_absolute_error_kt": 36.09
+        },
+        {
+          "held_out_storm_id": "AL142024",
+          "pairs": 20,
+          "gust_factor": 1.3,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.375,
+          "land_exposure_factor": 0.85,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.883,
+          "held_out_mean_absolute_error_kt": 9.67
+        },
+        {
+          "held_out_storm_id": "AL172022",
+          "pairs": 16,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.35,
+          "land_exposure_factor": 0.825,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 0.832,
+          "held_out_mean_absolute_error_kt": 12.15
+        },
+        {
+          "held_out_storm_id": "AL182005",
+          "pairs": 4,
+          "gust_factor": 1.314,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.054,
+          "held_out_mean_absolute_error_kt": 2.62
+        },
+        {
+          "held_out_storm_id": "AL192020",
+          "pairs": 4,
+          "gust_factor": 1.312,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.25,
+          "land_exposure_factor": 0.725,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.262,
+          "held_out_mean_absolute_error_kt": 15.45
+        },
+        {
+          "held_out_storm_id": "AL252005",
+          "pairs": 15,
+          "gust_factor": 1.317,
+          "gust_factor_contributing_storms": 18,
+          "outer_decay_exponent": 0.275,
+          "land_exposure_factor": 0.75,
+          "strong_gust_constraint_evaluable": true,
+          "bounds_relaxed_by": 0.0,
+          "held_out_median_ratio": 1.155,
+          "held_out_mean_absolute_error_kt": 10.9
+        }
+      ],
+      "storms_with_no_evaluable_peak_comparisons": [],
+      "out_of_sample": {
+        "n": 209,
+        "mean_absolute_error_kt": 14.42,
+        "median_ratio": 1.014
+      },
+      "out_of_sample_mean_of_per_storm_mae_kt": 15.02,
+      "in_sample": {
+        "n": 209,
+        "mean_absolute_error_kt": 13.32,
+        "median_ratio": 1.05
+      },
+      "chosen_constants_across_folds": {
+        "gust_factor": {
+          "min": 1.3,
+          "max": 1.317
+        },
+        "outer_decay_exponent": {
+          "min": 0.25,
+          "max": 0.4,
+          "in_sample": 0.25
+        },
+        "land_exposure_factor": {
+          "min": 0.725,
+          "max": 0.85,
+          "in_sample": 0.725
+        }
+      }
+    },
+    "factor_only": null,
+    "note": "Republished verbatim from each cohort's own leave-one-storm-out cross-validation (scripts/calibrate_wind_field.py) - not recomputed here, and not interchangeable with the fixed-bundle wind_accuracy comparison above, which scores one already-chosen bundle rather than refitting per fold. factor_only has no holdout: it is not an independently fitted bundle, so there is nothing to leave a storm out of.",
+    "current_production": null
+  },
+  "payout_comparison": {
+    "config_held_constant": {
+      "curve_set_id": "hazus-msf1-suburban-v2",
+      "policy_template": {
+        "policy_template_id": "fl-illustrative-5pct-v1",
+        "label": "Illustrative Florida homeowners policy - 5% hurricane deductible",
+        "evidence_status": "assumed",
+        "source": "StormShield_Finance_Data_v5.xlsx, sheet 'Sample Policy Summary', built from Fla. Stat. 627.701 and Citizens Property Insurance guidance.",
+        "warning": "ILLUSTRATIVE ONLY - not a declarations page and not policy wording. Citizens states real coverages, deductibles, limits and exclusions vary by policy. Finance must approve this scope before any number leaves the prototype.",
+        "deductible": {
+          "basis": "percent_of_coverage_a",
+          "percent": 0.05,
+          "statutory_options": [
+            "$500",
+            "2% of Coverage A",
+            "5% of Coverage A",
+            "10% of Coverage A"
+          ],
+          "note": "Fla. Stat. 627.701 requires insurers to offer $500, 2%, 5% and 10% hurricane-deductible options. The workbook's 'Data Request - Policy Examples' sheet asks for ONE option so worked examples stay internally consistent, and advises against 10%; 5% is the option its 'Sample Policy Summary' sheet already works through ($400,000 Coverage A -> $20,000). The percentage is applied to the documented policy base (Coverage A), never to the damage amount."
+        },
+        "aop_deductible_usd": 2500,
+        "coverage_limit_basis": "coverage_a",
+        "payout_basis": "RCV",
+        "wind_coverage_included": true,
+        "worked_example_from_workbook": {
+          "coverage_a_usd": 400000,
+          "hurricane_deductible_usd": 20000,
+          "damage_usd": 150000,
+          "insurer_pays_usd": 130000
+        },
+        "out_of_scope_v1": [
+          "Second-hurricane-same-calendar-year deductible (Fla. Stat. 627.701(5)(a): the greater of the unmet first deductible or the AOP deductible). This engine prices each storm independently and resets the deductible, so a chronological multi-storm year needs a future model.",
+          "AOP deductible for non-hurricane wind. Stored here because the statutory rule needs it; unused in v1.",
+          "Contents, loss of use, flood and storm surge, premium changes, reinsurance, claim expenses.",
+          "Recoverable depreciation withheld until repairs complete under RCV."
+        ]
+      },
+      "property_ids": [
+        "P001",
+        "P002",
+        "P003",
+        "P004",
+        "P005",
+        "P006",
+        "P007",
+        "P008",
+        "P009",
+        "P010"
+      ],
+      "roof_shape_by_property": {
+        "P001": "gable",
+        "P002": "gable",
+        "P003": "hip",
+        "P004": "gable",
+        "P005": "gable",
+        "P006": "gable",
+        "P007": "gable",
+        "P008": "gable",
+        "P009": "hip",
+        "P010": "gable"
+      },
+      "eligible_upgrades_by_property": {
+        "P001": [
+          "roof_straps",
+          "shutters"
+        ],
+        "P002": [
+          "shutters"
+        ],
+        "P003": [
+          "roof_straps",
+          "shutters"
+        ],
+        "P004": [
+          "roof_straps",
+          "shutters"
+        ],
+        "P005": [
+          "shutters"
+        ],
+        "P006": [
+          "roof_straps",
+          "shutters"
+        ],
+        "P007": [
+          "roof_straps",
+          "shutters"
+        ],
+        "P008": [
+          "shutters"
+        ],
+        "P009": [
+          "roof_straps",
+          "shutters"
+        ],
+        "P010": [
+          "roof_straps",
+          "shutters"
+        ]
+      },
+      "storm_ids": [
+        "SYN0155",
+        "SYN0697",
+        "SYN0973"
+      ],
+      "note": "The demo's seeded roof-shape assignment (scripts/assign_demo_roof_shapes.py), this curve_set_id, the policy template and eligible upgrades are held identical across every scenario above, so a payout difference between scenarios is attributable to the wind bundle alone."
+    },
+    "aggregation_note": "Every *_usd figure is a SUM over properties, for one storm and one scenario, never an average and never summed across storms into an endpoint total: portfolio_baseline_payout_usd sums each property's baseline (no-upgrade) payout; each entry of portfolio_avoided_payout_usd_by_upgrade sums avoided_payout_usd only over the properties eligible for that upgrade. Per-property figures (peak_gust_mph, baseline_payout_usd, avoided_payout_usd_by_upgrade) are reported alongside these sums, never blended with them.",
+    "storms": {
+      "SYN0155": {
+        "scenarios": {
+          "primary": {
+            "peak_gust_mph": {
+              "P001": 149.4,
+              "P002": 149.7,
+              "P003": 71.4,
+              "P004": 71.6,
+              "P005": 70.2,
+              "P006": 41.0,
+              "P007": 103.4,
+              "P008": 117.2,
+              "P009": 98.3,
+              "P010": 149.5
+            },
+            "baseline_payout_usd": {
+              "P001": 553699.35,
+              "P002": 227556.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 439972.16
+            },
+            "portfolio_baseline_payout_usd": 1221227.51,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 197098.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 156524.4
+              },
+              "shutters": {
+                "P001": 285653.55,
+                "P002": 198738.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 226887.62
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 353622.4,
+              "shutters": 711279.17
+            }
+          },
+          "factor_only": {
+            "peak_gust_mph": {
+              "P001": 147.3,
+              "P002": 147.5,
+              "P003": 70.4,
+              "P004": 70.5,
+              "P005": 69.2,
+              "P006": 40.4,
+              "P007": 101.9,
+              "P008": 115.5,
+              "P009": 97.0,
+              "P010": 147.3
+            },
+            "baseline_payout_usd": {
+              "P001": 517525.56,
+              "P002": 201484.8,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 411245.91
+            },
+            "portfolio_baseline_payout_usd": 1130256.27,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 196373.8,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 155949.3
+              },
+              "shutters": {
+                "P001": 279606.48,
+                "P002": 180590.4,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 222085.53
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 352323.1,
+              "shutters": 682282.41
+            }
+          },
+          "combined": {
+            "peak_gust_mph": {
+              "P001": 142.4,
+              "P002": 142.6,
+              "P003": 72.3,
+              "P004": 72.5,
+              "P005": 71.1,
+              "P006": 41.5,
+              "P007": 101.9,
+              "P008": 111.7,
+              "P009": 95.8,
+              "P010": 142.4
+            },
+            "baseline_payout_usd": {
+              "P001": 431090.25,
+              "P002": 139754.16,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 342043.43
+            },
+            "portfolio_baseline_payout_usd": 912887.84,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 187565.25,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 148898.93
+              },
+              "shutters": {
+                "P001": 252558.8,
+                "P002": 134490.96,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 200433.96
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 336464.18,
+              "shutters": 587483.72
+            }
+          },
+          "current_production": {
+            "peak_gust_mph": {
+              "P001": 152.2,
+              "P002": 152.4,
+              "P003": 68.4,
+              "P004": 68.6,
+              "P005": 67.2,
+              "P006": 39.3,
+              "P007": 101.8,
+              "P008": 119.3,
+              "P009": 98.0,
+              "P010": 152.2
+            },
+            "baseline_payout_usd": {
+              "P001": 599748.78,
+              "P002": 284025.6,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 477069.75
+            },
+            "portfolio_baseline_payout_usd": 1360844.13,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 194529.98,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 154419.75
+              },
+              "shutters": {
+                "P001": 291198.61,
+                "P002": 241176.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 231332.63
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 348949.73,
+              "shutters": 763707.24
+            }
+          }
+        },
+        "differences_vs_primary": {
+          "factor_only": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -2.1,
+                "relative": -0.0141
+              },
+              "P002": {
+                "absolute_usd": -2.2,
+                "relative": -0.0147
+              },
+              "P003": {
+                "absolute_usd": -1.0,
+                "relative": -0.014
+              },
+              "P004": {
+                "absolute_usd": -1.1,
+                "relative": -0.0154
+              },
+              "P005": {
+                "absolute_usd": -1.0,
+                "relative": -0.0142
+              },
+              "P006": {
+                "absolute_usd": -0.6,
+                "relative": -0.0146
+              },
+              "P007": {
+                "absolute_usd": -1.5,
+                "relative": -0.0145
+              },
+              "P008": {
+                "absolute_usd": -1.7,
+                "relative": -0.0145
+              },
+              "P009": {
+                "absolute_usd": -1.3,
+                "relative": -0.0132
+              },
+              "P010": {
+                "absolute_usd": -2.2,
+                "relative": -0.0147
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": -36173.79,
+                "relative": -0.0653
+              },
+              "P002": {
+                "absolute_usd": -26071.2,
+                "relative": -0.1146
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": -28726.25,
+                "relative": -0.0653
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": -90971.24,
+              "relative": -0.0745
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": -724.2,
+                  "relative": -0.0037
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -575.1,
+                  "relative": -0.0037
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": -6047.07,
+                  "relative": -0.0212
+                },
+                "P002": {
+                  "absolute_usd": -18147.6,
+                  "relative": -0.0913
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -4802.09,
+                  "relative": -0.0212
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": -1299.3,
+                "relative": -0.0037
+              },
+              "shutters": {
+                "absolute_usd": -28996.76,
+                "relative": -0.0408
+              }
+            }
+          },
+          "combined": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -7.0,
+                "relative": -0.0469
+              },
+              "P002": {
+                "absolute_usd": -7.1,
+                "relative": -0.0474
+              },
+              "P003": {
+                "absolute_usd": 0.9,
+                "relative": 0.0126
+              },
+              "P004": {
+                "absolute_usd": 0.9,
+                "relative": 0.0126
+              },
+              "P005": {
+                "absolute_usd": 0.9,
+                "relative": 0.0128
+              },
+              "P006": {
+                "absolute_usd": 0.5,
+                "relative": 0.0122
+              },
+              "P007": {
+                "absolute_usd": -1.5,
+                "relative": -0.0145
+              },
+              "P008": {
+                "absolute_usd": -5.5,
+                "relative": -0.0469
+              },
+              "P009": {
+                "absolute_usd": -2.5,
+                "relative": -0.0254
+              },
+              "P010": {
+                "absolute_usd": -7.1,
+                "relative": -0.0475
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": -122609.1,
+                "relative": -0.2214
+              },
+              "P002": {
+                "absolute_usd": -87801.84,
+                "relative": -0.3858
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": -97928.73,
+                "relative": -0.2226
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": -308339.67,
+              "relative": -0.2525
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": -9532.75,
+                  "relative": -0.0484
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -7625.47,
+                  "relative": -0.0487
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": -33094.75,
+                  "relative": -0.1159
+                },
+                "P002": {
+                  "absolute_usd": -64247.04,
+                  "relative": -0.3233
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -26453.66,
+                  "relative": -0.1166
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": -17158.22,
+                "relative": -0.0485
+              },
+              "shutters": {
+                "absolute_usd": -123795.45,
+                "relative": -0.174
+              }
+            }
+          },
+          "current_production": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": 2.8,
+                "relative": 0.0187
+              },
+              "P002": {
+                "absolute_usd": 2.7,
+                "relative": 0.018
+              },
+              "P003": {
+                "absolute_usd": -3.0,
+                "relative": -0.042
+              },
+              "P004": {
+                "absolute_usd": -3.0,
+                "relative": -0.0419
+              },
+              "P005": {
+                "absolute_usd": -3.0,
+                "relative": -0.0427
+              },
+              "P006": {
+                "absolute_usd": -1.7,
+                "relative": -0.0415
+              },
+              "P007": {
+                "absolute_usd": -1.6,
+                "relative": -0.0155
+              },
+              "P008": {
+                "absolute_usd": 2.1,
+                "relative": 0.0179
+              },
+              "P009": {
+                "absolute_usd": -0.3,
+                "relative": -0.0031
+              },
+              "P010": {
+                "absolute_usd": 2.7,
+                "relative": 0.0181
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 46049.43,
+                "relative": 0.0832
+              },
+              "P002": {
+                "absolute_usd": 56469.6,
+                "relative": 0.2482
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 37097.59,
+                "relative": 0.0843
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": 139616.62,
+              "relative": 0.1143
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": -2568.02,
+                  "relative": -0.013
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": -2104.65,
+                  "relative": -0.0134
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 5545.06,
+                  "relative": 0.0194
+                },
+                "P002": {
+                  "absolute_usd": 42438.0,
+                  "relative": 0.2135
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 4445.01,
+                  "relative": 0.0196
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": -4672.67,
+                "relative": -0.0132
+              },
+              "shutters": {
+                "absolute_usd": 52428.07,
+                "relative": 0.0737
+              }
+            }
+          }
+        }
+      },
+      "SYN0697": {
+        "scenarios": {
+          "primary": {
+            "peak_gust_mph": {
+              "P001": 89.9,
+              "P002": 91.6,
+              "P003": 66.9,
+              "P004": 66.0,
+              "P005": 69.1,
+              "P006": 36.6,
+              "P007": 120.8,
+              "P008": 76.0,
+              "P009": 75.6,
+              "P010": 104.5
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 39621.55,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 39621.55,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 24730.72,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 32808.39,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 24730.72,
+              "shutters": 32808.39
+            }
+          },
+          "factor_only": {
+            "peak_gust_mph": {
+              "P001": 88.7,
+              "P002": 90.3,
+              "P003": 65.9,
+              "P004": 65.1,
+              "P005": 68.1,
+              "P006": 36.1,
+              "P007": 119.1,
+              "P008": 74.9,
+              "P009": 74.5,
+              "P010": 103.0
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 25532.88,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 25532.88,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 17653.16,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 24308.41,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 17653.16,
+              "shutters": 24308.41
+            }
+          },
+          "combined": {
+            "peak_gust_mph": {
+              "P001": 88.0,
+              "P002": 89.5,
+              "P003": 67.2,
+              "P004": 66.4,
+              "P005": 69.2,
+              "P006": 37.0,
+              "P007": 115.2,
+              "P008": 75.6,
+              "P009": 75.2,
+              "P010": 100.9
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 3377.9,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 3377.9,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 3377.9,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 3377.9,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 3377.9,
+              "shutters": 3377.9
+            }
+          },
+          "current_production": {
+            "peak_gust_mph": {
+              "P001": 89.2,
+              "P002": 91.0,
+              "P003": 64.5,
+              "P004": 63.7,
+              "P005": 66.8,
+              "P006": 35.2,
+              "P007": 123.1,
+              "P008": 74.2,
+              "P009": 73.8,
+              "P010": 105.0
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 64063.3,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 64063.3,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 37382.92,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 48048.54,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 37382.92,
+              "shutters": 48048.54
+            }
+          }
+        },
+        "differences_vs_primary": {
+          "factor_only": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -1.2,
+                "relative": -0.0133
+              },
+              "P002": {
+                "absolute_usd": -1.3,
+                "relative": -0.0142
+              },
+              "P003": {
+                "absolute_usd": -1.0,
+                "relative": -0.0149
+              },
+              "P004": {
+                "absolute_usd": -0.9,
+                "relative": -0.0136
+              },
+              "P005": {
+                "absolute_usd": -1.0,
+                "relative": -0.0145
+              },
+              "P006": {
+                "absolute_usd": -0.5,
+                "relative": -0.0137
+              },
+              "P007": {
+                "absolute_usd": -1.7,
+                "relative": -0.0141
+              },
+              "P008": {
+                "absolute_usd": -1.1,
+                "relative": -0.0145
+              },
+              "P009": {
+                "absolute_usd": -1.1,
+                "relative": -0.0146
+              },
+              "P010": {
+                "absolute_usd": -1.5,
+                "relative": -0.0144
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P002": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": -14088.67,
+                "relative": -0.3556
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": -14088.67,
+              "relative": -0.3556
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": -7077.56,
+                  "relative": -0.2862
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P002": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": -8499.98,
+                  "relative": -0.2591
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": -7077.56,
+                "relative": -0.2862
+              },
+              "shutters": {
+                "absolute_usd": -8499.98,
+                "relative": -0.2591
+              }
+            }
+          },
+          "combined": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -1.9,
+                "relative": -0.0211
+              },
+              "P002": {
+                "absolute_usd": -2.1,
+                "relative": -0.0229
+              },
+              "P003": {
+                "absolute_usd": 0.3,
+                "relative": 0.0045
+              },
+              "P004": {
+                "absolute_usd": 0.4,
+                "relative": 0.0061
+              },
+              "P005": {
+                "absolute_usd": 0.1,
+                "relative": 0.0014
+              },
+              "P006": {
+                "absolute_usd": 0.4,
+                "relative": 0.0109
+              },
+              "P007": {
+                "absolute_usd": -5.6,
+                "relative": -0.0464
+              },
+              "P008": {
+                "absolute_usd": -0.4,
+                "relative": -0.0053
+              },
+              "P009": {
+                "absolute_usd": -0.4,
+                "relative": -0.0053
+              },
+              "P010": {
+                "absolute_usd": -3.6,
+                "relative": -0.0344
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P002": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": -36243.65,
+                "relative": -0.9147
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": -36243.65,
+              "relative": -0.9147
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": -21352.82,
+                  "relative": -0.8634
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P002": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": -29430.49,
+                  "relative": -0.897
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": -21352.82,
+                "relative": -0.8634
+              },
+              "shutters": {
+                "absolute_usd": -29430.49,
+                "relative": -0.897
+              }
+            }
+          },
+          "current_production": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -0.7,
+                "relative": -0.0078
+              },
+              "P002": {
+                "absolute_usd": -0.6,
+                "relative": -0.0066
+              },
+              "P003": {
+                "absolute_usd": -2.4,
+                "relative": -0.0359
+              },
+              "P004": {
+                "absolute_usd": -2.3,
+                "relative": -0.0348
+              },
+              "P005": {
+                "absolute_usd": -2.3,
+                "relative": -0.0333
+              },
+              "P006": {
+                "absolute_usd": -1.4,
+                "relative": -0.0383
+              },
+              "P007": {
+                "absolute_usd": 2.3,
+                "relative": 0.019
+              },
+              "P008": {
+                "absolute_usd": -1.8,
+                "relative": -0.0237
+              },
+              "P009": {
+                "absolute_usd": -1.8,
+                "relative": -0.0238
+              },
+              "P010": {
+                "absolute_usd": 0.5,
+                "relative": 0.0048
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P002": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 24441.75,
+                "relative": 0.6169
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": 24441.75,
+              "relative": 0.6169
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 12652.2,
+                  "relative": 0.5116
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P002": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 15240.15,
+                  "relative": 0.4645
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": 12652.2,
+                "relative": 0.5116
+              },
+              "shutters": {
+                "absolute_usd": 15240.15,
+                "relative": 0.4645
+              }
+            }
+          }
+        }
+      },
+      "SYN0973": {
+        "scenarios": {
+          "primary": {
+            "peak_gust_mph": {
+              "P001": 81.9,
+              "P002": 82.5,
+              "P003": 85.3,
+              "P004": 81.5,
+              "P005": 115.6,
+              "P006": 80.9,
+              "P007": 94.0,
+              "P008": 69.7,
+              "P009": 58.5,
+              "P010": 85.9
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 0.0,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 0.0,
+              "shutters": 0.0
+            }
+          },
+          "factor_only": {
+            "peak_gust_mph": {
+              "P001": 80.7,
+              "P002": 81.3,
+              "P003": 84.1,
+              "P004": 80.3,
+              "P005": 113.9,
+              "P006": 79.8,
+              "P007": 92.6,
+              "P008": 68.7,
+              "P009": 57.7,
+              "P010": 84.7
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 0.0,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 0.0,
+              "shutters": 0.0
+            }
+          },
+          "combined": {
+            "peak_gust_mph": {
+              "P001": 82.4,
+              "P002": 83.0,
+              "P003": 84.7,
+              "P004": 81.2,
+              "P005": 111.5,
+              "P006": 80.7,
+              "P007": 93.4,
+              "P008": 70.4,
+              "P009": 59.4,
+              "P010": 86.1
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 0.0,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 0.0,
+              "shutters": 0.0
+            }
+          },
+          "current_production": {
+            "peak_gust_mph": {
+              "P001": 79.0,
+              "P002": 79.6,
+              "P003": 83.5,
+              "P004": 79.3,
+              "P005": 116.2,
+              "P006": 78.8,
+              "P007": 91.8,
+              "P008": 66.9,
+              "P009": 55.9,
+              "P010": 83.2
+            },
+            "baseline_payout_usd": {
+              "P001": 0.0,
+              "P002": 0.0,
+              "P003": 0.0,
+              "P004": 0.0,
+              "P005": 0.0,
+              "P006": 0.0,
+              "P007": 0.0,
+              "P008": 0.0,
+              "P009": 0.0,
+              "P010": 0.0
+            },
+            "portfolio_baseline_payout_usd": 0.0,
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              },
+              "shutters": {
+                "P001": 0.0,
+                "P002": 0.0,
+                "P003": 0.0,
+                "P004": 0.0,
+                "P005": 0.0,
+                "P006": 0.0,
+                "P007": 0.0,
+                "P008": 0.0,
+                "P009": 0.0,
+                "P010": 0.0
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": 0.0,
+              "shutters": 0.0
+            }
+          }
+        },
+        "differences_vs_primary": {
+          "factor_only": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -1.2,
+                "relative": -0.0147
+              },
+              "P002": {
+                "absolute_usd": -1.2,
+                "relative": -0.0145
+              },
+              "P003": {
+                "absolute_usd": -1.2,
+                "relative": -0.0141
+              },
+              "P004": {
+                "absolute_usd": -1.2,
+                "relative": -0.0147
+              },
+              "P005": {
+                "absolute_usd": -1.7,
+                "relative": -0.0147
+              },
+              "P006": {
+                "absolute_usd": -1.1,
+                "relative": -0.0136
+              },
+              "P007": {
+                "absolute_usd": -1.4,
+                "relative": -0.0149
+              },
+              "P008": {
+                "absolute_usd": -1.0,
+                "relative": -0.0143
+              },
+              "P009": {
+                "absolute_usd": -0.8,
+                "relative": -0.0137
+              },
+              "P010": {
+                "absolute_usd": -1.2,
+                "relative": -0.014
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P002": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": 0.0,
+              "relative": null,
+              "relative_null_reason": "reference portfolio baseline payout is zero"
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P002": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              },
+              "shutters": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              }
+            }
+          },
+          "combined": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": 0.5,
+                "relative": 0.0061
+              },
+              "P002": {
+                "absolute_usd": 0.5,
+                "relative": 0.0061
+              },
+              "P003": {
+                "absolute_usd": -0.6,
+                "relative": -0.007
+              },
+              "P004": {
+                "absolute_usd": -0.3,
+                "relative": -0.0037
+              },
+              "P005": {
+                "absolute_usd": -4.1,
+                "relative": -0.0355
+              },
+              "P006": {
+                "absolute_usd": -0.2,
+                "relative": -0.0025
+              },
+              "P007": {
+                "absolute_usd": -0.6,
+                "relative": -0.0064
+              },
+              "P008": {
+                "absolute_usd": 0.7,
+                "relative": 0.01
+              },
+              "P009": {
+                "absolute_usd": 0.9,
+                "relative": 0.0154
+              },
+              "P010": {
+                "absolute_usd": 0.2,
+                "relative": 0.0023
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P002": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": 0.0,
+              "relative": null,
+              "relative_null_reason": "reference portfolio baseline payout is zero"
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P002": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              },
+              "shutters": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              }
+            }
+          },
+          "current_production": {
+            "peak_gust_mph": {
+              "P001": {
+                "absolute_usd": -2.9,
+                "relative": -0.0354
+              },
+              "P002": {
+                "absolute_usd": -2.9,
+                "relative": -0.0352
+              },
+              "P003": {
+                "absolute_usd": -1.8,
+                "relative": -0.0211
+              },
+              "P004": {
+                "absolute_usd": -2.2,
+                "relative": -0.027
+              },
+              "P005": {
+                "absolute_usd": 0.6,
+                "relative": 0.0052
+              },
+              "P006": {
+                "absolute_usd": -2.1,
+                "relative": -0.026
+              },
+              "P007": {
+                "absolute_usd": -2.2,
+                "relative": -0.0234
+              },
+              "P008": {
+                "absolute_usd": -2.8,
+                "relative": -0.0402
+              },
+              "P009": {
+                "absolute_usd": -2.6,
+                "relative": -0.0444
+              },
+              "P010": {
+                "absolute_usd": -2.7,
+                "relative": -0.0314
+              }
+            },
+            "baseline_payout_usd": {
+              "P001": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P002": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P003": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P004": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P005": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P006": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P007": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P008": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P009": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              },
+              "P010": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference baseline payout is zero"
+              }
+            },
+            "portfolio_baseline_payout_usd": {
+              "absolute_usd": 0.0,
+              "relative": null,
+              "relative_null_reason": "reference portfolio baseline payout is zero"
+            },
+            "avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              },
+              "shutters": {
+                "P001": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P002": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P003": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P004": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P005": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P006": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P007": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P008": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P009": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                },
+                "P010": {
+                  "absolute_usd": 0.0,
+                  "relative": null,
+                  "relative_null_reason": "reference avoided payout is zero"
+                }
+              }
+            },
+            "portfolio_avoided_payout_usd_by_upgrade": {
+              "roof_straps": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              },
+              "shutters": {
+                "absolute_usd": 0.0,
+                "relative": null,
+                "relative_null_reason": "reference portfolio avoided payout is zero"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "hashes": {
+    "example_portfolio_sha256": "b3f21f0d34e5a40b480cdebf18c02df0b7c8d5d0f4a52afbd9bf142fcfe91d2b",
+    "damage_curves_sha256": "f05da581b64c2b5035e4ac0185f399d55108d30cbcbe1486bc288221be489ffe",
+    "gust_pairs_sha256": "1fdd0da37aaefecc52c1b691613c502b2557e45bd08270c78ba28b3937c55bc4"
+  }
+}
