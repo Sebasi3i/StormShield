@@ -7,7 +7,6 @@ import type {
 interface StormImpactProps {
   properties: Property[]
   losses: StormLossResponse
-  onViewAnalysis: () => void
 }
 
 function formatCurrency(value: number) {
@@ -21,7 +20,6 @@ function formatCurrency(value: number) {
 function StormImpact({
   properties,
   losses,
-  onViewAnalysis,
 }: StormImpactProps) {
   if (losses.rows.length === 0) {
     return null
@@ -217,14 +215,6 @@ function StormImpact({
           })}
       </div>
 
-      <button
-    className="full-analysis-button"
-    type="button"
-    onClick={onViewAnalysis}
-    >
-        View Full Analysis
-        <span>→</span>
-      </button>
 
       <div className="impact-disclaimer">
         Illustrative estimate — includes assumptions

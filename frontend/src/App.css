@@ -1817,3 +1817,312 @@
   right: auto;
   left: 60px;
 }
+/* ========================================
+   Full portfolio risk analysis
+   ======================================== */
+
+.analysis-panel-large {
+  width: min(1180px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+}
+
+.analysis-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 28px;
+  border-bottom: 1px solid #dce5ef;
+  background: #f8fafc;
+  overflow-x: auto;
+}
+
+.analysis-tab {
+  position: relative;
+  flex-shrink: 0;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.analysis-tab:hover {
+  color: #175cd3;
+}
+
+.analysis-tab.active {
+  color: #175cd3;
+}
+
+.analysis-tab.active::after {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: #175cd3;
+  content: '';
+}
+
+.analysis-content {
+  padding: 24px 28px 30px;
+  overflow-y: auto;
+}
+
+.analysis-metric small {
+  display: block;
+  margin-top: 5px;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Storm damage bar chart */
+
+.storm-loss-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #e4eaf1;
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.storm-loss-row {
+  display: grid;
+  grid-template-columns: 150px minmax(160px, 1fr) 90px;
+  align-items: center;
+  gap: 14px;
+}
+
+.storm-loss-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.storm-loss-label strong {
+  color: #102a43;
+  font-size: 12px;
+}
+
+.storm-loss-label span {
+  margin-top: 2px;
+  color: #7b8794;
+  font-size: 10px;
+}
+
+.storm-loss-track {
+  height: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8eef5;
+}
+
+.storm-loss-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #2f80ed,
+    #175cd3
+  );
+  transition: width 250ms ease;
+}
+
+.storm-loss-value {
+  color: #102a43;
+  font-size: 12px;
+  text-align: right;
+}
+
+/* Explanatory text */
+
+.analysis-explainer {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-left: 3px solid #98a2b3;
+  background: #f8fafc;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* Mitigation information */
+
+.analysis-callout {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid #b2ddff;
+  border-radius: 10px;
+  background: #eff8ff;
+}
+
+.analysis-callout strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #175cd3;
+  font-size: 13px;
+}
+
+.analysis-callout p {
+  margin: 0;
+  color: #475467;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* Model details */
+
+.model-detail-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.model-detail-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid #e4eaf1;
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.model-detail-grid span {
+  color: #667085;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.model-detail-grid strong {
+  overflow-wrap: anywhere;
+  color: #102a43;
+  font-size: 12px;
+}
+
+.analysis-detail-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.analysis-detail-list li {
+  margin: 8px 0;
+  color: #475467;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.analysis-warning-list li {
+  color: #7a2e0e;
+}
+
+@media (max-width: 800px) {
+  .analysis-panel-large {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+  }
+
+  .analysis-tabs {
+    padding: 0 14px;
+  }
+
+  .analysis-content {
+    padding: 18px 16px 24px;
+  }
+
+  .storm-loss-row {
+    grid-template-columns: 110px 1fr 70px;
+    gap: 8px;
+  }
+
+  .model-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.analysis-chart-card {
+  margin-top: 16px;
+  padding: 20px 18px 12px;
+  border: 1px solid #dce5ef;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.analysis-empty-state {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  color: #667085;
+  font-size: 13px;
+  text-align: center;
+}
+
+.analysis-chart-card .recharts-default-tooltip {
+  border: 1px solid #dce5ef !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(16, 42, 67, 0.12);
+}
+
+.analysis-chart-card .recharts-legend-item-text {
+  color: #475467 !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+.analysis-panel-large {
+  max-height: 94vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.analysis-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+}
+
+.analysis-tabs {
+  flex-shrink: 0;
+}
+
+.analysis-header,
+.analysis-notice,
+.analysis-footer {
+  flex-shrink: 0;
+}
+
+/* Subtle dashboard scrollbar */
+.analysis-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.analysis-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.analysis-content::-webkit-scrollbar-thumb {
+  background: #c7d5e5;
+  border-radius: 999px;
+}
+
+.analysis-content::-webkit-scrollbar-thumb:hover {
+  background: #9fb4cb;
+}
+.leaflet-interactive:focus {
+  outline: none;
+}
+
+.leaflet-container path:focus {
+  outline: none;
+}
