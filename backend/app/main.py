@@ -680,8 +680,10 @@ def _storm_losses(
         ]
         exposures = []
         exposure_detail = []
+        storm_size = []
         for storm_id in ids:
             storm = wind.storm_by_id(storm_id, catalog)
+            storm_size.append(wind.storm_parameters(storm))
             try:
                 storm_exposures, detail = wind.exposures_for_storm(storm, coordinates)
             except ValueError as error:
@@ -735,6 +737,8 @@ def _storm_losses(
         # Closest approach per property, so a zero-loss row reads as an audited miss
         # rather than looking like a row that went missing.
         result["metadata"]["wind_exposure_detail"] = exposure_detail
+        # The size each storm was modeled with, and the track point it came from.
+        result["metadata"]["storm_size"] = storm_size
     return result
 
 

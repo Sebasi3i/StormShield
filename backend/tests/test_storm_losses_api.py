@@ -336,11 +336,13 @@ def _storm(*points):
     }
 
 
-def _expected_gust(distance_km, centre_wind_kt):
-    """The gust wind_field's profile gives at this distance, the independent check."""
+def _expected_gust(distance_km, centre_wind_kt, storm):
+    """The gust wind_field's profile gives at this distance, the independent check,
+    using the size the storm-size model assigns to this storm."""
+    size = wind.storm_parameters(storm)
     sustained = sustained_wind_profile_kt(
-        distance_km, centre_wind_kt, SIZE["rmw_km"], SIZE["outer_decay_exponent"],
-        SIZE["taper_start_km"], SIZE["cutoff_km"],
+        distance_km, centre_wind_kt, size["rmw_km"], size["outer_decay_exponent"],
+        size["taper_start_km"], size["cutoff_km"],
     )
     return sustained * wind.KT_TO_MPH * wind.GUST_FACTOR
 
@@ -360,19 +362,19 @@ def test_peak_gust_is_the_worst_over_the_track_not_the_value_at_landfall():
     exposures, detail = wind.exposures_for_storm(storm, [("HOME", *home)])
 
     distance = haversine_distance_km(*home, 25.0, -80.0)
-    assert exposures[0].peak_gust_mph == pytest.approx(_expected_gust(distance, 130.0), abs=0.01)
+    assert exposures[0].peak_gust_mph == pytest.approx(_expected_gust(distance, 130.0, storm), abs=0.01)
     assert detail[0]["peak_time_utc"] == "2026-09-01T00:00:00"
 
 
 def test_wind_peaks_at_the_radius_of_maximum_wind_not_in_the_eye():
     storm = _storm((25.0, -80.0, 130.0))
-    eyewall = (25.0, _km_east(25.0, -80.0, SIZE["rmw_km"]))
+    eyewall = (25.0, _km_east(25.0, -80.0, wind.storm_parameters(storm)["rmw_km"]))
     exposures, _ = wind.exposures_for_storm(storm, [("EYE", 25.0, -80.0), ("EYEWALL", *eyewall)])
     gust = {exposure.property_id: exposure.peak_gust_mph for exposure in exposures}
 
     assert gust["EYE"] == 0.0
     assert gust["EYEWALL"] == pytest.approx(
-        _expected_gust(haversine_distance_km(*eyewall, 25.0, -80.0), 130.0), abs=0.01
+        _expected_gust(haversine_distance_km(*eyewall, 25.0, -80.0), 130.0, storm), abs=0.01
     )
     assert gust["EYEWALL"] > 0.99 * 130.0 * wind.KT_TO_MPH * wind.GUST_FACTOR
 
@@ -427,7 +429,9 @@ def test_wind_model_is_wind_field_with_the_agreed_gust_factor(example):
     assert wind_model["model"] == "wind_field"
     assert wind_model["package_version"] == wind_field.__version__
     assert wind_model["gust_factor"] == 1.25
-    assert wind_model["storm_parameters"]["parameter_status"] == "assumed"
+    assert wind_model["storm_parameters"]["parameter_status"] == "sourced"
+    assert wind_model["storm_parameters"]["storm_size_model_id"] == "hurdat2-radii-fit-v1"
+    assert example["metadata"]["storm_size"][0]["storm_id"] == "SYN0155"
 
 
 def test_wind_field_labels_its_output_with_the_curves_metric():

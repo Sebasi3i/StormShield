@@ -1,0 +1,53 @@
+{
+  "storm_size_model_id": "hurdat2-radii-fit-v1",
+  "evidence_status": "sourced",
+  "validation_status": "not validated against station observations",
+  "source": {
+    "dataset": "NOAA NHC HURDAT2 Atlantic best track",
+    "file": "hurdat2-1851-2025-091226.txt",
+    "note": "Bundled with the hurricane_simulator package. Wind radii (34/50/64 kt, per quadrant) recorded from 2004; radius of maximum wind recorded from 2021. Radii are best-track estimates, largest quadrant, converted from nautical miles."
+  },
+  "scope": "Parameters are constant within each event: evaluated once per storm at its peak-intensity track point. The profile is axisymmetric; forward-motion asymmetry and land effects are not represented.",
+  "fitted_at": "2026-09-27T01:47:13Z",
+  "script": "backend/scripts/fit_storm_size.py",
+  "rmw": {
+    "form": "ln(rmw_km) = intercept + per_kt * max_wind_kt + per_degree_latitude * latitude",
+    "intercept": 3.514701820325689,
+    "per_kt": -0.00989130874104062,
+    "per_degree_latitude": 0.035710857928775284,
+    "bounds_km": [
+      8.0,
+      80.0
+    ],
+    "fixes": 633,
+    "storms": 39,
+    "seasons": [
+      2021,
+      2025
+    ],
+    "r_squared": 0.411,
+    "residual_sd_ln": 0.49
+  },
+  "outer_decay_exponent": {
+    "value": 0.492,
+    "interquartile": [
+      0.347,
+      0.679
+    ],
+    "fixes": 508,
+    "method": "median of ln(max_wind_kt / 64) / ln(r64_km / rmw_km) over fixes with both radii"
+  },
+  "taper": {
+    "taper_start_km": 259.0,
+    "cutoff_km": 444.0,
+    "fixes": 2568,
+    "method": "median and 90th percentile of the largest-quadrant 34 kt radius of hurricane fixes"
+  },
+  "examples_km": {
+    "64 kt at 25.0 N": 43.6,
+    "96 kt at 26.0 N": 32.9,
+    "120 kt at 26.0 N": 26.0,
+    "140 kt at 27.0 N": 22.1,
+    "155 kt at 20.0 N": 14.8
+  }
+}

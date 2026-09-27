@@ -16,10 +16,13 @@ wheel, pinned in requirements.txt):
   - a gust factor, converting one-minute sustained wind to a 3-second gust,
   - a knots-to-mph conversion, the only exact step.
 
-What is still ASSUMED, and published in `metadata()` with every run: the storm size
-(radius of maximum wind, decay, taper and cutoff) is one demonstration set applied to
-every storm, because the simulator does not publish a size per storm; and the gust
-factor is wind_field's demonstration value, 1.25. Every exposure is labeled `assumed`.
+Storm size (radius of maximum wind, decay, taper and cutoff) comes from the storm-size
+model in `fixtures/storm_size_model.json`, fitted by `scripts/fit_storm_size.py` to the
+wind radii NOAA records in HURDAT2: a smaller eye for a stronger, lower-latitude storm.
+The simulator publishes no size per storm, so the model is evaluated once per storm at
+its peak-intensity track point and held constant through the event. What is still
+ASSUMED, and published in `metadata()` with every run, is the gust factor: wind_field's
+demonstration value, 1.25, pending station observations to calibrate it.
 
 `claims.py` does not change with the wind model, because it consumes `WindExposure`
 and not a track. The metric stamped on every exposure must match the metric the curves
@@ -30,18 +33,18 @@ configuration, and `claims.damage_fraction` rejects a mismatch instead of conver
 from __future__ import annotations
 
 import json
+import math
 from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
 import wind_field
-from wind_field import WindFieldConfig, compute_property_exposure, default_storm_parameters
+from wind_field import WindFieldConfig, compute_property_exposure
 from wind_field.schema import (
     DEFAULT_MAX_SEGMENT_DISTANCE_FRACTION_RMW,
     DEFAULT_MAX_TIME_STEP_MINUTES,
     DEMO_GUST_DURATION_SECONDS,
     DEMO_GUST_FACTOR,
-    DEMO_STORM_PARAMETERS,
     EXPECTED_TRACK_STEP_HOURS,
     KT_TO_MPH,
     WIND_MODEL_VERSION,
@@ -75,8 +78,62 @@ def _config(catalog_id: str = "storm_catalog") -> WindFieldConfig:
         catalog_id=catalog_id,
         gust_factor=GUST_FACTOR,
         gust_duration_seconds=GUST_DURATION_SECONDS,
-        assumption_notes="Demonstration storm size applied to every storm; gust factor 1.25.",
+        assumption_notes=(
+            "Storm size per storm from the HURDAT2 wind-radii fit "
+            f"({load_storm_size_model()['storm_size_model_id']}); gust factor 1.25 assumed."
+        ),
     )
+
+
+@lru_cache
+def load_storm_size_model(path: str | None = None) -> dict:
+    """The fitted storm-size model, with its provenance. See scripts/fit_storm_size.py."""
+    model_path = Path(path) if path else FIXTURES / "storm_size_model.json"
+    return json.loads(model_path.read_text(encoding="utf-8"))
+
+
+def rmw_km(max_wind_kt: float, latitude: float, model: dict | None = None) -> float:
+    """Radius of maximum wind for a storm of this intensity at this latitude, in km.
+
+    ln(rmw) is linear in intensity and latitude, the fitted form; the result is clamped
+    to the range the record spans for hurricanes so an extreme track cannot produce an
+    implausible eye.
+    """
+    rmw = (model or load_storm_size_model())["rmw"]
+    value = math.exp(
+        rmw["intercept"] + rmw["per_kt"] * max_wind_kt + rmw["per_degree_latitude"] * latitude
+    )
+    low, high = rmw["bounds_km"]
+    return min(high, max(low, value))
+
+
+def storm_parameters(storm: dict, model: dict | None = None) -> dict:
+    """This storm's size parameters: one row in wind_field's storm_parameters shape.
+
+    Evaluated at the storm's peak-intensity track point and constant through the event,
+    which is what the model's scope note states. `size_basis` records the point used so
+    the value can be audited against the track.
+    """
+    model = model or load_storm_size_model()
+    peak = max(storm["track"], key=lambda point: point["max_wind_kt"])
+    return {
+        "storm_id": storm["storm_id"],
+        "rmw_km": round(rmw_km(peak["max_wind_kt"], peak["latitude"], model), 1),
+        "outer_decay_exponent": model["outer_decay_exponent"]["value"],
+        "taper_start_km": model["taper"]["taper_start_km"],
+        "cutoff_km": model["taper"]["cutoff_km"],
+        "parameter_status": "sourced",
+        "source_note": (
+            f"{model['storm_size_model_id']}: RMW from the storm's peak of "
+            f"{peak['max_wind_kt']:g} kt at {peak['latitude']:g} N; decay and taper are "
+            "record-wide medians. Not validated against station observations."
+        ),
+        "size_basis": {
+            "peak_wind_kt": peak["max_wind_kt"],
+            "latitude": peak["latitude"],
+            "timestamp": peak["timestamp"],
+        },
+    }
 
 
 # Fail at import, not at the first request, if wind_field's gust definition for this
@@ -146,6 +203,10 @@ def exposures_for_storm(
         }
     )
 
+    # One size for the whole event, from the storm-size model.
+    parameters = storm_parameters(storm)
+    parameter_table = pd.DataFrame([{k: v for k, v in parameters.items() if k != "size_basis"}])
+
     # Peak over every continuous stretch of the track, and the closest pass of any.
     peaks = None
     for segment in _track_segments(storm["track"]):
@@ -161,7 +222,7 @@ def exposures_for_storm(
         result = compute_property_exposure(
             track,
             property_table,
-            default_storm_parameters([storm["storm_id"]]),
+            parameter_table,
             _config(),
         )
         stretch = result.exposures.set_index("property_id")
@@ -207,6 +268,7 @@ def exposures_for_storm(
                 "closest_approach": {
                     "distance_km": round(float(row["min_sampled_center_distance_km"]), 1),
                 },
+                "rmw_km": parameters["rmw_km"],
             }
         )
 
@@ -231,6 +293,7 @@ def storm_by_id(storm_id: str, catalog: dict | None = None) -> dict | None:
 def metadata() -> dict:
     """Provenance for the wind step, published with every run that uses it."""
     config = _config()
+    model = load_storm_size_model()
     return {
         "wind_metric": WIND_METRIC,
         "evidence_status": "assumed",
@@ -246,19 +309,31 @@ def metadata() -> dict:
         ),
         "kt_to_mph": KT_TO_MPH,
         "storm_parameters": {
-            key: DEMO_STORM_PARAMETERS[key]
-            for key in (
-                "rmw_km",
-                "outer_decay_exponent",
-                "taper_start_km",
-                "cutoff_km",
-                "parameter_status",
-            )
+            "parameter_status": "sourced",
+            "storm_size_model_id": model["storm_size_model_id"],
+            "rmw_form": model["rmw"]["form"],
+            "rmw_bounds_km": model["rmw"]["bounds_km"],
+            "outer_decay_exponent": model["outer_decay_exponent"]["value"],
+            "taper_start_km": model["taper"]["taper_start_km"],
+            "cutoff_km": model["taper"]["cutoff_km"],
+            "fit": {
+                "dataset": model["source"]["dataset"],
+                "file": model["source"]["file"],
+                "rmw_fixes": model["rmw"]["fixes"],
+                "rmw_storms": model["rmw"]["storms"],
+                "rmw_seasons": model["rmw"]["seasons"],
+                "rmw_r_squared": model["rmw"]["r_squared"],
+                "decay_fixes": model["outer_decay_exponent"]["fixes"],
+                "taper_fixes": model["taper"]["fixes"],
+            },
+            "validation_status": model["validation_status"],
         },
         "storm_parameters_note": (
-            "ASSUMED storm size, identical for every storm, because the simulator does "
-            "not publish a radius of maximum wind or size per storm. "
-            + DEMO_STORM_PARAMETERS["source_note"]
+            "Storm size per storm from the storm-size model fitted to HURDAT2 wind "
+            "radii: the radius of maximum wind from the storm's peak intensity and "
+            "latitude, decay and taper from record-wide medians, constant within each "
+            "event. The per-storm values used are in metadata.storm_size. "
+            + model["scope"]
         ),
         "track_interpolation": {
             "max_time_step_minutes": DEFAULT_MAX_TIME_STEP_MINUTES,

@@ -104,12 +104,15 @@ The gust at each property comes from **wind_field**, the property-level wind mod
 from the hurricane simulator project, called by `app/wind.py`: a radial wind profile
 around the storm centre (calm eye, strongest at the radius of maximum wind), moved
 along the track in 15-minute steps so each home sees the storm's closest pass, with a
-1.25 gust factor. Its storm size is still an assumed demonstration value, the same for
-every storm, and every damage curve currently shipped is an **assumed fixture**. Both
-say so in their own provenance, and every response carries `evidence_status`. Replace
-`app/fixtures/damage_curves.json` when the research team supplies real curves;
-`app/claims.py` is unaffected by the curves and the wind model alike, because it
-consumes wind exposures rather than tracks.
+1.25 gust factor. Storm size is per storm: the radius of maximum wind comes from a model
+fitted to the wind radii in NOAA's HURDAT2 record (`app/fixtures/storm_size_model.json`,
+produced by `scripts/fit_storm_size.py`; see `docs/calibration.md`), evaluated at each
+storm's peak intensity and latitude, with the decay and taper from record-wide medians.
+The gust factor is still an assumed value, and every damage curve currently shipped is
+an **assumed fixture**. Each says so in its own provenance, and every response carries
+`evidence_status`. Replace `app/fixtures/damage_curves.json` when the research team
+supplies real curves; `app/claims.py` is unaffected by the curves and the wind model
+alike, because it consumes wind exposures rather than tracks.
 
 `wind-field` and `hurricane-simulator` are not on PyPI. Their wheels live in
 `backend/vendor/` and are pinned in `requirements.txt`. To upgrade either, put the new
@@ -205,11 +208,12 @@ backend/            FastAPI service, risk engine, ETL scripts
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?
     fixtures/       Curves, policy template, storm catalog, sample response
-  scripts/          Adapters that import outside data
+  scripts/          Adapters that import outside data, and the storm-size fit
   tests/            pytest suite
   vendor/           wind_field and hurricane_simulator wheels (not on PyPI)
   requirements.txt  Pinned dependencies
 data/raw/           Downloaded source datasets (gitignored)
 data/processed/     Build artifacts (gitignored except published profiles)
+docs/               Calibration notes: what each constant rests on
 frontend/           React + TypeScript + Vite dashboard
 ```
