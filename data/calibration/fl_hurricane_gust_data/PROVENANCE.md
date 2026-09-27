@@ -15,3 +15,16 @@ QC-cleaned pairs table. Rebuild both with `build.py` once the raw ASOS file is i
 
 Used by `backend/scripts/fit_gust_factor.py` and `backend/scripts/validate_wind_field.py`.
 See `README.md` for the column definitions and the caveats that matter when fitting.
+
+## Extension: 2004 and 2005 seasons (prepared, not yet fetched)
+
+`storms_2004_2005.csv` lists Charley, Frances, Ivan, Jeanne, Dennis, Katrina, Rita and
+Wilma with Florida windows derived from the bundled HURDAT2 (centre inside 22.5-32 N,
+88.5-78 W, padded six hours; Ivan trimmed to its landfall passage). Their best-track rows
+are in `raw/hurdat2_fl_2004_2005.txt`, taken from the same HURDAT2 file as the rest.
+`storms_2016_2024.csv` lists the original 11 with the windows from `README.md`.
+
+The one-minute observations for the new storms are not in this folder yet: the
+environment this was prepared in could not reach the Iowa Mesonet or NCEI hosts.
+`fetch_asos_1min.py` downloads them into the raw file `build.py` reads; run it where
+those hosts are reachable, then `build.py`, then the four calibration scripts.

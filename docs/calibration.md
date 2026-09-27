@@ -209,7 +209,71 @@ replacing 1.25 with an effective 1.00 near the track, where the demo homes sit. 
 is the direction the stations point: the original constants overstated near-track
 gusts by about a quarter against every observed landfall in the set.
 
-## 6. Damage curves: still assumed
+## 6. Extending the observations
+
+Eleven storms determine the constants to within the fold spread above; more storms
+narrow that and, more importantly, thicken the hurricane-force tail (34 pairs), where
+the model still runs 10% low. Two extensions are prepared in
+`data/calibration/fl_hurricane_gust_data`; both need a network that can reach the
+data hosts, which the environment this branch was built in could not.
+
+### 2004 and 2005 seasons: ready to fetch
+
+NCEI's one-minute ASOS archive begins around 2000, so the two most active Florida
+seasons on record are available: Charley, Frances, Ivan and Jeanne in 2004; Dennis,
+Katrina, Rita and Wilma in 2005. They add the cases that stress the model most, a very
+small Charley and a very large Wilma. `storms_2004_2005.csv` holds their Florida windows
+(from the bundled HURDAT2) and `raw/hurdat2_fl_2004_2005.txt` their best-track rows;
+`fetch_asos_1min.py` downloads the observations from the Iowa Environmental Mesonet
+mirror into the raw file `build.py` reads. Then the whole chain reruns:
+
+```bash
+cd data/calibration/fl_hurricane_gust_data
+python fetch_asos_1min.py storms_2004_2005.csv storms_2016_2024.csv   # 19 storms
+python build.py
+cd ../../../backend
+python scripts/fit_gust_factor.py && python scripts/calibrate_wind_field.py && python scripts/validate_wind_field.py
+python -m pytest tests -q
+```
+
+Two things to check on the first run, since the fetch could not be tested here: that
+the fetched sections carry the columns `build.py` expects (the script's docstring lists
+them), and that the 2004-2005 records do not show the parser misalignment the README
+describes for later years, or if they do, that `build.py`'s repair catches them.
+HURDAT2 has no radius of maximum wind for these seasons except at landfall, so
+`r_over_rmw` will be sparse for them; the calibration does not use it.
+
+### Denser networks: what they are and what is needed
+
+Airports stop reporting in the eyewall, so airport data alone will never populate the
+tail well. Two sources do:
+
+- **Florida Coastal Monitoring Program (FCMP) towers.** The University of Florida
+  deploys 10 m instrumented towers into landfalling hurricanes and has archives for
+  most Florida landfalls since 1999, including Charley, Frances, Ivan, Jeanne, Dennis,
+  Wilma, Irma, Michael and Ian. They record high-rate wind at known heights and
+  exposures, exactly what the gust factor and the near-centre profile need. The data
+  are per deployment rather than a single API; each tower record needs its position,
+  height and exposure carried through into the pairs table with a `network` column so
+  it can be weighted separately from ASOS. Host: `fcmp.ce.ufl.edu`.
+- **NOAA/HRD H*Wind surface wind analyses.** Gridded analyses of the whole wind
+  field, built from every observation platform in the storm, available from AOML for
+  storms through 2013 (later analyses are commercial). For Charley, Wilma, Katrina and
+  the other 2004-2005 storms they give the peak wind at every grid point, which
+  validates the profile's shape everywhere rather than only where an airport happened
+  to be. Host: `www.aoml.noaa.gov`.
+
+Neither is a drop-in for the current pairs table. FCMP fits the existing scheme after
+a per-tower conversion (their sustained winds are 1-minute at 10 m, so no averaging-
+period caveat); H*Wind is a field rather than point observations and would be compared
+with the model's field over a grid. Both are a further step once the 2004-2005
+airports are in.
+
+To run any of this from a cloud session, the environment's network policy needs these
+hosts allowed: `mesonet.agron.iastate.edu`, `www.ncei.noaa.gov`, `fcmp.ce.ufl.edu`,
+`www.aoml.noaa.gov`.
+
+## 7. Damage curves: still assumed
 
 Every curve in `backend/app/fixtures/damage_curves.json` derives from the platform's
 earlier formula, and the Finance workbook returned no damage-effect evidence.

@@ -204,3 +204,31 @@ def test_the_calibration_holds_up_on_storms_it_did_not_see(calibration):
 def test_metadata_carries_the_out_of_sample_error(calibration):
     published = wind.metadata()["calibration"]
     assert published["out_of_sample_mean_absolute_error_kt"] == calibration["cross_validation"]["out_of_sample"]["mean_absolute_error_kt"]
+
+
+# --------------------------------------------------------------------------- #
+# Prepared extension: 2004-2005 seasons
+# --------------------------------------------------------------------------- #
+
+
+DATASET = BACKEND.parent / "data" / "calibration" / "fl_hurricane_gust_data"
+
+
+def test_the_extension_manifest_matches_its_best_tracks():
+    import pandas as pd
+
+    manifest = pd.read_csv(DATASET / "storms_2004_2005.csv", parse_dates=["window_start_utc", "window_end_utc"])
+    assert set(manifest["storm_name"]) == {"CHARLEY", "FRANCES", "IVAN", "JEANNE", "DENNIS", "KATRINA", "RITA", "WILMA"}
+    assert (manifest["window_end_utc"] > manifest["window_start_utc"]).all()
+    assert ((manifest["window_end_utc"] - manifest["window_start_utc"]).dt.total_seconds() / 3600 <= 96).all()
+
+    headers = [line[1:].strip() for line in (DATASET / "raw" / "hurdat2_fl_2004_2005.txt").read_text().splitlines() if line.startswith("#")]
+    assert sorted(headers) == sorted(f"{row.storm_id},{row.storm_name}" for row in manifest.itertuples())
+
+
+def test_the_original_storms_manifest_matches_the_pairs_file():
+    import pandas as pd
+
+    manifest = pd.read_csv(DATASET / "storms_2016_2024.csv")
+    pairs = pd.read_csv(DATASET / "fl_gust_pairs_2min_qc.csv.gz", usecols=["storm_id"])
+    assert set(manifest["storm_id"]) == set(pairs["storm_id"].unique())

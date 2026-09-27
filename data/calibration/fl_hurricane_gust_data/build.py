@@ -2,7 +2,7 @@
 
 Inputs (raw/):
   fl_hurricanes_asos1min_raw.csv.gz  IEM copy of NCEI ASOS 1-minute data (sectioned file)
-  hurdat2_fl_subset.txt, hurdat2_fl_extra.txt  NHC HURDAT2 rows for the 11 storms
+  hurdat2_fl_*.txt  NHC HURDAT2 rows for the storms (original 11, plus 2004-2005 extension)
 
 Outputs (out/): see README.md
 """
@@ -137,7 +137,7 @@ def parse_hurdat(paths):
     return bt.reset_index(drop=True)
 
 
-bt = parse_hurdat([RAW / "hurdat2_fl_subset.txt", RAW / "hurdat2_fl_extra.txt"])
+bt = parse_hurdat(sorted(RAW.glob("hurdat2_fl_*.txt")))  # the 11 original storms and any extension
 bt.to_csv(OUT / "best_tracks.csv", index=False, date_format="%Y-%m-%d %H:%M")
 
 
