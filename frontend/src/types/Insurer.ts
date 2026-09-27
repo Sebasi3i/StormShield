@@ -203,6 +203,8 @@ export interface InsurerCompareResponse {
   storm_ids: string[]
   selected_proposal_ids: string[]
   program: InsurerProgram
+  annual_model: AnnualModel
+  deductible_fraction: number | null
   complete: boolean
   unavailable: { policy_id: string; proposal_id: string; reason: string }[]
   policies: PricedPolicy[]

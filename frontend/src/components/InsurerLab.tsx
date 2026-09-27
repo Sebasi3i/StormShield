@@ -120,6 +120,66 @@ function toCsv(result: InsurerCompareResponse) {
   return [...assumptions, header.join(','), ...lines].join('\n')
 }
 
+/*
+ * The settings a result was computed with, in one line, read from the response rather
+ * than from the form so it always describes what is on screen.
+ */
+function describeSettings(result: InsurerCompareResponse, demo: InsurerDemo, proposalCount: number): string[] {
+  const parts: string[] = []
+  const preset = demo.presets[result.preset_id]
+
+  parts.push(`Preset: ${preset ? preset.label : result.preset_id}`)
+  parts.push(`Storms: ${result.storm_ids.join(', ')}`)
+  parts.push(
+    result.selected_proposal_ids.length === proposalCount
+      ? `Projects: all ${proposalCount}`
+      : `Projects: ${result.selected_proposal_ids.length} of ${proposalCount}` +
+          (result.selected_proposal_ids.length > 0 ? ` (${result.selected_proposal_ids.join(', ')})` : ''),
+  )
+  parts.push(
+    result.deductible_fraction === null
+      ? 'Deductible: policy plan, 5% of Coverage A'
+      : `Deductible: ${pct(result.deductible_fraction)} of Coverage A (sensitivity, premium held fixed)`,
+  )
+  if (result.annual_model.kind === 'one_event_or_none') {
+    const weights = Object.entries(result.annual_model.conditional_storm_weights)
+    const equal = weights.every(([, w]) => w === weights[0][1])
+
+    parts.push(
+      `Annual assumptions: on, ${pct(result.annual_model.annual_event_probability)} chance per year of one storm` +
+        (equal ? ', equal weights' : `, weights ${weights.map(([s, w]) => `${s} ${w}`).join(' / ')}`),
+    )
+  } else {
+    parts.push('Annual assumptions: off (each storm on its own, no yearly figures)')
+  }
+  const program = result.program
+  parts.push(
+    `Program: grant ${pct(program.grant_share)} of cost up to ${usd(program.grant_cap_usd)}, ` +
+      `${usd(program.inspection_usd_per_project)} inspection per project, ${usd(program.fixed_setup_usd)} setup, ` +
+      `${usd(program.annual_admin_usd)}/yr admin, ${usd(program.budget_usd)} budget, ` +
+      `${program.horizon_years} years at ${pct(program.discount_rate, 1)}`,
+  )
+
+  return parts
+}
+
+function sameSettings(result: InsurerCompareResponse, request: InsurerCompareRequest, allProposalIds: string[]): boolean {
+  const sorted = (ids: string[]) => [...ids].sort().join(',')
+  const requested = request.selected_proposal_ids ?? allProposalIds
+
+  if (sorted(result.storm_ids) !== sorted(request.storm_ids ?? [])) return false
+  if (sorted(result.selected_proposal_ids) !== sorted(requested)) return false
+  if ((result.deductible_fraction ?? null) !== (request.deductible_fraction ?? null)) return false
+  if (JSON.stringify(result.program) !== JSON.stringify(request.program)) return false
+  if (result.annual_model.kind !== request.annual_model.kind) return false
+  if (result.annual_model.kind === 'one_event_or_none' && request.annual_model.kind === 'one_event_or_none') {
+    if (result.annual_model.annual_event_probability !== request.annual_model.annual_event_probability) return false
+    if (JSON.stringify(result.annual_model.conditional_storm_weights) !== JSON.stringify(request.annual_model.conditional_storm_weights)) return false
+  }
+
+  return true
+}
+
 interface InsurerLabProps {
   onClose: () => void
 }
@@ -308,6 +368,9 @@ function InsurerLab({ onClose }: InsurerLabProps) {
   const selectedSet = new Set(selectedProposalIds ?? allProposalIds)
   const focusedEvent = result && focusedStormId ? result.events[focusedStormId] : null
   const cofunded = result?.programs.insurer_cofunded ?? null
+  const currentRequest = request()
+  const settingsLines = result ? describeSettings(result, demo, allProposalIds.length) : []
+  const resultIsStale = result !== null && currentRequest !== null && !sameSettings(result, currentRequest, allProposalIds)
 
   return (
     <div className="lab">
@@ -508,6 +571,21 @@ function InsurerLab({ onClose }: InsurerLabProps) {
       </section>
 
       {runError && <div className="lab-error" role="alert">{runError}</div>}
+
+      {result && (
+        <div className={resultIsStale ? 'lab-settings stale' : 'lab-settings'} aria-live="polite">
+          <strong>
+            {resultIsStale
+              ? 'Settings changed since this result was computed. Press Compare to refresh. The result below used:'
+              : `This result was computed with${result.optimization ? ' (after Optimize)' : ''}:`}
+          </strong>
+          <ul>
+            {settingsLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {result?.optimization && (
         <div className="analysis-callout">
