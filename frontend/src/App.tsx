@@ -22,6 +22,48 @@ import './App.css'
 const FLORIDA_BATCH = 'florida-batch'
 const DEFAULT_CATALOG_STORM = 'SYN0155'
 
+const DISPLAY_REGION = {
+  minLat: 18.0,
+  maxLat: 36.0,
+  minLon: -94.0,
+  maxLon: -67.0,
+}
+
+function isInDisplayRegion(
+  latitude: number,
+  longitude: number,
+) {
+  return (
+    latitude >= DISPLAY_REGION.minLat &&
+    latitude <= DISPLAY_REGION.maxLat &&
+    longitude >= DISPLAY_REGION.minLon &&
+    longitude <= DISPLAY_REGION.maxLon
+  )
+}
+
+function getLastVisibleStep(storm: Storm) {
+  let enteredRegion = false
+  let lastVisibleStep = 0
+
+  for (let i = 0; i < storm.track.length; i += 1) {
+    const point = storm.track[i]
+
+    if (
+      isInDisplayRegion(
+        point.latitude,
+        point.longitude,
+      )
+    ) {
+      enteredRegion = true
+      lastVisibleStep = i
+    } else if (enteredRegion) {
+      break
+    }
+  }
+
+  return lastVisibleStep
+}
+
 function App() {
   const [selectedProperties, setSelectedProperties] = useState<Property[]>([])
 
@@ -39,6 +81,7 @@ function App() {
   const [focusedStormId, setFocusedStormId] = useState<string | null>(null)
   const [stormLoading, setStormLoading] = useState(false)
   const [stormStep, setStormStep] = useState(0)
+  const [stormProgress, setStormProgress] = useState(0)
   const [stormAnimating, setStormAnimating] = useState(false)
   const [stormLosses, setStormLosses] =
     useState<StormLossResponse | null>(null)
@@ -98,6 +141,7 @@ function App() {
     setActiveStorms([])
     setFocusedStormId(null)
     setStormStep(0)
+    setStormProgress(0)
     setStormAnimating(false)
     setStormLosses(null)
     setStormError(null)
@@ -170,6 +214,7 @@ function App() {
     try {
       setStormLoading(true)
       setStormStep(0)
+      setStormProgress(0)
       setStormLosses(null)
       setStormError(null)
       setAnalysisOpen(false)
@@ -211,34 +256,68 @@ function App() {
   )
 
   useEffect(() => {
-    if (activeStorms.length === 0 || !stormAnimating || stormStep >= lastStep) {
-      return
-    }
-
-    // Generated tracks run from formation to dissipation and can be twice as
-    // long as catalog ones, so long tracks step faster to keep playback short.
-    const trackLength = lastStep + 1
-    const stepDelay =
-      trackLength > 40 ? Math.max(200, 26000 / trackLength) : 650
-
-    const timer = window.setTimeout(() => {
-      setStormStep(stormStep + 1)
-
-      if (stormStep + 1 >= lastStep) {
-        setStormAnimating(false)
+      if (
+        activeStorms.length === 0 ||
+        !stormAnimating ||
+        stormStep >= lastStep
+      ) {
+        return
       }
-    }, stepDelay)
 
-    return () => window.clearTimeout(timer)
-  }, [activeStorms, stormAnimating, stormStep, lastStep])
+      const trackLength = lastStep + 1
+
+      // Keep roughly the same overall playback duration as before,
+      // but render many small movements between each real track point.
+      const stepDuration =
+        trackLength > 40
+          ? Math.max(200, 26000 / trackLength)
+          : 650
+
+      const frameDelay = 30
+      const progressIncrement =
+        frameDelay / stepDuration
+
+      const timer = window.setTimeout(() => {
+        const nextProgress =
+          stormProgress + progressIncrement
+
+        if (nextProgress >= 1) {
+          const nextStep = stormStep + 1
+
+          setStormStep(nextStep)
+          setStormProgress(0)
+
+          if (nextStep >= lastStep) {
+            setStormAnimating(false)
+          }
+        } else {
+          setStormProgress(nextProgress)
+        }
+      }, frameDelay)
+
+      return () => window.clearTimeout(timer)
+    }, [
+      activeStorms,
+      stormAnimating,
+      stormStep,
+      stormProgress,
+      lastStep,
+    ])
 
   const focusedStorm =
     activeStorms.find((storm) => storm.storm_id === focusedStormId) ??
     activeStorms[0] ??
     null
 
+  const focusedVisibleStep = focusedStorm
+  ? Math.min(
+      stormStep,
+      getLastVisibleStep(focusedStorm),
+    )
+  : 0
+
   const focusedPoint = focusedStorm
-    ? focusedStorm.track[Math.min(stormStep, focusedStorm.track.length - 1)]
+    ? focusedStorm.track[focusedVisibleStep]
     : null
 
   // Single-storm views read the focused storm's rows out of the batch run.
@@ -446,8 +525,8 @@ function App() {
                 </span>
 
                 <span>
-                  Step {Math.min(stormStep, focusedStorm.track.length - 1) + 1}{' '}
-                  of {focusedStorm.track.length}
+                  Step {focusedVisibleStep + 1}{' '}
+                  of {getLastVisibleStep(focusedStorm) + 1}
                 </span>
               </div>
 
@@ -456,9 +535,8 @@ function App() {
                   className="storm-progress-bar"
                   style={{
                     width: `${
-                      ((Math.min(stormStep, focusedStorm.track.length - 1) +
-                        1) /
-                        focusedStorm.track.length) *
+                      ((focusedVisibleStep + 1) /
+                        (getLastVisibleStep(focusedStorm) + 1)) *
                       100
                     }%`,
                     ...(!isBatch && scenarioColor
@@ -476,6 +554,7 @@ function App() {
             onToggleProperty={toggleProperty}
             storms={activeStorms}
             stormStep={stormStep}
+            stormProgress={stormProgress}
             focusedStormId={focusedStorm?.storm_id ?? null}
             onFocusStorm={setFocusedStormId}
             start={isBatch && batch ? batch.generator.start : null}
@@ -488,6 +567,12 @@ function App() {
           <Portfolio
             properties={selectedProperties}
             onRemoveProperty={toggleProperty}
+            onAnalyzePortfolio={() => {
+              if (stormLosses) {
+                setAnalysisOpen(true)
+              }
+            }}
+            analysisAvailable={stormLosses !== null}
           />
 
           {isBatch && (
@@ -506,16 +591,15 @@ function App() {
               <StormImpact
                 properties={selectedProperties}
                 losses={focusedLosses}
-                onViewAnalysis={() => setAnalysisOpen(true)}
               />
             )}
 
         </div>
       </section>
-      {analysisOpen && focusedLosses && (
+      {analysisOpen && stormLosses && (
         <FullAnalysis
           properties={selectedProperties}
-          losses={focusedLosses}
+          losses={stormLosses}
           onClose={() => setAnalysisOpen(false)}
         />
       )}
