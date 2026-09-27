@@ -154,6 +154,16 @@ No endpoint yet; this step is the fixtures and the pure premium engine.
   the curve set gained the pre-2002 shutters-plus-straps package (15 -> 18 curves), and
   every curve now records the features its building has; the package is also offered
   by `POST /api/v1/storm-losses` as the upgrade `shutters_roof_straps`.
+- `app/insurer.py` — the economics: three arms (current book, homeowner-funded,
+  insurer co-funded) on the same selected projects and the same wind, each catalog
+  storm reported as an alternative event and never added across storms. A conditional
+  "if this storm occurs in the first policy year" figure is always available. Annual
+  figures (expected avoided payout, insurer NPV, break-even avoided payout, and the
+  break-even annual event probability) exist only under the explicit
+  `one_event_or_none` model, whose probability and storm weights are an invented,
+  editable demo assumption carried back with every result. `optimize` enumerates every
+  subset of the costed proposals and picks the highest insurer NPV within the upfront
+  budget, the empty subset included.
 - `scripts/import_insurer_workbook.py` — rebuilds those fixtures from
   `data/insurer_demo/workbook_extract.json`, checks the join to the portfolio field by
   field, and refuses to write unless the engine reproduces the workbook's totals to the
@@ -249,6 +259,7 @@ backend/            FastAPI service, risk engine, ETL scripts
     claims.py       Damage and insurer payout engine (pure, no HTTP)
     premium.py      Sample insurer: mitigation credits -> wind premium, quotes, grants (pure)
     mitigation_states.py  Sample insurer: current vs upgraded physical state on the same wind (pure)
+    insurer.py      Sample insurer: program arms, event results, annual NPV, budget optimizer (pure)
     wind.py         Wind field adapter: storm track -> gust at a property (wind_field)
     generator.py    Storm generation on request (hurricane_simulator, loaded on first use)
     florida.py      Florida outline: is this track point over Florida?
