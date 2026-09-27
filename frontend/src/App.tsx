@@ -11,6 +11,7 @@ import type {
 import { generateFloridaStorms, getStormCatalog } from './api/storms'
 import type { StormLossResponse } from './types/StormLoss'
 import { getStormLosses, lossesForStorm } from './api/stormLosses'
+import { getStormColor } from './utils/stormColors'
 import StormImpact from './components/StormImpact'
 import StormBatch from './components/StormBatch'
 import FullAnalysis from './components/FullAnalysis'
@@ -248,6 +249,15 @@ function App() {
 
   const isBatch = activeStorms.length > 1
 
+  // Each catalog storm keeps its own colour on the map and in the controls;
+  // a batch colours by Florida hit instead (see PropertyMap).
+  const catalogStorms = catalog?.storms ?? []
+  const catalogColors = new Map(
+    catalogStorms.map((storm, index) => [storm.storm_id, getStormColor(index)]),
+  )
+  const scenarioColor =
+    scenario === FLORIDA_BATCH ? null : (catalogColors.get(scenario) ?? null)
+
   return (
     <main className="app">
       <header className="app-header">
@@ -305,6 +315,14 @@ function App() {
               </option>
             </optgroup>
           </select>
+
+            {scenarioColor && (
+              <span
+                className="storm-color-indicator"
+                style={{ backgroundColor: scenarioColor }}
+                title="Storm track colour"
+              />
+            )}
           </div>
 
           {scenario === FLORIDA_BATCH && (
@@ -369,7 +387,14 @@ function App() {
                   <h2>{focusedStorm.storm_id}</h2>
                 </div>
 
-                <div className="storm-category">
+                <div
+                  className="storm-category"
+                  style={
+                    !isBatch && scenarioColor
+                      ? { backgroundColor: scenarioColor }
+                      : undefined
+                  }
+                >
                   {focusedPoint.category}
                 </div>
               </div>
@@ -436,6 +461,9 @@ function App() {
                         focusedStorm.track.length) *
                       100
                     }%`,
+                    ...(!isBatch && scenarioColor
+                      ? { backgroundColor: scenarioColor }
+                      : {}),
                   }}
                 />
               </div>
@@ -451,6 +479,8 @@ function App() {
             focusedStormId={focusedStorm?.storm_id ?? null}
             onFocusStorm={setFocusedStormId}
             start={isBatch && batch ? batch.generator.start : null}
+            catalogStorms={isBatch ? [] : catalogStorms}
+            catalogColors={catalogColors}
           />
         </div>
 

@@ -52,24 +52,28 @@
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 330px;
-  gap: 0;
-
   align-items: start;
+
+  width: 100%;
 }
 
 .map-container {
   position: sticky;
   top: 0;
 
-  height: calc(100vh - 86px);
+  height: calc(100vh - 90px);
   min-height: 600px;
 
   overflow: hidden;
+
+  background: #dce6ef;
 }
 
 .property-map {
   width: 100%;
   height: 100%;
+
+  min-height: 600px;
 }
 
 .property-popup {
@@ -264,12 +268,8 @@
 }
 
 .analyze-button:hover:not(:disabled) {
-  background: var(--blue);
-  transform: translateY(-1px);
-}
-
-.analyze-button:hover:not(:disabled) {
   background: #0747a6;
+  transform: translateY(-1px);
 }
 
 .analyze-button:disabled {
@@ -451,9 +451,7 @@
   color: var(--storm-blue-light);
   font-size: 17px;
 }
-.map-container {
-  position: relative;
-}
+
 .storm-status {
   position: absolute;
   left: 18px;
@@ -585,6 +583,35 @@
 
   transition: width 0.4s ease;
 }
+.storm-color-indicator {
+  width: 11px;
+  height: 11px;
+
+  flex-shrink: 0;
+
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+
+  box-shadow: 0 0 0 1px rgba(8, 27, 51, 0.25);
+}
+
+.catalog-error {
+  position: absolute;
+  top: 78px;
+  left: 18px;
+  z-index: 1000;
+
+  padding: 10px 14px;
+
+  background: #fff1f2;
+  color: #b42318;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
 .storm-controls {
   position: absolute;
   top: 18px;
@@ -639,7 +666,10 @@
   gap: 14px;
 
   min-width: 0;
-  padding-bottom: 24px;
+  padding: 14px;
+  padding-bottom: 28px;
+
+  background: #f4f8fc;
 }
 
 .storm-impact {
@@ -1244,23 +1274,26 @@
   font-size: 9px;
 }
 
-@media (max-width: 800px) {
-  .analysis-backdrop {
-    padding: 12px;
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
   }
 
-  .analysis-panel {
-    max-height: calc(100vh - 24px);
-    padding: 18px;
+  .map-container {
+    position: relative;
+    top: auto;
+
+    height: 600px;
+    min-height: 600px;
   }
 
-  .analysis-metrics {
-    grid-template-columns: 1fr 1fr;
+  .property-map {
+    height: 100%;
+    min-height: 600px;
   }
 
-  .analysis-notice {
-    align-items: flex-start;
-    flex-direction: column;
+  .portfolio {
+    min-height: 0;
   }
 }
 

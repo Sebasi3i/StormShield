@@ -11,6 +11,7 @@ import {
 
 import { Fragment, useEffect } from 'react'
 import { LatLngBounds } from 'leaflet'
+import type { LatLngBoundsExpression } from 'leaflet'
 import type { Property } from '../types/Property'
 import type { Storm, StormStart } from '../types/Storm'
 import 'leaflet/dist/leaflet.css'
@@ -26,7 +27,17 @@ interface PropertyMapProps {
   onFocusStorm: (stormId: string) => void
   // Where a generated batch started, if one is on screen.
   start: StormStart | null
+  // The catalog's scenarios, drawn faintly so the alternatives stay visible
+  // while one of them runs. Empty during a batch.
+  catalogStorms: Storm[]
+  catalogColors: Map<string, string>
 }
+
+// The Atlantic basin, generously: a batch can start off Cape Verde.
+const MAP_BOUNDS: LatLngBoundsExpression = [
+  [5.0, -100.0],
+  [50.0, -15.0],
+]
 
 // Blue for a track like the catalog's; red for one that crosses Florida at
 // Category 3 or stronger, which is what a Florida batch is generated for.
@@ -97,6 +108,8 @@ function PropertyMap({
   focusedStormId,
   onFocusStorm,
   start,
+  catalogStorms,
+  catalogColors,
 }: PropertyMapProps) {
   // The focused track is drawn last so it sits on top of the others.
   const orderedStorms = [
@@ -106,13 +119,21 @@ function PropertyMap({
 
   return (
     <MapContainer
-     center={[27.0, -78.5]}
-     zoom={6}
-     className="property-map"
+      center={[27.5, -80.5]}
+      zoom={6}
+      minZoom={4}
+      maxZoom={12}
+      maxBounds={MAP_BOUNDS}
+      maxBoundsViscosity={1.0}
+      worldCopyJump={false}
+      className="property-map"
     >
       <TileLayer
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        noWrap={true}
+        minZoom={4}
+        maxZoom={19}
       />
       <MapResizeHandler />
       <FitToStorms storms={storms} />
@@ -134,6 +155,47 @@ function PropertyMap({
         </CircleMarker>
       )}
 
+      {catalogStorms.map((catalogStorm) => {
+        const running = storms.some(
+          (storm) => storm.storm_id === catalogStorm.storm_id,
+        )
+
+        // The running scenario gets its own animated track below.
+        if (running) {
+          return null
+        }
+
+        return (
+          <Polyline
+            key={`catalog-${catalogStorm.storm_id}`}
+            positions={catalogStorm.track.map((point) => [
+              point.latitude,
+              point.longitude,
+            ])}
+            pathOptions={{
+              color: catalogColors.get(catalogStorm.storm_id) ?? TRACK_COLOR,
+              weight: 2,
+              opacity: 0.28,
+              dashArray: '5 7',
+            }}
+          >
+            <Popup>
+              <div>
+                <strong>{catalogStorm.storm_id}</strong>
+
+                <p>Peak center wind: {catalogStorm.peak_wind_kt.toFixed(1)} kt</p>
+
+                <p>
+                  {catalogStorm.landfall
+                    ? 'Florida landfall scenario'
+                    : 'No modeled landfall'}
+                </p>
+              </div>
+            </Popup>
+          </Polyline>
+        )
+      })}
+
       {orderedStorms.map((storm) => {
         // A track that has already ended holds its last point while the
         // longer ones finish.
@@ -141,7 +203,10 @@ function PropertyMap({
         const point = storm.track[step]
         const focused =
           storms.length === 1 || storm.storm_id === focusedStormId
-        const color = storm.florida_hit ? FLORIDA_HIT_COLOR : TRACK_COLOR
+        // A batch colours by Florida hit; a catalog storm keeps its own colour.
+        const color = storm.florida_hit
+          ? FLORIDA_HIT_COLOR
+          : (catalogColors.get(storm.storm_id) ?? TRACK_COLOR)
 
         return (
           <Fragment key={storm.storm_id}>
