@@ -94,14 +94,17 @@ def _storm(storm_id, *points):
     }
 
 
-def test_storm_parameters_use_the_peak_intensity_point(model):
+def test_storm_parameters_use_the_peak_intensity_point_near_florida(model):
+    # 130 kt out at 75 W is outside the Florida window; the 110 kt fix off Florida is
+    # the one that sizes the storm.
     storm = _storm("T", (22.0, -70.0, 90.0), (24.0, -75.0, 130.0), (26.0, -80.0, 110.0))
     parameters = wind.storm_parameters(storm)
 
     assert parameters["storm_id"] == "T"
-    assert parameters["size_basis"] == {"peak_wind_kt": 130.0, "latitude": 24.0, "timestamp": "2026-09-01 06:00:00"}
-    assert parameters["rmw_km"] == pytest.approx(wind.rmw_km(130.0, 24.0), abs=0.05)
-    assert parameters["outer_decay_exponent"] == model["outer_decay_exponent"]["value"]
+    assert parameters["size_basis"] == {"peak_wind_kt": 110.0, "latitude": 26.0, "timestamp": "2026-09-01 12:00:00"}
+    assert parameters["rmw_km"] == pytest.approx(wind.rmw_km(110.0, 26.0), abs=0.05)
+    # The decay exponent is the station-calibrated one, not the radii median.
+    assert parameters["outer_decay_exponent"] == wind.load_wind_calibration()["outer_decay_exponent"]
     assert parameters["taper_start_km"] == model["taper"]["taper_start_km"]
     assert parameters["cutoff_km"] == model["taper"]["cutoff_km"]
     assert parameters["parameter_status"] == "sourced"
@@ -129,4 +132,4 @@ def test_metadata_publishes_the_model_not_a_constant():
     assert parameters["storm_size_model_id"] == "hurdat2-radii-fit-v1"
     assert "rmw_km" not in parameters, "size is per storm now, not one number"
     assert parameters["fit"]["rmw_fixes"] >= 500
-    assert "station" in parameters["validation_status"]
+    assert "validation" in parameters["validation_status"]

@@ -1,51 +1,73 @@
 # Calibrating the wind and loss constants
 
-Status of each constant the pricing depends on, what data exists to calibrate it, and
-what this branch did about it. Prepared 27 September 2026 on the `calibration` branch.
+Status of each constant the pricing depends on, the data used, what was fitted, and how
+the result compares with observations. Prepared 27 September 2026 on the `calibration`
+branch.
 
 ## Summary
 
-| Constant | Before | Now | Data used | Still needed |
+| Constant | Before | Now | Data | Evidence |
 | --- | --- | --- | --- | --- |
-| Radius of maximum wind | 30 km, every storm | Per storm, from intensity and latitude | HURDAT2 RMW, 2021-2025 | Station-gust validation |
-| Outer decay exponent | 0.5 | 0.492, record median | HURDAT2 64 kt radii | Same |
-| Taper start / cutoff | 200 / 300 km | 259 / 444 km, record quantiles | HURDAT2 34 kt radii | Same |
-| Gust factor | 1.25, assumed | 1.25, assumed | none available here | Station observations, or a sourced convention |
-| Damage curves | assumed fixtures | unchanged | none available here | Claims data or published curves |
+| Radius of maximum wind | 30 km, every storm | Per storm, from intensity and latitude near Florida | HURDAT2 RMW, 2021-2025 | sourced |
+| Outer decay exponent | 0.5 | 0.275, fitted to station peak gusts | Florida ASOS peaks, 11 hurricanes | sourced, calibrated |
+| Land exposure factor | none (marine profile) | 0.75 on the sustained wind | Florida ASOS peaks, 11 hurricanes | sourced, calibrated |
+| Gust factor | 1.25, assumed | 1.333, measured | Florida ASOS 2-minute pairs, 11 hurricanes | sourced |
+| Taper start / cutoff | 200 / 300 km | 259 / 444 km, record quantiles | HURDAT2 34 kt radii | sourced |
+| Damage curves | assumed fixtures | unchanged | none available | assumed |
 
-Storm size is now `sourced` in every response. Everything else keeps its previous
-evidence label. The run as a whole is therefore still `assumed`, because the damage
-curves and the gust factor are.
+The wind step is now `sourced` end to end and validated against station observations.
+The run as a whole stays `assumed` because the damage curves are. "Sourced" means each
+number has a documented origin and a reproducible fit; the validation section says how
+large the remaining errors are, and they are not small.
+
+Every fixture is produced by a script from committed data, and a test refits each one
+and checks the committed values:
+
+```bash
+cd backend
+python scripts/fit_storm_size.py        # app/fixtures/storm_size_model.json
+python scripts/fit_gust_factor.py       # app/fixtures/gust_factor_model.json
+python scripts/calibrate_wind_field.py  # app/fixtures/wind_calibration.json
+python scripts/validate_wind_field.py   # app/fixtures/wind_validation.json
+python -m pytest tests -q
+```
+
+## The data
+
+### HURDAT2 wind radii (bundled)
+
+NOAA's best-track file ships inside the `hurricane_simulator` wheel. Beyond the centre
+track the simulator uses, each fix from 2004 on records the extent of 34, 50 and 64 kt
+winds in four quadrants, and each fix from 2021 on records the radius of maximum wind.
+`scripts/fit_storm_size.py` reads these directly (the simulator's loader drops them).
+
+### Florida hurricane ASOS gust data (`data/calibration/fl_hurricane_gust_data`)
+
+One-minute ASOS observations from 46 Florida airport stations during 11 hurricanes,
+Hermine 2016 to Milton 2024, built from the NCEI archive via the Iowa Environmental
+Mesonet and paired minute by minute with the NHC best track. The calibration-ready
+table has 334,762 two-minute windows with a mean of at least 10 kt and clean QC flags.
+`PROVENANCE.md` in that folder records what was received and what was left out (the
+raw ASOS file and the full one-minute parquet, both re-buildable with `build.py`).
+
+Checked on receipt: the gust-factor column recomputes exactly from gust over mean; no
+window has a gust below its mean; storm and station counts match the README; the
+strongest observation (Punta Gorda in Ian, 76 kt mean, 117 kt gust) is consistent with
+NHC's report for that station.
 
 ## 1. Storm size: fitted from HURDAT2
 
-### The data
+Restricted to hurricane-strength fixes:
 
-NOAA's HURDAT2 best-track file is bundled inside the `hurricane_simulator` wheel in
-`backend/vendor/`, so no download was needed. Beyond the centre track the simulator
-uses, each fix from 2004 on records the extent of 34, 50 and 64 kt winds in four
-quadrants, and each fix from 2021 on records the radius of maximum wind. The simulator's
-loader drops these columns; `backend/scripts/fit_storm_size.py` reads them directly and
-writes the extracted table to `data/processed/hurdat2_wind_radii.csv` (55,523 fixes,
-ignored by git, reproducible from the script).
-
-### The fit
-
-Restricted to hurricane-strength fixes (status HU, at least 64 kt):
-
-- **Radius of maximum wind.** `ln(rmw_km) = 3.515 - 0.0099 * max_wind_kt + 0.0357 * latitude`,
-  fitted by least squares on 633 fixes from 39 storms, seasons 2021 to 2025. R² is 0.41
-  and the residual standard deviation in log space is 0.49, so an individual storm can
-  sit a factor of 1.6 either side of the fit. The result is clamped to 8 to 80 km, the
-  range the record spans for hurricanes.
-- **Outer decay exponent.** For the modified-Rankine profile the wind model uses,
-  `V(r) = Vmax * (rmw / r) ** x`, the exponent that reproduces each fix's 64 kt radius is
-  `x = ln(Vmax / 64) / ln(R64 / rmw)`. Its median over 508 fixes is 0.492, with an
-  interquartile range of 0.35 to 0.68.
-- **Taper.** The largest-quadrant 34 kt radius of 2,568 hurricane fixes has a median of
-  259 km and a 90th percentile of 444 km. These become the taper start and cutoff.
-
-Fitted radius of maximum wind at representative points:
+- **Radius of maximum wind.** `ln(rmw_km) = 3.515 - 0.0099 * max_wind_kt + 0.0357 * latitude`
+  on 633 fixes from 39 storms, 2021-2025. R² 0.41; residual standard deviation 0.49 in
+  log space, so an individual storm can sit a factor of 1.6 either side. Clamped to
+  8-80 km.
+- **Taper.** The largest-quadrant 34 kt radius of 2,568 hurricane fixes: median 259 km,
+  90th percentile 444 km.
+- **Decay exponent from the radii,** for reference: the exponent that reproduces each
+  fix's 64 kt radius has a median of 0.49. This describes the sustained mean wind and is
+  superseded for pricing by the station-calibrated value in section 3.
 
 | Intensity, latitude | RMW |
 | --- | ---: |
@@ -53,85 +75,122 @@ Fitted radius of maximum wind at representative points:
 | 96 kt at 26 N | 33 km |
 | 120 kt at 26 N | 26 km |
 | 140 kt at 27 N | 22 km |
-| 155 kt at 20 N | 15 km |
 
-For comparison, Hurricane Ian's landfall fix (130 to 140 kt at 26.7 N) carries a
-best-track RMW of 20 nautical miles, 37 km, with hurricane-force winds to 30 to 45
-nautical miles. The fit gives 22 to 25 km for a storm like it, inside the residual
-spread. Michael, Idalia and Milton were recorded with RMWs of 5 to 10 nautical miles.
+**Where on the track.** The size is evaluated once per storm at its most intense fix
+inside a window around Florida (22.5-32.5 N, 89.5-78 W), or at its overall peak if the
+track never enters it, and held constant through the event. Sizing from the peak near
+Florida rather than a peak far out at sea scored slightly better against the stations
+and matches what the pricing is for.
 
-### How it is applied
+## 2. Gust factor: measured at Florida stations
 
-`app/wind.py` evaluates the model once per storm at the track's peak-intensity point
-and holds the size constant through the event, which the model's scope note states
-explicitly. Every loss response now carries `metadata.storm_size`, one row per storm
-with the parameters used and the track point they came from, and each row of
-`metadata.wind_exposure_detail` repeats the RMW. The demo constant set is no longer
-applied anywhere in the platform.
+Windows with a two-minute mean of 34 kt or more, rows repaired from a parser
+misalignment excluded, split by upwind exposure over 10 km:
 
-Two consequences of the "peak intensity" choice are worth knowing. A storm that peaks
-far out at sea and weakens before landfall is sized from its strongest, smallest state,
-so it is modelled tighter at the coast than it probably was. And catalog tracks are
-clipped to the map window, so their peak is the peak of the stored stretch. A
-time-varying size (a size per track point) is the natural next step and is a small
-change to the same function.
+| Two-minute mean | Land fetch | Ocean fetch |
+| --- | ---: | ---: |
+| 34-50 kt | 1.333 (n 7,519) | 1.289 (n 2,716) |
+| 50-64 kt | 1.360 (n 285) | 1.320 (n 33) |
+| 64 kt or more | 1.424 (n 49) | no data |
 
-### Effect on the demo
+The platform value is the land-fetch median, **1.333**, with a 10th-90th percentile
+range of 1.23-1.50. The curves are labelled "open terrain", the ASOS siting standard.
 
-Three catalog storms priced against the ten-home demo portfolio, baseline curves, 5%
-deductible, gust factor 1.25, before and after:
+Two caveats travel with the number. The observations are ratios to a two-minute mean;
+the model's sustained wind follows the best-track one-minute convention. Within a
+window the larger of its two one-minute means is at least the two-minute mean, so
+G(3s, 2min) is an upper bound on G(3s, 1min), and the two are close in steady hurricane
+wind; no conversion factor was applied, because none could be sourced from this
+container. And the hurricane-force tail is thin (49 windows), so the value rests on the
+34-64 kt bands.
 
-| Storm | Stored peak | RMW before | RMW after | Portfolio payout before | Portfolio payout after |
+## 3. Profile shape: calibrated to station peak gusts
+
+Two things neither dataset measures directly were fitted jointly against the peak gust
+each station recorded in each storm: the outer decay exponent of the profile, and an
+open-terrain land exposure factor on the sustained wind (the profile is marine and the
+wind model has no land weakening, while every station and every priced property is on
+land).
+
+Method: run each storm's real best track (synoptic fixes) through wind_field with the
+storm-size model and a unit gust factor; scale by the measured gust factor and each
+candidate land factor; compare with the station's observed peak. Pairs: station within
+250 km of the track, observed peak at least 40 kt, record not broken off after strong
+wind. That is 156 station-storm pairs from all 11 storms, with 4 truncated records
+listed separately.
+
+Objective: minimum mean absolute error among candidates whose median modelled/observed
+ratio is within 5% of one overall and within 10% of one where the observed gust was
+64 kt or more. The second condition exists because the damage curves only respond above
+about 65 kt; the first fit, without it, chose a shape that matched the many moderate
+observations by pricing the damaging winds 16% low.
+
+| | Decay | Land factor | Median ratio | MAE | Within 75 km | Beyond 75 km | Observed 64 kt+ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Reference (radii decay, no land factor) | 0.5 | 1.00 | 0.98 | 16.6 kt | 1.23 | 0.90 | 0.87 |
+| **Chosen** | **0.275** | **0.75** | 1.03 | 14.1 kt | 1.13 | 0.99 | 0.90 |
+
+The decay exponent is much flatter than the radii-implied 0.49 because observed peak
+gusts away from the centre include rainband and convective gusts that a mean profile
+does not carry; since the curves consume peak gusts, the peak-gust shape is the one
+the pricing needs. The land factor stands in for surface roughness. Both are effective
+values, fitted jointly: only their combination is validated, and neither should be
+quoted as a physical measurement on its own. Note that the land factor and the gust
+factor multiply to 1.00, so the calibrated peak gust at a land station is, on average,
+the marine profile's sustained wind. The full candidate grid is in the fixture.
+
+## 4. Validation: what the calibrated step gets right and wrong
+
+`scripts/validate_wind_field.py`, same 156 pairs, calibrated step as the platform runs it:
+
+| Subset | Pairs | Bias | MAE | Median ratio | Within 15% |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| SYN0155 | 148 kt | 30 km | 18 km | $952,785 | $856,000 |
-| SYN0697 | 109 kt | 30 km | 27 km | $110,347 | $98,028 |
-| SYN0973 | 144 kt | 30 km | 21 km | $21,032 | $0 |
+| All | 156 | +3.5 kt | 14.1 kt | 1.03 | 37% |
+| Within 75 km of track | 44 | +10.7 kt | 15.4 kt | 1.13 | 41% |
+| Beyond 75 km | 112 | +0.6 kt | 13.6 kt | 0.99 | 35% |
+| Observed 64 kt or more | 34 | -4.2 kt | 16.1 kt | 0.90 | 35% |
 
-The direction is what the record implies: the demo constant was on the large side for
-major hurricanes, so homes some distance off the track now see less wind. SYN0973's
-$21,032 came entirely from Orlando at 142 mph under the 30 km size; at 21 km the gust
-there falls to 119 mph and below the deductible.
+Per storm the median ratio ranges from 0.81 (Nicole) to 1.56 (Michael, 4 stations).
+Ian and Matthew run high (1.23, 1.39); Irma runs low (0.83), consistent with Irma
+being far larger than the size model gives a 155 kt storm.
 
-## 2. Gust factor: not calibrated, and why
+What this means for a priced result:
 
-The 1.25 ratio converts the model's one-minute sustained wind to the 3-second gust the
-damage curves are defined on. Calibrating it needs paired sustained and gust readings
-at land stations during hurricane passages, for example NCEI's hourly station records
-or the observation tables in NHC tropical cyclone reports. None of that is in the
-repository, and the container this branch was built in could not reach
-`www.ncei.noaa.gov` or `www.nhc.noaa.gov`: the environment's network policy denied
-both hosts. The download and the fit are ready to do as soon as those hosts are
-allowed. Until then 1.25 stays labelled `assumed`. It is within the range published in
-the WMO tropical-cyclone wind-averaging guidance for open-land exposure, but that
-reference should be read and cited before the label changes, not quoted from memory.
+- **Near the track the model is still about 13% high** on average, and the scatter is
+  wide: only about a third of stations are within 15% of the model. A single-home
+  loss should be read as a central estimate with a spread of that order, not a point
+  value.
+- **The strongest observed gusts are modelled about 10% low.** At the top of the damage
+  curve that is a material fraction of the loss.
+- **The four eyewall records that broke off** (Punta Gorda in Ian, Fort Myers and
+  RSW in Irma, Sarasota in Milton) all show the model at or above the last observed
+  value, as they should, since those observations are lower bounds.
+- **Storm-to-storm variation in size and asymmetry** is the largest remaining error
+  source and cannot be removed by constants. A size per track point from the best-track
+  radii, and a forward-motion asymmetry, are the next modelling steps.
 
-## 3. Damage curves: no data on hand
+## 5. Effect on the demo
 
-Every curve in `backend/app/fixtures/damage_curves.json` is derived from the platform's
-earlier formula, and the file records that the Finance workbook returned no damage-effect
-evidence. Calibration needs insurer claims by wind speed and construction class, or the
-adoption of published curves such as the Florida Public Hurricane Loss Model or HAZUS
-with their evidence status carried through. Nothing in the repository or reachable from
-this environment supplies either.
+Three catalog storms against the ten-home demo portfolio, baseline curves, 5%
+deductible, original constants (30 km, decay 0.5, gust factor 1.25, no land factor)
+versus the calibrated step:
 
-## 4. Validation: the next step once station data is reachable
+| Storm | Top gust before | Top gust after | Portfolio payout before | after |
+| --- | ---: | ---: | ---: | ---: |
+| SYN0155 | 187 mph | 150 mph | $952,768 | $312,812 |
+| SYN0697 | 150 mph | 121 mph | $110,334 | $12,854 |
+| SYN0973 | 142 mph | 116 mph | $21,037 | $0 |
 
-HURDAT2 already holds the real tracks and radii of Ian (2022), Irma (2017), Michael
-(2018), Idalia (2023) and Milton (2024). With station observations from those
-landfalls, the check is: run the real track through the wind model with the fitted
-size, compare the modelled peak gust at each station with what it recorded, and report
-bias and absolute error. That is the physical validation the solution plan's item H3
-describes, and it would also settle the gust factor.
+The drop is large and comes mostly from the land factor and gust factor together
+replacing 1.25 with an effective 1.00 near the track, where the demo homes sit. That
+is the direction the stations point: the original constants overstated near-track
+gusts by about a quarter against every observed landfall in the set.
 
-To unblock it, allow these hosts in the environment's network settings:
+## 6. Damage curves: still assumed
 
-- `www.ncei.noaa.gov` (station records)
-- `www.nhc.noaa.gov` (tropical cyclone reports, current HURDAT2)
-
-## Reproducing
-
-```bash
-cd backend
-python scripts/fit_storm_size.py        # rewrites app/fixtures/storm_size_model.json
-python -m pytest tests -q               # includes a test that the fixture matches a refit
-```
+Every curve in `backend/app/fixtures/damage_curves.json` derives from the platform's
+earlier formula, and the Finance workbook returned no damage-effect evidence.
+Calibration needs insurer claims by wind speed and construction class, or published
+curves such as the Florida Public Hurricane Loss Model or HAZUS with their evidence
+status carried through. Nothing in the repository supplies either. Until then the loss
+figures inherit the curve assumption on top of the wind errors above.

@@ -20,9 +20,14 @@ Storm size (radius of maximum wind, decay, taper and cutoff) comes from the stor
 model in `fixtures/storm_size_model.json`, fitted by `scripts/fit_storm_size.py` to the
 wind radii NOAA records in HURDAT2: a smaller eye for a stronger, lower-latitude storm.
 The simulator publishes no size per storm, so the model is evaluated once per storm at
-its peak-intensity track point and held constant through the event. What is still
-ASSUMED, and published in `metadata()` with every run, is the gust factor: wind_field's
-demonstration value, 1.25, pending station observations to calibrate it.
+its peak intensity near Florida and held constant through the event. The gust factor
+comes from `fixtures/gust_factor_model.json`, measured at Florida ASOS stations during
+11 hurricanes (`scripts/fit_gust_factor.py`). The profile's outer decay exponent and an
+open-terrain land exposure factor come from `fixtures/wind_calibration.json`, fitted
+jointly to the peak gusts those stations recorded (`scripts/calibrate_wind_field.py`),
+and `fixtures/wind_validation.json` records how the whole step then compares with the
+observations (`scripts/validate_wind_field.py`). All of it is published in `metadata()`
+with every run.
 
 `claims.py` does not change with the wind model, because it consumes `WindExposure`
 and not a track. The metric stamped on every exposure must match the metric the curves
@@ -44,7 +49,6 @@ from wind_field.schema import (
     DEFAULT_MAX_SEGMENT_DISTANCE_FRACTION_RMW,
     DEFAULT_MAX_TIME_STEP_MINUTES,
     DEMO_GUST_DURATION_SECONDS,
-    DEMO_GUST_FACTOR,
     EXPECTED_TRACK_STEP_HOURS,
     KT_TO_MPH,
     WIND_MODEL_VERSION,
@@ -60,11 +64,45 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 # is a different model.
 WIND_METRIC = "peak_3s_gust_10m_open_terrain_mph"
 
-# ASSUMED. Ratio of a 3-second gust to the one-minute sustained wind the simulator
-# reports, over open terrain: wind_field's demonstration value, agreed with the
-# simulator owner for the platform. Not calibrated.
-GUST_FACTOR = DEMO_GUST_FACTOR
+
+@lru_cache
+def load_gust_factor_model(path: str | None = None) -> dict:
+    """The measured gust factor, with its provenance. See scripts/fit_gust_factor.py."""
+    model_path = Path(path) if path else FIXTURES / "gust_factor_model.json"
+    return json.loads(model_path.read_text(encoding="utf-8"))
+
+
+@lru_cache
+def load_wind_calibration(path: str | None = None) -> dict:
+    """Decay exponent and land exposure factor fitted to station peak gusts.
+
+    See scripts/calibrate_wind_field.py. Loaded on demand so the calibration script
+    itself can run before the fixture exists.
+    """
+    model_path = Path(path) if path else FIXTURES / "wind_calibration.json"
+    return json.loads(model_path.read_text(encoding="utf-8"))
+
+
+# Ratio of a 3-second gust to the sustained wind, over open terrain: the median
+# measured at land-fetch Florida ASOS stations in winds of 34 kt or more. wind_field's
+# demonstration value (1.25) is no longer used.
+GUST_FACTOR = float(load_gust_factor_model()["gust_factor"])
 GUST_DURATION_SECONDS = DEMO_GUST_DURATION_SECONDS
+
+
+def land_exposure_factor() -> float:
+    """Open-terrain land reduction applied to the marine profile's sustained wind.
+
+    Every priced property is on land; the profile is a marine one with no surface
+    friction. Calibrated jointly with the decay exponent against station peak gusts.
+    """
+    return float(load_wind_calibration()["land_exposure_factor"])
+
+
+# The window within which a storm's size is taken: its most intense fix here, if any,
+# sizes the whole event. Generous around Florida so an approaching storm is sized from
+# its landfall-relevant state rather than a peak far out in the Atlantic.
+FLORIDA_WINDOW = {"min_lat": 22.5, "max_lat": 32.5, "min_lon": -89.5, "max_lon": -78.0}
 
 # Reported exposures below this are floored to zero. Well under the 75 mph where the
 # curves first show damage, so this changes no payout; it keeps a light breeze far from
@@ -79,8 +117,9 @@ def _config(catalog_id: str = "storm_catalog") -> WindFieldConfig:
         gust_factor=GUST_FACTOR,
         gust_duration_seconds=GUST_DURATION_SECONDS,
         assumption_notes=(
-            "Storm size per storm from the HURDAT2 wind-radii fit "
-            f"({load_storm_size_model()['storm_size_model_id']}); gust factor 1.25 assumed."
+            "Storm size per storm from the HURDAT2 wind-radii fit; gust factor "
+            f"{GUST_FACTOR} measured at Florida ASOS stations; decay and land exposure "
+            "calibrated to station peak gusts. See metadata() for the model ids."
         ),
     )
 
@@ -107,26 +146,40 @@ def rmw_km(max_wind_kt: float, latitude: float, model: dict | None = None) -> fl
     return min(high, max(low, value))
 
 
+def size_basis_point(storm: dict) -> dict:
+    """The track point a storm's size is taken from: its most intense fix inside the
+    Florida window, or its overall peak if the track never enters it."""
+    inside = [
+        point
+        for point in storm["track"]
+        if FLORIDA_WINDOW["min_lat"] <= point["latitude"] <= FLORIDA_WINDOW["max_lat"]
+        and FLORIDA_WINDOW["min_lon"] <= point["longitude"] <= FLORIDA_WINDOW["max_lon"]
+    ]
+    return max(inside or storm["track"], key=lambda point: point["max_wind_kt"])
+
+
 def storm_parameters(storm: dict, model: dict | None = None) -> dict:
     """This storm's size parameters: one row in wind_field's storm_parameters shape.
 
-    Evaluated at the storm's peak-intensity track point and constant through the event,
-    which is what the model's scope note states. `size_basis` records the point used so
-    the value can be audited against the track.
+    The radius of maximum wind is the storm-size model at `size_basis_point`, constant
+    through the event; the decay exponent is the station-calibrated value; taper and
+    cutoff are the record medians. `size_basis` records the point used so the value can
+    be audited against the track.
     """
     model = model or load_storm_size_model()
-    peak = max(storm["track"], key=lambda point: point["max_wind_kt"])
+    calibration = load_wind_calibration()
+    peak = size_basis_point(storm)
     return {
         "storm_id": storm["storm_id"],
         "rmw_km": round(rmw_km(peak["max_wind_kt"], peak["latitude"], model), 1),
-        "outer_decay_exponent": model["outer_decay_exponent"]["value"],
+        "outer_decay_exponent": calibration["outer_decay_exponent"],
         "taper_start_km": model["taper"]["taper_start_km"],
         "cutoff_km": model["taper"]["cutoff_km"],
         "parameter_status": "sourced",
         "source_note": (
-            f"{model['storm_size_model_id']}: RMW from the storm's peak of "
-            f"{peak['max_wind_kt']:g} kt at {peak['latitude']:g} N; decay and taper are "
-            "record-wide medians. Not validated against station observations."
+            f"{model['storm_size_model_id']}: RMW from the storm's peak near Florida of "
+            f"{peak['max_wind_kt']:g} kt at {peak['latitude']:g} N; decay from "
+            f"{calibration['wind_calibration_id']}; taper from record medians."
         ),
         "size_basis": {
             "peak_wind_kt": peak["max_wind_kt"],
@@ -241,9 +294,10 @@ def exposures_for_storm(
     detail: list[dict] = []
     for property_id, _, _ in properties:
         row = peaks.loc[property_id]
-        # Rounded to 0.01 mph so results are identical across platforms whose maths
-        # libraries differ in the last bit; far below any meaningful difference.
-        gust = round(float(row["peak_gust_mph"]), 2)
+        # The profile is marine; every property is on land. Rounded to 0.01 mph so
+        # results are identical across platforms whose maths libraries differ in the
+        # last bit; far below any meaningful difference.
+        gust = round(float(row["peak_gust_mph"]) * land_exposure_factor(), 2)
         if gust < NEGLIGIBLE_GUST_MPH:
             gust = 0.0
         exposures.append(
@@ -269,6 +323,7 @@ def exposures_for_storm(
                     "distance_km": round(float(row["min_sampled_center_distance_km"]), 1),
                 },
                 "rmw_km": parameters["rmw_km"],
+                "land_exposure_factor": land_exposure_factor(),
             }
         )
 
@@ -290,23 +345,62 @@ def storm_by_id(storm_id: str, catalog: dict | None = None) -> dict | None:
     return next((s for s in catalog["storms"] if s["storm_id"] == storm_id), None)
 
 
+def _validation_summary() -> dict:
+    """The headline numbers of fixtures/wind_validation.json, if it has been produced."""
+    path = FIXTURES / "wind_validation.json"
+    if not path.exists():
+        return {"status": "not run"}
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        "wind_validation_id": summary["wind_validation_id"],
+        "storms": summary["selection"]["storms"],
+        "station_storm_pairs": summary["selection"]["station_storm_pairs"],
+        "median_ratio_modeled_over_observed": summary["all"]["median_ratio_modeled_over_observed"],
+        "mean_absolute_error_kt": summary["all"]["mean_absolute_error_kt"],
+        "within_15_percent": summary["all"]["within_15_percent"],
+        "within_75_km_median_ratio": summary["within_75_km"]["median_ratio_modeled_over_observed"],
+        "beyond_75_km_median_ratio": summary["beyond_75_km"]["median_ratio_modeled_over_observed"],
+        "observed_64kt_or_more_median_ratio": summary["observed_64kt_or_more"]["median_ratio_modeled_over_observed"],
+    }
+
+
 def metadata() -> dict:
     """Provenance for the wind step, published with every run that uses it."""
     config = _config()
     model = load_storm_size_model()
+    gust_model = load_gust_factor_model()
+    calibration = load_wind_calibration()
+    validation = _validation_summary()
     return {
         "wind_metric": WIND_METRIC,
-        "evidence_status": "assumed",
+        "evidence_status": "sourced",
+        "evidence_note": (
+            "Storm size, gust factor, decay and land exposure each have a documented "
+            "source and a fit; the step as a whole is validated against station peak "
+            "gusts from 11 Florida hurricanes (see validation). Sourced does not mean "
+            "the residual errors are small: see validation.mean_absolute_error_kt."
+        ),
         "model": "wind_field",
         "model_version": WIND_MODEL_VERSION,
         "package_version": wind_field.__version__,
         "gust_factor": GUST_FACTOR,
         "gust_duration_seconds": GUST_DURATION_SECONDS,
         "gust_factor_note": (
-            "ASSUMED ratio of a 3-second gust to the simulator's one-minute sustained "
-            "wind, over open terrain: wind_field's demonstration value, agreed for the "
-            "platform. Not calibrated."
+            f"{gust_model['gust_factor_model_id']}: {gust_model['gust_factor_basis']}, "
+            f"n={gust_model['land_fetch']['n']} windows, 10th-90th percentile "
+            f"{gust_model['land_fetch']['p10']}-{gust_model['land_fetch']['p90']}. "
+            + gust_model["sustained_basis_note"]
         ),
+        "land_exposure_factor": calibration["land_exposure_factor"],
+        "calibration": {
+            "wind_calibration_id": calibration["wind_calibration_id"],
+            "outer_decay_exponent": calibration["outer_decay_exponent"],
+            "land_exposure_factor": calibration["land_exposure_factor"],
+            "objective": calibration["objective"],
+            "station_storm_pairs": calibration["data"]["station_storm_pairs"],
+            "interpretation": calibration["interpretation"],
+        },
+        "validation": validation,
         "kt_to_mph": KT_TO_MPH,
         "storm_parameters": {
             "parameter_status": "sourced",
@@ -326,7 +420,7 @@ def metadata() -> dict:
                 "decay_fixes": model["outer_decay_exponent"]["fixes"],
                 "taper_fixes": model["taper"]["fixes"],
             },
-            "validation_status": model["validation_status"],
+            "validation_status": "validated jointly with the gust factor and decay; see validation",
         },
         "storm_parameters_note": (
             "Storm size per storm from the storm-size model fitted to HURDAT2 wind "
@@ -349,10 +443,12 @@ def metadata() -> dict:
             "a modified-Rankine profile (max_wind_kt x r/rmw inside the radius of maximum "
             "wind, max_wind_kt x (rmw/r)^outer_decay_exponent outside it, cosine-tapered "
             "to zero between taper_start_km and cutoff_km), converted to mph and "
-            "multiplied by the gust factor. Gaps in a stored track are not bridged."
+            "multiplied by the land exposure factor and the gust factor. Gaps in a "
+            "stored track are not bridged."
         ),
         "not_modeled": (
-            "Forward-motion asymmetry, terrain roughness, and any weakening over land "
-            "beyond what the track's max_wind_kt already carries."
+            "Forward-motion asymmetry, local terrain roughness beyond the single "
+            "open-terrain land factor, and any weakening over land beyond what the "
+            "track's max_wind_kt already carries."
         ),
     }

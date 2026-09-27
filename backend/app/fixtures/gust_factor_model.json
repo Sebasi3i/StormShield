@@ -1,0 +1,165 @@
+{
+  "gust_factor_model_id": "fl-asos-hurricane-gust-v1",
+  "evidence_status": "sourced",
+  "gust_duration_seconds": 3,
+  "reference_height_m": 10,
+  "terrain_exposure": "open (ASOS siting standard)",
+  "sustained_basis_note": "Observed against a two-minute mean. The platform's sustained wind is the best-track one-minute convention; G(3s, 2min) is an upper bound on G(3s, 1min) for the same window (the larger one-minute mean is at least the two-minute mean), and the two are close in steady hurricane wind. No averaging-period conversion factor has been applied.",
+  "source": {
+    "dataset": "Florida hurricane ASOS gust data (data/calibration/fl_hurricane_gust_data)",
+    "file": "fl_gust_pairs_2min_qc.csv.gz",
+    "observations": "NCEI ASOS one-minute data via the Iowa Environmental Mesonet",
+    "storms": "Hermine 2016 to Milton 2024, 11 hurricanes, 46 stations",
+    "pairing": "NOAA/AOML ASOS gust method: peak gust over the same two-minute window as the mean"
+  },
+  "fitted_at": "2026-09-27T02:44:49Z",
+  "script": "backend/scripts/fit_gust_factor.py",
+  "gust_factor": 1.333,
+  "gust_factor_basis": "median G(3s, 2min), land-fetch stations, two-minute mean >= 34 kt",
+  "land_fetch": {
+    "n": 7853,
+    "median": 1.333,
+    "mean": 1.349,
+    "p10": 1.226,
+    "p90": 1.5
+  },
+  "ocean_fetch": {
+    "n": 2749,
+    "median": 1.289,
+    "mean": 1.304,
+    "p10": 1.194,
+    "p90": 1.432
+  },
+  "all_stations": {
+    "n": 10602,
+    "median": 1.324,
+    "mean": 1.338,
+    "p10": 1.214,
+    "p90": 1.477
+  },
+  "by_band": {
+    "34-50 kt": {
+      "all": {
+        "n": 10235,
+        "median": 1.318,
+        "mean": 1.336,
+        "p10": 1.213,
+        "p90": 1.476
+      },
+      "land_fetch": {
+        "n": 7519,
+        "median": 1.333,
+        "mean": 1.348,
+        "p10": 1.225,
+        "p90": 1.5
+      },
+      "ocean_fetch": {
+        "n": 2716,
+        "median": 1.289,
+        "mean": 1.303,
+        "p10": 1.194,
+        "p90": 1.43
+      }
+    },
+    "50-64 kt": {
+      "all": {
+        "n": 318,
+        "median": 1.357,
+        "mean": 1.362,
+        "p10": 1.24,
+        "p90": 1.481
+      },
+      "land_fetch": {
+        "n": 285,
+        "median": 1.36,
+        "mean": 1.365,
+        "p10": 1.24,
+        "p90": 1.484
+      },
+      "ocean_fetch": {
+        "n": 33,
+        "median": 1.32,
+        "mean": 1.335,
+        "p10": 1.21,
+        "p90": 1.449
+      }
+    },
+    "64+ kt": {
+      "all": {
+        "n": 49,
+        "median": 1.424,
+        "mean": 1.431,
+        "p10": 1.348,
+        "p90": 1.518
+      },
+      "land_fetch": {
+        "n": 49,
+        "median": 1.424,
+        "mean": 1.431,
+        "p10": 1.348,
+        "p90": 1.518
+      },
+      "ocean_fetch": {
+        "n": 0,
+        "median": null,
+        "mean": null,
+        "p10": null,
+        "p90": null
+      }
+    }
+  },
+  "per_storm": {
+    "DEBBY": {
+      "n": 56,
+      "median": 1.306
+    },
+    "HELENE": {
+      "n": 546,
+      "median": 1.4
+    },
+    "HERMINE": {
+      "n": 5,
+      "median": 1.235
+    },
+    "IAN": {
+      "n": 2637,
+      "median": 1.31
+    },
+    "IDALIA": {
+      "n": 2,
+      "median": 1.32
+    },
+    "IRMA": {
+      "n": 4859,
+      "median": 1.308
+    },
+    "MATTHEW": {
+      "n": 715,
+      "median": 1.297
+    },
+    "MICHAEL": {
+      "n": 201,
+      "median": 1.353
+    },
+    "MILTON": {
+      "n": 1142,
+      "median": 1.417
+    },
+    "NICOLE": {
+      "n": 337,
+      "median": 1.293
+    },
+    "SALLY": {
+      "n": 102,
+      "median": 1.324
+    }
+  },
+  "selection": {
+    "min_mean2min_kt": 34.0,
+    "ocean_fetch_fraction_0_10km": 0.5,
+    "parser_repaired_rows_excluded": true,
+    "windows_used": 10602,
+    "stations": 41,
+    "storms": 11
+  }
+}

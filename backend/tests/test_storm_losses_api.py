@@ -120,7 +120,8 @@ def test_run_publishes_the_provenance_a_reader_needs(example):
     assert metadata["curve_source_notes"]
     assert metadata["sampling_description"]
     assert metadata["curve_wind_metric"] == metadata["wind_model"]["wind_metric"]
-    assert metadata["wind_model"]["evidence_status"] == "assumed"
+    assert metadata["wind_model"]["evidence_status"] == "sourced"
+    assert example["evidence_status"] == "assumed", "the curves are still assumed"
     assert metadata["wind_model"]["reference_height_m"] == 10
     assert metadata["wind_model"]["gust_factor"]
     assert metadata["policy_basis"]["deductible_percent"] == 0.05
@@ -344,7 +345,7 @@ def _expected_gust(distance_km, centre_wind_kt, storm):
         distance_km, centre_wind_kt, size["rmw_km"], size["outer_decay_exponent"],
         size["taper_start_km"], size["cutoff_km"],
     )
-    return sustained * wind.KT_TO_MPH * wind.GUST_FACTOR
+    return sustained * wind.KT_TO_MPH * wind.land_exposure_factor() * wind.GUST_FACTOR
 
 
 def _km_east(latitude, longitude, km):
@@ -376,7 +377,7 @@ def test_wind_peaks_at_the_radius_of_maximum_wind_not_in_the_eye():
     assert gust["EYEWALL"] == pytest.approx(
         _expected_gust(haversine_distance_km(*eyewall, 25.0, -80.0), 130.0, storm), abs=0.01
     )
-    assert gust["EYEWALL"] > 0.99 * 130.0 * wind.KT_TO_MPH * wind.GUST_FACTOR
+    assert gust["EYEWALL"] > 0.99 * 130.0 * wind.KT_TO_MPH * wind.land_exposure_factor() * wind.GUST_FACTOR
 
 
 def test_distant_property_is_floored_to_zero_exposure():
@@ -428,7 +429,9 @@ def test_wind_model_is_wind_field_with_the_agreed_gust_factor(example):
 
     assert wind_model["model"] == "wind_field"
     assert wind_model["package_version"] == wind_field.__version__
-    assert wind_model["gust_factor"] == 1.25
+    assert wind_model["gust_factor"] == wind.GUST_FACTOR == wind.load_gust_factor_model()["gust_factor"]
+    assert wind_model["evidence_status"] == "sourced"
+    assert wind_model["validation"]["wind_validation_id"] == "fl-asos-hurricane-peaks-v1"
     assert wind_model["storm_parameters"]["parameter_status"] == "sourced"
     assert wind_model["storm_parameters"]["storm_size_model_id"] == "hurdat2-radii-fit-v1"
     assert example["metadata"]["storm_size"][0]["storm_id"] == "SYN0155"
